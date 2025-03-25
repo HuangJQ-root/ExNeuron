@@ -104,19 +104,89 @@ enum neu_http_method {
     NEU_HTTP_METHOD_DELETE,
     NEU_HTTP_METHOD_OPTIONS
 };
+
+/**
+ * @brief HTTP处理器类型枚举，定义了不同的HTTP处理器类型。
+ *
+ * 此枚举用于指定HTTP处理器的具体类型，包括直接处理函数、目录服务以及重定向等。
+ */
 enum neu_http_handler_type {
+    /**
+     * @brief 直接处理函数类型。
+     *
+     * 表示HTTP请求将由一个具体的处理函数来处理。通常用于实现自定义的业务逻辑，
+     * 如处理API请求、动态生成内容等。
+     */
     NEU_HTTP_HANDLER_FUNCTION = 0x0,
+
+    /**
+     * @brief 目录服务类型。
+     *
+     * 表示HTTP请求将被映射到服务器上的某个目录，并从该目录中提供静态文件服务。
+     * 适用于提供HTML页面、CSS样式表、JavaScript脚本等静态资源。
+     */
     NEU_HTTP_HANDLER_DIRECTORY,
+
+    /**
+     * @brief 重定向类型。
+     *
+     * 表示HTTP请求将被重定向到另一个URL。常用于URL规范化、临时移动资源或永久改变资源位置等情况。
+     */
     NEU_HTTP_HANDLER_REDIRECT,
 };
 
+/**
+ * @brief HTTP处理器结构体，用于定义处理HTTP请求的方法、URL、类型及其实现。
+ *
+ * 此结构体描述了一个HTTP处理器的所有必要信息，包括请求方法（GET、POST等）、请求的URL路径、处理器类型以及具体的处理器实现或相关信息。
+ */
 struct neu_http_handler {
+    /**
+     * @brief HTTP请求方法。
+     *
+     * 使用枚举类型`neu_http_method`定义，表示HTTP请求的方法，如GET、POST、PUT、DELETE等。
+     */
     enum neu_http_method       method;
-    char *                     url;
+
+    /**
+     * @brief 请求的URL路径。
+     *
+     * 字符串指针，指向具体的URL路径，用于匹配特定的HTTP请求。
+     */
+    char                      *url;
+
+    /**
+     * @brief HTTP处理器类型。
+     *
+     * 使用枚举类型`neu_http_handler_type`定义，指示处理器的具体类型。
+     */
     enum neu_http_handler_type type;
+
+    /**
+     * @brief 处理器值联合体。
+     *
+     * 根据处理器类型的不同，此联合体可以存储不同类型的值：
+     */
     union neu_http_handler_value {
+        /**
+         * @brief 处理器函数指针。
+         *
+         * 当处理器类型为直接处理器时使用，指向一个函数，该函数负责处理对应的HTTP请求。
+         */
         void *handler;
+
+        /**
+         * @brief 文件路径。
+         *
+         * 当处理器类型为目录服务时使用，指向一个字符串，表示要提供给客户端的文件所在的目录路径。
+         */
         char *path;
+
+        /**
+         * @brief 目标URL。
+         *
+         * 当处理器类型为重定向处理器时使用，指向一个字符串，表示重定向的目标URL。
+         */
         char *dst_url;
     } value;
 };

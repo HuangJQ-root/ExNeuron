@@ -53,7 +53,7 @@
 
 static const char *     plugin_file = "persistence/plugins.json";
 static const char *     tmp_path    = "tmp";
-static neu_persister_t *g_impl      = NULL;
+static neu_persister_t *g_impl      = NULL; // 全局的 SQLite持久化器实例指针
 
 static int write_file_string(const char *fn, const char *s)
 {
@@ -178,15 +178,29 @@ int neu_persister_store_plugins(UT_array *plugin_infos)
     return rv;
 }
 
+/**
+ * @brief 从指定的 JSON 文件中加载插件信息，并将其添加到插件信息数组中。
+ *
+ * 该函数会读取指定文件名的 JSON 文件内容，将其解析为插件请求结构体，
+ * 然后把解析得到的插件名称添加到传入的插件信息数组中。最后，释放解析过程中分配的内存。
+ *
+ * @param fname 指向要读取的 JSON 文件名称的常量字符指针。
+ * @param plugin_infos 指向存储插件信息的 UT_array 数组的指针。
+ * @return 如果文件读取或 JSON 解析过程中出现错误，返回相应的错误码；如果一切正常，返回 0。
+ */
 static int load_plugins_file(const char *fname, UT_array *plugin_infos)
 {
+    // 用于存储从文件中读取的 JSON 字符串
     char *json_str = NULL;
     int   rv       = read_file_string(fname, &json_str);
     if (rv != 0) {
         return rv;
     }
 
+    // 用于存储解析后的插件请求结构体
     neu_json_plugin_req_t *plugin_req = NULL;
+
+    // 对 JSON 字符串进行解析
     rv = neu_json_decode_plugin_req(json_str, &plugin_req);
     if (rv != 0) {
         free(json_str);
@@ -195,11 +209,16 @@ static int load_plugins_file(const char *fname, UT_array *plugin_infos)
 
     for (int i = 0; i < plugin_req->n_plugin; i++) {
         char *name = plugin_req->plugins[i];
+
+        // 将插件名称添加到插件信息数组中
         utarray_push_back(plugin_infos, &name);
     }
 
+    // 释放读取的 JSON 字符串内存
     free(json_str);
+    // 释放插件请求结构体中插件列表的内存
     free(plugin_req->plugins);
+    // 释放插件请求结构体的内存
     free(plugin_req);
     return 0;
 }
@@ -209,19 +228,36 @@ static int ut_str_cmp(const void *a, const void *b)
     return strcmp(*(char **) a, *(char **) b);
 }
 
+/**
+ * @brief 从默认配置文件和用户配置文件中加载插件信息，并合并去重。
+ *
+ * 该函数的主要功能是从默认插件配置文件和用户自定义插件配置文件中加载插件信息。
+ * 它会分别加载这两个文件中的插件列表，对默认插件列表进行排序，然后将用户插件列表中的
+ * 非重复插件添加到默认插件列表中，最后释放用户插件列表占用的内存，并将合并后的插件列表
+ * 通过指针返回给调用者。
+ *
+ * @param plugin_infos 指向 UT_array 指针的指针，用于存储合并后的插件信息数组。
+ * @return 无论是否成功加载插件文件，最终都会返回 0 表示函数执行完成。
+ */
 int neu_persister_load_plugins(UT_array **plugin_infos)
 {
+    // 定义存储默认插件信息的数组
     UT_array *default_plugins = NULL;
+    // 定义存储用户自定义插件信息的数组
     UT_array *user_plugins    = NULL;
+    // 初始化默认插件数组
     utarray_new(default_plugins, &ut_ptr_icd);
+    // 初始化用户插件数组
     utarray_new(user_plugins, &ut_ptr_icd);
 
+    // 从默认插件配置文件中加载插件信息
     // default plugins will always present
     if (0 !=
         load_plugins_file("config/default_plugins.json", default_plugins)) {
         nlog_warn("cannot load default plugins");
     }
-    // user plugins
+    
+    // 从用户插件配置文件中加载插件信息
     if (0 != load_plugins_file(plugin_file, user_plugins)) {
         nlog_warn("cannot load user plugins");
     } else {
@@ -231,16 +267,21 @@ int neu_persister_load_plugins(UT_array **plugin_infos)
 
     utarray_foreach(user_plugins, char **, name)
     {
-        // filter out duplicates in case of old persistence data
+        // 检查当前用户插件是否已存在于默认插件数组中
         char **find = utarray_find(default_plugins, name, ut_str_cmp);
         if (NULL == find) {
+            // 若不存在，则将该用户插件添加到默认插件数组中
             utarray_push_back(default_plugins, name);
-            *name = NULL; // move to default_plugins
+
+            // 将原用户插件指针置空，表示已移动到默认插件数组
+            *name = NULL; 
         } else {
+            // 若已存在，则释放该用户插件占用的内存
             free(*name);
         }
     }
 
+    // 释放用户插件数组占用的内存
     utarray_free(user_plugins);
     *plugin_infos = default_plugins;
     return 0;
@@ -307,6 +348,22 @@ bool neu_persister_library_exists(const char *library)
     return ret;
 }
 
+/**
+ * @brief 创建并初始化一个 SQLite 持久化实例。
+ *
+ * 该函数接收一个指向包含数据库模式文件目录路径的字符串，并使用该目录中的模式文件
+ * 创建和初始化一个 SQLite 持久化实例。如果成功创建持久化实例，则返回 0；
+ * 如果创建失败（例如内存分配失败或数据库打开失败），则返回 -1。
+ *
+ * @param schema_dir 指向包含数据库模式文件的目录路径的字符串。\n
+ *                   默认值为 "./config"。
+ *
+ * @return int 成功时返回 0，失败时返回 -1。
+ *
+ * @note 
+ * - `g_impl` 是一个全局变量，用于存储持久化实例的引用。
+ * - 确保 `schema_dir` 指向有效的目录路径，且该目录中包含所需的 SQL 模式文件。
+ */
 int neu_persister_create(const char *schema_dir)
 {
     g_impl = neu_sqlite_persister_create(schema_dir);
@@ -451,6 +508,19 @@ int neu_persister_store_node_setting(const char *node_name, const char *setting)
     return g_impl->vtbl->store_node_setting(g_impl, node_name, setting);
 }
 
+/**
+ * @brief 从持久化存储中加载指定节点的设置信息。
+ *
+ * 该函数通过调用由全局变量 `g_impl` 所指向的结构体中 `vtbl` 成员（函数指针表）
+ * 里的 `load_node_setting` 函数，来实现从持久化存储中读取指定节点的设置信息的功能。
+ *
+ * @param node_name 指向一个表示节点名称的字符串的指针，用于唯一标识要加载设置信息的节点。
+ * @param setting 指向一个常量字符指针的常量指针。函数会将从持久化存储中读取到的节点设置
+ *                信息的指针存储在这里。注意，该指针所指向的内容是常量，不能在函数内部被修改。
+ * @return 函数的返回值表示加载操作的结果。
+ *         具体的返回值含义取决于 `g_impl->vtbl->load_node_setting` 函数的实现，
+ *         通常返回 0 表示加载成功，非 0 值表示加载失败。
+ */
 int neu_persister_load_node_setting(const char *       node_name,
                                     const char **const setting)
 {

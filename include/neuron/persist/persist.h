@@ -31,16 +31,66 @@ extern "C" {
 
 typedef neu_json_plugin_req_plugin_t neu_persist_plugin_info_t;
 
+/**
+ * @brief 用于存储持久化节点信息的结构体。
+ *
+ * 该结构体包含了与持久化节点相关的基本信息，如节点名称、节点类型、插件名称和节点状态等。
+ * 这些信息可以用于描述和管理持久化节点，例如在配置文件中记录节点信息，或者在系统运行时跟踪节点的状态。
+ */
 typedef struct {
+    /**
+     * @brief 节点的名称。
+     *
+     * 这是一个指向字符串的指针，用于存储节点的名称。节点名称通常用于唯一标识一个节点，
+     * 可以在系统中方便地查找和引用该节点。
+     */
     char *name;
+
+    /**
+     * @brief 节点的类型。
+     *
+     * App或驱动
+     */
     int   type;
+
+    /**
+     * @brief 节点所使用的插件名称。
+     *
+     * 这是一个指向字符串的指针，用于存储节点所使用的插件的名称。插件名称可以帮助
+     * 确定节点的具体功能和行为，因为不同的插件可能会为节点提供不同的功能。
+     */
     char *plugin_name;
+
+    /**
+     * @brief 节点的状态。
+     *
+     * 一个整数值，用于表示节点的当前状态。
+     * 例如节点处于运行、停止等状态。
+     */
     int   state;
 } neu_persist_node_info_t;
 
+/**
+ * @brief 用于持久化存储组信息的结构体。
+ *
+ */
 typedef struct {
+    /**
+     * @brief
+     * 组采集时间间隔
+     */
     uint32_t interval;
+
+    /**
+     * @brief
+     * 组名
+     */
     char *   name;
+
+    /**
+     * @brief
+     * 
+     */
     char *   context;
 } neu_persist_group_info_t;
 

@@ -174,10 +174,22 @@ int json_encode_read_resp(void *json_object, void *param)
     return ret;
 }
 
+/**
+ * @brief 解码单条 JSON 写入请求
+ *
+ * 该函数用于从给定的 JSON 对象中解码单条写入请求的数据，并将其填充到 `neu_json_write_req_t` 结构体中。
+ * 它首先定义了需要从 JSON 对象中解析的元素数组，然后调用 `neu_json_decode_by_json` 函数进行解析。
+ * 解析完成后，将解析得到的值赋值给 `neu_json_write_req_t` 结构体的相应成员。
+ * 如果解析过程中出现错误，会释放已分配的字符串内存。
+ *
+ * @param json_obj 指向要解析的 JSON 对象的指针，通常是由 `neu_json_decode_newb` 等函数解析得到的 JSON 对象。
+ * @param req 指向 `neu_json_write_req_t` 结构体的指针，用于存储解码后的写入请求数据。
+ * @return int 解码操作的结果，0 表示成功，非 0 表示失败。失败的原因可能是 JSON 数据格式不符合预期或解析过程中出现其他错误。
+ */
 static int decode_write_req_json(void *json_obj, neu_json_write_req_t *req)
 {
     int ret = 0;
-
+    
     neu_json_elem_t req_elems[] = {
         {
             .name = "node_name",
@@ -285,6 +297,20 @@ static int decode_write_tags_req_json(void *                     json_obj,
     return 0;
 }
 
+/**
+ * @brief 解码 JSON 写入请求
+ *
+ * 该函数用于将传入的 JSON 字符串解析为 `neu_json_write_t` 结构体。它会根据 JSON 数据的结构
+ * 判断是单条写入请求还是多条写入请求，并调用相应的解码函数进行处理。
+ *
+ * @param buf 指向包含 JSON 数据的缓冲区的指针。
+ * @param len 缓冲区中 JSON 数据的长度（以字节为单位）。
+ * @param result 指向 `neu_json_write_t` 结构体指针的指针，用于存储解码后的结果。
+ *               如果解码成功，该指针将指向一个分配好内存的 `neu_json_write_t` 结构体；
+ *               如果解码失败，该指针将保持不变。
+ * @return int 解码操作的结果，0 表示成功，-1 表示失败。失败的原因可能包括内存分配失败、
+ *             JSON 解析失败或具体解码函数执行失败。
+ */
 int json_decode_write_req(char *buf, size_t len, neu_json_write_t **result)
 {
     int               ret      = 0;
@@ -294,20 +320,29 @@ int json_decode_write_req(char *buf, size_t len, neu_json_write_t **result)
         return -1;
     }
 
+    // 解析 JSON 数据
     json_obj = neu_json_decode_newb(buf, len);
     if (NULL == json_obj) {
         free(req);
         return -1;
     }
 
+    // 检查 JSON 数据中是否包含 "tags" 字段
     if (NULL == json_object_get(json_obj, "tags")) {
+        // 如果不包含 "tags" 字段，认为是单条写入请求
         req->singular = true;
+
+        // 调用解码单条写入请求的函数
         ret           = decode_write_req_json(json_obj, &req->single);
     } else {
+        // 如果包含 "tags" 字段，认为是多条写入请求
         req->singular = false;
+
+        // 调用解码多条写入请求的函数
         ret           = decode_write_tags_req_json(json_obj, &req->plural);
     }
 
+    // 根据解码结果处理
     if (0 == ret) {
         *result = req;
     } else {

@@ -32,269 +32,253 @@ typedef struct {
     struct neu_persister_vtbl_s *vtbl;
 } neu_persister_t;
 
+/**
+ * @brief
+ * 
+ * 虚函数表，定义了一组函数指针，这些指针指向不同的函数，
+ * 这些函数实现了持久化对象的各种操作。通过使用虚函数表，
+ * 可以在运行时根据实际的持久化对象类型调用相应的函数，
+ * 从而实现多态性(不同的持久化对象如sqlite)。
+ * 
+ */
 struct neu_persister_vtbl_s {
     /**
-     * Destroy perister.
+     * @brief 销毁持久化对象。
      */
     void (*destroy)(neu_persister_t *self);
 
     /**
-     * @return implementation defined underlying handle.
+     * @return 返回实现定义的底层句柄。
      */
     void *(*native_handle)(neu_persister_t *self);
 
     /**
-     * Persist nodes.
-     * @param node_info                 neu_persist_node_info_t.
-     * @return 0 on success, non-zero on failure
+     * @brief 持久化节点信息。
      */
     int (*store_node)(neu_persister_t *self, neu_persist_node_info_t *info);
 
     /**
-     * Load node infos.
-     * @param[out] node_infos           used to return pointer to heap allocated
-     *                                  vector of neu_persist_node_info_t.
-     * @return 0 on success, none-zero on failure
+     * @brief 加载节点信息。
      */
     int (*load_nodes)(neu_persister_t *self, UT_array **node_infos);
 
     /**
-     * Delete node.
-     * @param node_name                 name of the node to delete.
-     * @return 0 on success, none-zero on failure
+     * @brief 删除节点。
      */
     int (*delete_node)(neu_persister_t *self, const char *node_name);
 
     /**
-     * Update node name.
-     * @param node_name                 name of the node to update.
-     * @param new_name                  new name of the adapter.
-     * @return 0 on success, none-zero on failure
+     * @brief 更新节点名称。
      */
     int (*update_node)(neu_persister_t *self, const char *node_name,
                        const char *new_name);
 
     /**
-     * Update node state.
-     * @param node_name                 name of the node to update.
-     * @param state                     state of the adapter.
-     * @return 0 on success, none-zero on failure
+     * @brief 更新节点状态。
      */
     int (*update_node_state)(neu_persister_t *self, const char *node_name,
                              int state);
 
     /**
-     * Persist node setting.
-     * @param adapter_name              name of the adapter who owns the
-     * setting.
-     * @param setting                   node setting string.
-     * @return 0 on success, non-zero otherwise
+     * @brief 持久化节点设置。
      */
     int (*store_node_setting)(neu_persister_t *self, const char *node_name,
                               const char *setting);
 
     /**
-     * Load node setting.
-     * @param node_name                 name of the node.
-     * @param[out] setting              used to return node setting string.
-     * @return 0 on success, non-zero otherwise
+     * @brief 加载节点设置。
      */
     int (*load_node_setting)(neu_persister_t *self, const char *node_name,
                              const char **const setting);
 
     /**
-     * Delete node setting.
-     * @param node_name                 name of the node.
-     * @return 0 on success, none-zero on failure
+     * @brief 删除节点设置。
      */
     int (*delete_node_setting)(neu_persister_t *self, const char *node_name);
 
     /**
-     * Persist node tag.
-     * @param driver_name               name of the driver who owns the tags
-     * @param group_name                name of the group
-     * @param tag                       the tag to store
-     * @return 0 on success, non-zero otherwise
+     * @brief 持久化节点标签。
      */
     int (*store_tag)(neu_persister_t *self, const char *driver_name,
                      const char *group_name, const neu_datatag_t *tag);
 
     /**
-     * Persist node tags.
-     * @param driver_name               name of the driver who owns the tags
-     * @param group_name                name of the group
-     * @param tags                      list of tags to store
-     * @param n                         number of tags to store
-     * @return 0 on success, non-zero otherwise
+     * 持久化多个节点标签。
+     * @param driver_name               驱动程序名称。
+     * @param group_name                分组名称。
+     * @param tags                      标签数组。
+     * @param n                         标签数量。
+     * @return 成功返回 0，失败返回非零值。
      */
     int (*store_tags)(neu_persister_t *self, const char *driver_name,
                       const char *group_name, const neu_datatag_t *tags,
                       size_t n);
 
     /**
-     * Load node tag infos.
-     * @param node_name                 name of the node who owns the tags
-     * @param group_name                name of the group
-     * @param[out] tag_infos            used to return pointer to heap allocated
-     *                                  vector of neu_datatag_t
-     * @return 0 on success, non-zero otherwise
+     * 加载节点标签信息。
+     * @param node_name                 节点名称。
+     * @param group_name                分组名称。
+     * @param[out] tag_infos            用于返回指向堆分配的 neu_datatag_t 向量的指针。
+     * @return 成功返回 0，失败返回非零值。
      */
     int (*load_tags)(neu_persister_t *self, const char *driver_name,
                      const char *group_name, UT_array **tag_infos);
 
     /**
-     * Update node tags.
-     * @param driver_name               name of the driver who owns the tags
-     * @param group_name                name of the group
-     * @param tag                       the tag to update
-     * @return 0 on success, non-zero otherwise
+     * 更新节点标签。
+     * @param driver_name               驱动程序名称。
+     * @param group_name                分组名称。
+     * @param tag                       标签信息。
+     * @return 成功返回 0，失败返回非零值。
      */
     int (*update_tag)(neu_persister_t *self, const char *driver_name,
                       const char *group_name, const neu_datatag_t *tag);
 
     /**
-     * Update node tag value.
-     * @param driver_name               name of the driver who owns the tags
-     * @param group_name                name of the group
-     * @param tag                       the tag to update
-     * @return 0 on success, non-zero otherwise
+     * 更新节点标签的值。
+     * @param driver_name               驱动程序名称。
+     * @param group_name                分组名称。
+     * @param tag                       标签信息。
+     * @return 成功返回 0，失败返回非零值。
      */
     int (*update_tag_value)(neu_persister_t *self, const char *driver_name,
                             const char *group_name, const neu_datatag_t *tag);
 
     /**
-     * Delete node tags.
-     * @param driver_name               name of the driver who owns the tags
-     * @param group_name                name of the group
-     * @param tag_name                  name of the tag
-     * @return 0 on success, non-zero otherwise
+     * 删除节点标签。
+     * @param driver_name               驱动程序名称。
+     * @param group_name                分组名称。
+     * @param tag_name                  标签名称。
+     * @return 成功返回 0，失败返回非零值。
      */
     int (*delete_tag)(neu_persister_t *self, const char *driver_name,
                       const char *group_name, const char *tag_name);
 
     /**
-     * Persist subscriptions.
-     * @param app_name                  name of the app node
-     * @param driver_name               name of the driver node
-     * @param group_name                name of the group
-     * @param params                    subscription params
-     * @return 0 on success, non-zero otherwise
+     * 持久化订阅信息。
+     * @param app_name                  应用节点名称。
+     * @param driver_name               驱动节点名称。
+     * @param group_name                分组名称。
+     * @param params                    订阅参数。
+     * @param static_tags               静态标签。
+     * @return 成功返回 0，失败返回非零值。
      */
     int (*store_subscription)(neu_persister_t *self, const char *app_name,
                               const char *driver_name, const char *group_name,
                               const char *params, const char *static_tags);
 
     /**
-     * Update subscriptions.
-     * @param app_name                  name of the app node
-     * @param driver_name               name of the driver node
-     * @param group_name                name of the group
-     * @param params                    subscription params
-     * @return 0 on success, non-zero otherwise
+     * 更新订阅信息。
+     * @param app_name                  应用节点名称。
+     * @param driver_name               驱动节点名称。
+     * @param group_name                分组名称。
+     * @param params                    订阅参数。
+     * @param static_tags               静态标签。
+     * @return 成功返回 0，失败返回非零值。
      */
     int (*update_subscription)(neu_persister_t *self, const char *app_name,
                                const char *driver_name, const char *group_name,
                                const char *params, const char *static_tags);
 
     /**
-     * Load adapter subscriptions.
-     * @param app_name                  name of the app node
-     * @param[out] subscription_infos   used to return pointer to heap allocated
-     *                                  vector of
-     * neu_persist_subscription_info_t.
-     * @return 0 on success, non-zero otherwise
+     * 加载适配器订阅信息。
+     * @param app_name                  应用节点名称。
+     * @param[out] subscription_infos   用于返回指向堆分配的 neu_persist_subscription_info_t 向量的指针。
+     * @return 成功返回 0，失败返回非零值。
      */
     int (*load_subscriptions)(neu_persister_t *self, const char *app_name,
                               UT_array **subscription_infos);
 
     /**
-     * Persist subscriptions.
-     * @param app_name                  name of the app node
-     * @param driver_name               name of the driver node
-     * @param group_name                name of the group
-     * @return 0 on success, non-zero otherwise
+     * 删除订阅信息。
+     * @param app_name                  应用节点名称。
+     * @param driver_name               驱动节点名称。
+     * @param group_name                分组名称。
+     * @return 成功返回 0，失败返回非零值。
      */
     int (*delete_subscription)(neu_persister_t *self, const char *app_name,
                                const char *driver_name, const char *group_name);
 
     /**
-     * Persist group config.
-     * @param driver_name               name of the driver who owns the group
-     * @param group_info                group info to persist.
-     * @return 0 on success, non-zero otherwise
+     * 持久化组配置。
+     * @param driver_name               驱动程序名称。
+     * @param group_info                组配置信息。
+     * @param context                   上下文信息。
+     * @return 成功返回 0，失败返回非零值。
      */
     int (*store_group)(neu_persister_t *self, const char *driver_name,
                        neu_persist_group_info_t *group_info,
                        const char *              context);
 
     /**
-     * Update group config.
-     * @param driver_name               name of the driver who owns the group
-     * @param group_info                group info to persist.
-     * @return 0 on success, non-zero otherwise
+     * 更新组配置。
+     * @param driver_name               驱动程序名称。
+     * @param group_name                组名称。
+     * @param group_info                组配置信息。
+     * @return 成功返回 0，失败返回非零值。
      */
     int (*update_group)(neu_persister_t *self, const char *driver_name,
                         const char *              group_name,
                         neu_persist_group_info_t *group_info);
 
     /**
-     * Load all group config infos under an adapter.
-     * @param driver_name               name of the driver who owns the group
-     * @param[out] group_infos          used to return pointer to heap allocated
-     *                                  vector of neu_persist_group_info_t.
-     * @return 0 on success, non-zero otherwise
+     * 加载适配器下所有组的配置信息。
+     * @param driver_name               驱动程序名称。
+     * @param[out] group_infos          用于返回指向堆分配的 neu_persist_group_info_t 向量的指针。
+     * @return 成功返回 0，失败返回非零值。
      */
     int (*load_groups)(neu_persister_t *self, const char *driver_name,
                        UT_array **group_infos);
+
     /**
-     * Delete group config.
-     * @param driver_name               name of the driver who owns the group
-     * @param group_name                name of the group.
-     * @return 0 on success, none-zero on failure
+     * 删除组配置。
+     * @param driver_name               驱动程序名称。
+     * @param group_name                组名称。
+     * @return 成功返回 0，失败返回非零值。
      */
     int (*delete_group)(neu_persister_t *self, const char *driver_name,
                         const char *group_name);
 
     /**
-     * Load all user infos.
-     * @param[out] user_infos           used to return pointer to heap allocated
-     *                                  vector of neu_persist_user_info_t.
-     * @return 0 on success, non-zero otherwise
+     * 加载所有用户信息。
+     * @param[out] user_infos           用于返回指向堆分配的 neu_persist_user_info_t 向量的指针。
+     * @return 成功返回 0，失败返回非零值。
      */
     int (*load_users)(neu_persister_t *self, UT_array **user_infos);
 
     /**
-     * Save user info.
-     * @param user                      user info
-     * @return 0 on success, none-zero on failure
+     * 保存用户信息。
+     * @param user                      用户信息。
+     * @return 成功返回 0，失败返回非零值。
      */
     int (*store_user)(neu_persister_t *              self,
                       const neu_persist_user_info_t *user);
 
     /**
-     * Update user info.
-     * @param user                      user info
-     * @return 0 on success, none-zero on failure
+     * 更新用户信息。
+     * @param user                      用户信息。
+     * @return 成功返回 0，失败返回非零值。
      */
     int (*update_user)(neu_persister_t *              self,
                        const neu_persist_user_info_t *user);
 
     /**
-     * Load user info.
-     * @param user_name                 name of the user.
-     * @param user_p                    output parameter of user info
-     * @return 0 on success, none-zero on failure
+     * 加载用户信息。
+     * @param user_name                 用户名称。
+     * @param user_p                    输出参数，用于返回用户信息。
+     * @return 成功返回 0，失败返回非零值。
      */
     int (*load_user)(neu_persister_t *self, const char *user_name,
                      neu_persist_user_info_t **user_p);
 
     /**
-     * Delete user info.
-     * @param user_name                 name of the user.
-     * @return 0 on success, none-zero on failure
+     * 删除用户信息。
+     * @param user_name                 用户名称。
+     * @return 成功返回 0，失败返回非零值。
      */
     int (*delete_user)(neu_persister_t *self, const char *user_name);
 };
+
 
 // read all file contents as string
 int read_file_string(const char *fn, char **out);

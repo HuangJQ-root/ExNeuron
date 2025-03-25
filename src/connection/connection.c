@@ -42,32 +42,147 @@ struct tcp_client {
     struct sockaddr_in client;
 };
 
+/**
+ * @brief 表示网络连接的结构体，封装了网络连接所需的各种参数、状态和回调函数。
+ * 
+ * 该结构体用于管理不同类型的网络连接：TCP UDP TTY
+ */
 struct neu_conn {
+    /**
+     * @brief 连接参数。
+     *
+     */
     neu_conn_param_t param;
+
+    /**
+     * @brief 连接的额外数据指针。
+     * 
+     * 可用于存储与连接相关的额外信息
+     */
     void *           data;
+    
+    /**
+     * @brief 连接状态标志。
+     * 
+     * 表示当前连接是否已成功建立，true 表示已连接，
+     * false 表示未连接。
+     */
     bool             is_connected;
+
+    /**
+     * @brief 停止标志。
+     * 
+     * 用于控制连接操作是否停止，设置为 true 
+     * 时表示停止连接相关的操作。
+     */
     bool             stop;
+
+    /**
+     * @brief 连接正常标志。
+     * 
+     * 表示连接是否处于正常状态，true 表示连接正常，
+     * false 表示连接可能存在问题。
+     */
     bool             connection_ok;
 
+    /**
+     * @brief 连接成功回调函数指针。
+     * 
+     * 当连接成功建立时，会调用该回调函数
+     */
     neu_conn_callback connected;
+
+    /**
+     * @brief 连接断开回调函数指针。
+     * 
+     * 当连接断开时，会调用该回调函数
+     */
     neu_conn_callback disconnected;
+
+    /**
+     * @brief 回调触发标志。
+     * 
+     * 用于控制是否触发连接成功或断开的回调函数，
+     * true 表示触发，false 表示不触发。
+     */
     bool              callback_trigger;
 
+    /**
+     * @brief 互斥锁。
+     * 
+     * 用于保护结构体中的共享资源，确保在多线程环境下
+     * 对连接状态和数据的安全访问。
+     */
     pthread_mutex_t mtx;
 
+    /**
+     * @brief 文件描述符。
+     * 
+     */
     int  fd;
+
+    /**
+     * @brief 阻塞标志。
+     * 
+     * 表示连接操作是否为阻塞模式，
+     * true 表示阻塞，false 表示非阻塞。
+     */
     bool block;
 
+    /**
+     * @brief 连接状态信息。
+     * 
+     * 存储连接的状态信息：发送和接收的字节数等
+     */
     neu_conn_state_t state;
 
+    /**
+     * @brief TCP 服务器相关信息。
+     * 
+     * 包含 TCP 服务器的客户端信息、客户端数量和监听状态等，用于管理 TCP 服务器连接。
+     */
     struct {
+            /**
+         * @brief TCP 客户端数组指针。
+         * 
+         * 指向一个存储 TCP 客户端信息的数组，每个元素为 struct tcp_client 类型。
+         */
         struct tcp_client *clients;
+
+        /**
+         * @brief TCP 客户端数量。
+         * 
+         * 表示当前连接到 TCP 服务器的客户端数量。
+         */
         int                n_client;
+
+        /**
+         * @brief 监听状态标志。
+         * 
+         * 表示 TCP 服务器是否正在监听连接请求，true 表示正在监听，false 表示未监听。
+         */
         bool               is_listen;
     } tcp_server;
 
+    /**
+     * @brief 缓冲区指针。
+     * 
+     * 指向一个用于存储网络数据的缓冲区，用于暂存从网络接收或要发送的数据。
+     */
     uint8_t *buf;
+
+    /**
+     * @brief 缓冲区大小。
+     * 
+     * 表示 buf 缓冲区的总大小，用于限制缓冲区可存储的数据量。
+     */
     uint16_t buf_size;
+
+    /**
+     * @brief 缓冲区偏移量。
+     * 
+     * 表示当前缓冲区中已使用的字节数，用于指示下一次读写操作的位置。
+     */
     uint16_t offset;
 };
 
@@ -250,30 +365,77 @@ int neu_conn_tcp_server_close_client(neu_conn_t *conn, int fd)
     return 0;
 }
 
+/**
+ * @brief 向 TCP 服务器的指定客户端发送数据。
+ *
+ * 该函数用于将指定长度的数据从缓冲区发送到 TCP 服务器的特定客户端。
+ * 在发送数据之前，会检查连接是否停止，并尝试监听新的客户端连接。
+ * 发送成功后，会更新连接的发送字节统计信息。如果发送失败且不是由于
+ * 非阻塞操作暂时无数据可处理的情况，会调用断开连接回调函数并从客户端
+ * 列表中移除该客户端。
+ *
+ * @param conn 指向 `neu_conn_t` 结构体的指针，表示 TCP 服务器连接。
+ * @param fd 要发送数据的客户端的文件描述符。
+ * @param buf 指向要发送的数据缓冲区的指针。
+ * @param len 要发送的数据的长度（字节数）。
+ *
+ * @return 返回实际发送的字节数。如果发送失败，返回0 。
+ */
 ssize_t neu_conn_tcp_server_send(neu_conn_t *conn, int fd, uint8_t *buf,
                                  ssize_t len)
 {
+    // 用于存储发送操作的返回值，即实际发送的字节数
     ssize_t ret = 0;
 
     pthread_mutex_lock(&conn->mtx);
+
+    // 检查连接是否已停止，如果停止则解锁并返回 0
     if (conn->stop) {
         pthread_mutex_unlock(&conn->mtx);
         return ret;
     }
 
+    // 监听新的客户端连接
     conn_tcp_server_listen(conn);
+
+    /**
+     * @note 以非阻塞模式且忽略 SIGPIPE 信号的方式向客户端发送数据
+     * 
+     * - 当使用 send 函数向一个已经关闭连接的套接字发送数据时，
+     *   如果没有设置 MSG_NOSIGNAL 标志，系统会向当前进程发送
+     *   一个 SIGPIPE 信号。默认情况下，SIGPIPE 信号的处理动
+     *   作是终止进程，这可能会导致程序意外退出。而当设置了 
+     *   MSG_NOSIGNAL 标志后，send 函数在遇到这种情况时不会发
+     *   送 SIGPIPE 信号，而是返回 -1 并将 errno 设置为 EPIPE，
+     *   这样程序可以通过检查返回值和 errno 来处理这种错误情况，
+     *   避免进程被意外终止。
+     * 
+     * - 将 send 函数设置为非阻塞模式。在默认情况下，send 函数是阻
+     *   塞的，即如果套接字的发送缓冲区已满，send 函数会阻塞当前线程，
+     *   直到有足够的空间可以发送数据。而当设置了 MSG_DONTWAIT 标志
+     *   后，send 函数会立即返回，如果发送缓冲区已满，send 函数会返回
+     *   -1 并将 errno 设置为 EAGAIN 或 EWOULDBLOCK，表示当前操作
+     *   无法立即完成。
+     */
     ret = send(fd, buf, len, MSG_NOSIGNAL | MSG_DONTWAIT);
+
+    // 如果发送成功，更新连接的发送字节统计信息
     if (ret > 0) {
         conn->state.send_bytes += ret;
     }
 
+    // 如果发送失败且错误码不是 EAGAIN（表示非阻塞操作暂时无数据可处理）
     if (ret <= 0 && errno != EAGAIN) {
+        // 调用断开连接回调函数，通知连接断开
         conn->disconnected(conn->data, fd);
+
+        // 从客户端列表中移除该客户端
         conn_tcp_server_del_client(conn, fd);
     }
 
     pthread_mutex_unlock(&conn->mtx);
 
+    // 返回实际发送的字节数
     return ret;
 }
 
@@ -310,64 +472,110 @@ ssize_t neu_conn_tcp_server_recv(neu_conn_t *conn, int fd, uint8_t *buf,
     return ret;
 }
 
+/**
+ * @brief 向指定的网络连接发送数据。
+ *
+ * 该函数用于将指定长度的数据从缓冲区发送到指定的网络连接。
+ * 它会处理连接状态，包括在连接断开时尝试重新连接，
+ * 并根据连接类型（如 TCP 客户端、UDP、串口客户端等）选择合适的发送方式。
+ * 同时，它会处理发送失败的情况，包括重试机制和断开连接的处理。
+ *
+ * @param conn 表示要发送数据的网络连接。
+ * @param buf 指向要发送的数据缓冲区的指针。
+ * @param len 要发送的数据的长度（字节数）。
+ *
+ * @return 若发送成功，返回实际发送的字节数；若发送失败，返回 -1 并设置相应的 errno；
+ *         若连接已停止，返回 0。
+ */
 ssize_t neu_conn_send(neu_conn_t *conn, uint8_t *buf, ssize_t len)
 {
+    // 用于存储实际发送的字节数，初始化为 0
     ssize_t ret = 0;
 
     pthread_mutex_lock(&conn->mtx);
+
+    // 检查连接是否已停止，如果停止则解锁并返回 0
     if (conn->stop) {
         pthread_mutex_unlock(&conn->mtx);
         return ret;
     }
 
+    // 如果连接未建立，尝试连接
     if (!conn->is_connected) {
         conn_connect(conn);
     }
 
+    // 如果连接已建立
     if (conn->is_connected) {
+        // 重试次数计数器
         int retry = 0;
+        
+        // 循环发送数据，直到发送完所有数据或出现错误
         while (ret < len) {
+            // 存储每次发送操作的返回值
             int rc = 0;
 
+            // 根据连接类型选择不同的发送方式
             switch (conn->param.type) {
             case NEU_CONN_UDP_TO:
             case NEU_CONN_TCP_SERVER:
+                // UDP 目标连接和 TCP 服务器连接类型不应该使用此函数发送数据，断言失败
                 assert(false);
                 break;
             case NEU_CONN_TCP_CLIENT:
             case NEU_CONN_UDP:
                 if (conn->block) {
+                    // 阻塞模式下发送数据，忽略 SIGPIPE 信号
                     rc = send(conn->fd, buf + ret, len - ret, MSG_NOSIGNAL);
                 } else {
+                    // 非阻塞模式下发送数据，忽略 SIGPIPE 信号并等待所有数据发送完成
                     rc = send(conn->fd, buf + ret, len - ret,
                               MSG_NOSIGNAL | MSG_WAITALL);
                 }
                 break;
             case NEU_CONN_TTY_CLIENT:
+                // 向串口设备写入数据
                 rc = write(conn->fd, buf + ret, len - ret);
                 break;
             }
 
+            // 如果发送成功
             if (rc > 0) {
+                // 更新已发送的字节数
                 ret += rc;
+
+                // 如果已发送的字节数等于要发送的总字节数，跳出循环
                 if (ret == len) {
                     break;
                 }
-            } else {
+            } 
+            // 发送失败的情况
+            else {
+                // 如果是非阻塞模式，且错误码为 EAGAIN（表示暂时无数据可处理）
                 if (!conn->block && rc == -1 && errno == EAGAIN) {
+                    // 如果重试次数超过 10 次
                     if (retry > 10) {
                         zlog_error(conn->param.log,
                                    "conn fd: %d, send buf len: %zd, ret: %zd, "
                                    "errno: %s(%d)",
                                    conn->fd, len, ret, strerror(errno), errno);
                         break;
-                    } else {
+                    } 
+                    // 重试次数未超过 10 次
+                    else {
+                        // 定义一个 50 毫秒的时间间隔
                         struct timespec t1 = {
                             .tv_sec  = 0,
                             .tv_nsec = 1000 * 1000 * 50,
                         };
+
+                        // 用于存储实际睡眠的时间
                         struct timespec t2 = { 0 };
+
+                        // 线程睡眠 50 毫秒
                         nanosleep(&t1, &t2);
+
+                        // 重试次数加 1
                         retry++;
                         zlog_warn(conn->param.log,
                                   "not all data send, retry: %d, ret: "
@@ -375,30 +583,45 @@ ssize_t neu_conn_send(neu_conn_t *conn, uint8_t *buf, ssize_t len)
                                   retry, ret, rc, len);
                     }
                 } else {
+                    // 更新返回值为错误码
                     ret = rc;
                     break;
                 }
             }
         }
 
+        // 如果发送失败
         if (ret == -1) {
+            // 如果错误码不是 EAGAIN
             if (errno != EAGAIN) {
+                // 断开连接
                 conn_disconnect(conn);
-            } else {
+            } 
+            // 如果错误码是 EAGAIN 且连接状态正常
+            else {
                 if (conn->connection_ok == true) {
+                    // 断开连接
                     conn_disconnect(conn);
                 }
             }
         }
 
+        // 如果发送成功且连接成功回调函数未触发
         if (ret > 0 && conn->callback_trigger == false) {
+            // 调用连接成功回调函数
             conn->connected(conn->data, conn->fd);
+
+            // 标记连接成功回调函数已触发
             conn->callback_trigger = true;
         }
     }
 
+    // 如果发送成功
     if (ret > 0) {
+        // 更新连接的发送字节统计信息
         conn->state.send_bytes += ret;
+
+        // 标记连接状态正常
         conn->connection_ok = true;
     }
 
@@ -407,20 +630,34 @@ ssize_t neu_conn_send(neu_conn_t *conn, uint8_t *buf, ssize_t len)
     return ret;
 }
 
+/**
+ * @brief 清空网络连接的接收缓冲区。
+ * 
+ * 该函数用于清空指定网络连接的接收缓冲区，确保缓冲区中没有残留数据。
+ * 目前仅支持 TCP 客户端连接类型，对于其他连接类型不做处理。
+ * 
+ * @param conn 指向 neu_conn_t 结构体的指针，表示要清空接收缓冲区的网络连接。
+ */
 void neu_conn_clear_recv_buffer(neu_conn_t *conn)
 {
+    // 检查连接是否已建立，如果未建立则直接返回
     if (!conn->is_connected) {
         return;
     }
 
+    // 临时缓冲区，用于存储从接收缓冲区读取的数据
     uint8_t temp_buf[256];
+
+    // 存储 recv 函数的返回值，表示读取的字节数
     ssize_t ret;
 
     switch (conn->param.type) {
     case NEU_CONN_TCP_CLIENT:
         do {
+            // 以非阻塞模式从套接字读取数据到临时缓冲区
             ret = recv(conn->fd, temp_buf, sizeof(temp_buf), MSG_DONTWAIT);
 
+            // 如果读取到数据，则继续循环读取
             if (ret > 0) {
                 continue;
             } else if (ret == 0) {
@@ -428,6 +665,7 @@ void neu_conn_clear_recv_buffer(neu_conn_t *conn)
                           "Connection closed while clearing buffer.");
                 break;
             } else if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                // 如果错误码为 EAGAIN 或 EWOULDBLOCK，表示没有更多数据可读取
                 break;
             } else {
                 zlog_error(conn->param.log, "Error clearing buffer: %s",
@@ -441,16 +679,36 @@ void neu_conn_clear_recv_buffer(neu_conn_t *conn)
     }
 }
 
+/**
+ * @brief 从网络连接中接收数据。
+ *
+ * 该函数用于从指定的网络连接中接收数据，根据连接的类型（TCP 客户端、UDP、串口客户端等）
+ * 选择合适的系统调用（`recv` 或 `read`）来接收数据。在接收数据前后会对连接状态进行检查，
+ * 若连接已停止则直接返回；若接收失败则根据不同的连接类型进行相应的错误处理，如记录日志、断开连接等。
+ * 若接收成功，则更新连接的接收字节统计信息。
+ *
+ * @param conn 指向 `neu_conn_t` 结构体的指针，表示要接收数据的网络连接，
+ *             该结构体包含连接的参数、状态、回调函数等信息。
+ * @param buf 指向用于存储接收到的数据的缓冲区的指针，
+ * @param len 要接收的数据的字节数，即期望从连接中读取的数据长度。
+ *
+ * @return 返回实际接收到的字节数。若接收成功，返回值大于 0；若接收失败，返回值小于等于 0，
+ *         此时根据不同的连接类型和错误情况进行相应处理。若连接已停止，返回 0。
+ */
 ssize_t neu_conn_recv(neu_conn_t *conn, uint8_t *buf, ssize_t len)
 {
+    // 用于存储实际接收的字节数，初始化为 0
     ssize_t ret = 0;
 
     pthread_mutex_lock(&conn->mtx);
+
+    // 检查连接是否已停止，如果停止则解锁并返回 0
     if (conn->stop) {
         pthread_mutex_unlock(&conn->mtx);
         return ret;
     }
 
+    // 根据连接类型选择不同的接收方式
     switch (conn->param.type) {
     case NEU_CONN_UDP_TO:
     case NEU_CONN_TCP_SERVER:
@@ -459,6 +717,7 @@ ssize_t neu_conn_recv(neu_conn_t *conn, uint8_t *buf, ssize_t len)
         break;
     case NEU_CONN_TCP_CLIENT:
         if (conn->block) {
+            // 阻塞模式下接收数据，等待所有数据接收完成
             ret = recv(conn->fd, buf, len, MSG_WAITALL);
         } else {
             ret = recv(conn->fd, buf, len, 0);
@@ -475,11 +734,13 @@ ssize_t neu_conn_recv(neu_conn_t *conn, uint8_t *buf, ssize_t len)
                 ret = rv;
                 break;
             }
-
+            
             ret += rv;
         }
         break;
     }
+
+    // 根据不同的连接类型进行错误处理
     if (conn->param.type == NEU_CONN_TTY_CLIENT) {
         if (ret == -1) {
             zlog_error(
@@ -517,6 +778,7 @@ ssize_t neu_conn_recv(neu_conn_t *conn, uint8_t *buf, ssize_t len)
 
     return ret;
 }
+
 ssize_t neu_conn_udp_sendto(neu_conn_t *conn, uint8_t *buf, ssize_t len,
                             void *dst)
 {
@@ -729,47 +991,79 @@ static void conn_init_param(neu_conn_t *conn, neu_conn_param_t *param)
     }
 }
 
+/**
+ * @brief 启动 TCP 服务器监听。
+ *
+ * 该函数用于检查 TCP 服务器连接是否已经开始监听，如果未监听，
+ * 则根据配置的 IP 地址类型（IPv4 或 IPv6）创建套接字、绑定
+ * 地址和端口，并开始监听客户端连接请求。如果监听成功，会更新
+ * 连接的相关状态，调用开始监听的回调函数，并记录日志。
+ *
+ * @param conn 指向 neu_conn_t 结构体的指针，表示 TCP 服务器连接。
+ */
 static void conn_tcp_server_listen(neu_conn_t *conn)
 {
+    // 检查连接类型是否为 TCP 服务器，并且服务器是否未处于监听状态
     if (conn->param.type == NEU_CONN_TCP_SERVER &&
         conn->tcp_server.is_listen == false) {
         int fd = -1, ret = 0;
 
+        // 检查配置的 IP 地址是否为 IPv4 地址
         if (is_ipv4(conn->param.params.tcp_server.ip)) {
+            // 定义 IPv4 本地地址结构体
             struct sockaddr_in local = {
                 .sin_family      = AF_INET,
                 .sin_port        = htons(conn->param.params.tcp_server.port),
                 .sin_addr.s_addr = inet_addr(conn->param.params.tcp_server.ip),
             };
 
+            // 创建一个非阻塞的 TCP 套接字
             fd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, IPPROTO_TCP);
 
+            // 将套接字绑定到本地地址和端口
             ret = bind(fd, (struct sockaddr *) &local, sizeof(local));
         } else if (is_ipv6(conn->param.params.tcp_server.ip)) {
+            // 定义 IPv6 本地地址结构体
             struct sockaddr_in6 local = { 0 };
+
+            // 地址族为 IPv6
             local.sin6_family         = AF_INET6;
+
+            // 将端口号从主机字节序转换为网络字节序
             local.sin6_port = htons(conn->param.params.tcp_server.port);
+
+            // 将 IPv6 地址从文本形式转换为二进制形式
             inet_pton(AF_INET6, conn->param.params.tcp_server.ip,
                       &local.sin6_addr);
 
+            // 创建一个非阻塞的 TCP 套接字
             fd = socket(AF_INET6, SOCK_STREAM | SOCK_NONBLOCK, IPPROTO_TCP);
 
+            // 将套接字绑定到本地地址和端口
             ret = bind(fd, (struct sockaddr *) &local, sizeof(local));
         } else {
+            // 如果 IP 地址既不是 IPv4 也不是 IPv6
             zlog_error(conn->param.log, "invalid ip: %s",
                        conn->param.params.tcp_server.ip);
             return;
         }
 
+        // 如果绑定操作失败
         if (ret != 0) {
+            // 关闭套接字
             close(fd);
+
+            // 记录错误日志，提示绑定失败及错误信息
             zlog_error(conn->param.log, "tcp bind %s:%d fail, errno: %s",
                        conn->param.params.tcp_server.ip,
                        conn->param.params.tcp_server.port, strerror(errno));
             return;
         }
 
+        // 开始监听客户端连接请求，最大允许 1 个未处理的连接请求
         ret = listen(fd, 1);
+
+        // 如果监听操作失败
         if (ret != 0) {
             close(fd);
             zlog_error(conn->param.log, "tcp bind %s:%d fail, errno: %s",
@@ -778,10 +1072,16 @@ static void conn_tcp_server_listen(neu_conn_t *conn)
             return;
         }
 
+        // 将监听套接字的文件描述符赋值给连接结构体
         conn->fd                   = fd;
+
+        // 标记服务器已开始监听
         conn->tcp_server.is_listen = true;
 
+        // 调用开始监听的回调函数，通知相关模块服务器已开始监听
         conn->param.params.tcp_server.start_listen(conn->data, fd);
+
+        // 记录通知日志，提示服务器监听成功及相关信息
         zlog_notice(conn->param.log, "tcp server listen %s:%d success, fd: %d",
                     conn->param.params.tcp_server.ip,
                     conn->param.params.tcp_server.port, fd);
@@ -1273,13 +1573,32 @@ static void conn_tcp_server_add_client(neu_conn_t *conn, int fd,
     return;
 }
 
+/**
+ * @brief 从 TCP 服务器的客户端列表中移除指定文件描述符对应的客户端。
+ *
+ * 该函数用于在 TCP 服务器中，根据传入的文件描述符找到对应的客户端，
+ * 并将其从客户端列表中移除。移除操作包括关闭客户端的套接字连接，
+ * 将该客户端在列表中的文件描述符置为 0，并减少客户端数量计数。
+ *
+ * @param conn 表示 TCP 服务器连接。
+ * @param fd 要移除的客户端的文件描述符。该文件描述符用于唯一标识一个客户端连接。
+ */
 static void conn_tcp_server_del_client(neu_conn_t *conn, int fd)
 {
+    // 遍历客户端列表，最大遍历次数为服务器允许的最大连接数
     for (int i = 0; i < conn->param.params.tcp_server.max_link; i++) {
+        // 检查文件描述符是否有效（大于 0），并且当前客户端的文件描述符与传入的文件描述符匹配
         if (fd > 0 && conn->tcp_server.clients[i].fd == fd) {
+            // 关闭客户端的套接字连接
             close(fd);
+
+            // 将该客户端在列表中的文件描述符置为 0，表示该位置空闲
             conn->tcp_server.clients[i].fd = 0;
+
+            // 减少客户端数量计数
             conn->tcp_server.n_client -= 1;
+
+            // 找到并移除客户端后，直接返回
             return;
         }
     }

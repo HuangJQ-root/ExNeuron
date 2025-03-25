@@ -45,47 +45,106 @@
 
 #define neu_plugin_module default_dashboard_plugin_module
 
+/**
+ * @brief 插件结构体，用于描述一个插件的基本信息及其相关资源。
+ *
+ * 此结构体包含了插件的基本属性、HTTP服务器实例以及REST处理上下文等信息。
+ * 它是插件的核心数据结构，用于管理和操作插件的各项功能。
+ */
 struct neu_plugin {
+    /**
+     * @brief 插件的公共部分。
+     *
+     * 包含插件的一些基础信息和通用配置，比如插件名称、版本号等。
+     */
     neu_plugin_common_t    common;
-    nng_http_server *      server;
+
+    /**
+     * @brief 指向nng_http_server类型的指针，表示插件使用的HTTP服务器实例。
+     *
+     * 通过此服务器实例，插件可以提供RESTful API服务，允许外部应用与插件进行交互。
+     */
+    nng_http_server       *server;
+
+    /**
+     * @brief 指向neu_rest_handle_ctx_t类型的指针，表示插件的REST处理上下文。
+     *
+     * 此上下文包含处理REST请求所需的各种信息和状态，如路由表、中间件等。
+     */
     neu_rest_handle_ctx_t *handle_ctx;
 };
 
+/**
+ * @brief 初始化并绑定HTTP服务器。
+ *
+ * 此函数负责初始化一个NNG HTTP服务器，并将其绑定到指定的URL地址。如果成功，
+ * 它将返回指向新创建的HTTP服务器实例的指针；否则，返回NULL。
+ *
+ * @return 成功时返回指向nng_http_server的指针；失败时返回NULL。
+ */
 static nng_http_server *server_init()
 {
+    //解析后的URL结构体指针
     nng_url *        url;
+
+    //HTTP服务器实例指针
     nng_http_server *server;
 
     nlog_notice("bind url: %s", host_port);
 
+    // 解析host_port字符串为nng_url结构体
     int ret = nng_url_parse(&url, host_port);
     if (ret != 0) {
+        // 如果解析失败，记录错误并释放已分配的资源，然后返回NULL
         nng_url_free(url);
         return NULL;
     }
 
+    // 尝试创建并绑定HTTP服务器到解析出的URL
     ret = nng_http_server_hold(&server, url);
     if (ret != 0) {
         nlog_error("rest api server bind error: %d", ret);
         return NULL;
     }
+
+    // 清理不再需要的URL结构体
     nng_url_free(url);
 
     return server;
 }
 
+/**
+ * @brief 打开（初始化）仪表盘插件。
+ *
+ * 此函数负责创建并初始化一个仪表盘插件实例。它包括设置插件的基本信息、
+ * 初始化HTTP服务器以及注册RESTful API处理器等操作。如果任何步骤失
+ * 败，则会清理已分配的资源并返回NULL。
+ *
+ * @return 
+ * 
+ * 成功时返回指向neu_plugin_t类型的指针，表示初始化完成的插件实例；
+ * 失败时返回NULL。
+ */
 static neu_plugin_t *dashb_plugin_open(void)
 {
+    // 用于存储函数返回值的状态变量
     int                            rv;
+    // 分配内存并初始化插件实例
     neu_plugin_t *                 plugin    = calloc(1, sizeof(neu_plugin_t));
+    // RESTful处理器的数量
     uint32_t                       n_handler = 0;
+    // RESTful处理器数组
     const struct neu_http_handler *rest_handlers = NULL;
+    // CORS处理器数组
     const struct neu_http_handler *cors          = NULL;
 
+    // 初始化插件的公共部分
     neu_plugin_common_init(&plugin->common);
 
+    // 初始化插件的REST上下文
     plugin->handle_ctx = neu_rest_init_ctx(plugin);
 
+    // 初始化HTTP服务器
     plugin->server = server_init();
 
     if (plugin->server == NULL) {
@@ -93,14 +152,19 @@ static neu_plugin_t *dashb_plugin_open(void)
         goto server_init_fail;
     }
 
+    // 获取RESTful处理器并添加到HTTP服务器
     neu_rest_handler(&rest_handlers, &n_handler);
     for (uint32_t i = 0; i < n_handler; i++) {
         neu_http_add_handler(plugin->server, &rest_handlers[i]);
     }
+
+    // 获取CORS处理器并添加到HTTP服务器
     neu_rest_api_cors_handler(&cors, &n_handler);
     for (uint32_t i = 0; i < n_handler; i++) {
         neu_http_add_handler(plugin->server, &cors[i]);
     }
+
+    // 启动HTTP服务器
     if ((rv = nng_http_server_start(plugin->server)) != 0) {
         nlog_error("Failed to start api server, error=%d", rv);
         goto server_init_fail;
@@ -110,6 +174,7 @@ static neu_plugin_t *dashb_plugin_open(void)
     return plugin;
 
 server_init_fail:
+    // 清理代码：释放HTTP服务器和上下文资源，并释放插件实例内存
     if (plugin->server != NULL) {
         nng_http_server_release(plugin->server);
     }
@@ -153,6 +218,9 @@ static int dashb_plugin_uninit(neu_plugin_t *plugin)
     return rv;
 }
 
+/**
+ * @brief 配置仪表盘插件的函数
+ */
 static int dashb_plugin_config(neu_plugin_t *plugin, const char *configs)
 {
     int rv = 0;

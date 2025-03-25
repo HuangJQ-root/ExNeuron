@@ -25,18 +25,71 @@
 #include "adapter/adapter_internal.h"
 #include "node_manager.h"
 
+/**
+ * @brief 一个通用的节点实体的信息。
+ *
+ *定义节点的基本属性和通用行为，例如节点的名称、类型、ID 等标识信息，
+ *以及一些与节点本身关联的通用配置。它更侧重于描述节点的 "静态特征" 
+ *和基本的抽象概念，是一个相对宽泛和基础的节点定义。
+ */
 typedef struct node_entity {
+    /**
+     * @brief 节点实体的名字。
+     */
     char *name;
 
+    /**
+     * @brief 指向适配器结构体，其用于描述一个适配器的基础信息及其相关资源。。
+     *
+     * 这个字段代表了与节点实体相关的某种适配器
+     */
     neu_adapter_t *    adapter;
+
+    /**
+     * @brief 标识该节点实体是否是静态的。
+     *
+     * 如果设置为true，则表示此节点实体是静态的。
+     */
     bool               is_static;
+
+    /**
+     * @brief 控制是否显示此节点实体的信息。
+     *
+     * 如果设置为true，则表示应当显示此节点实体的信息。
+     */
     bool               display;
+
+    /**
+     * @brief 标识该节点实体是否代表单一实例或具有唯一性等属性。
+     *
+     * 如果设置为true，则表示此节点实体代表单一实例。
+     */
     bool               single;
+
+    /**
+     * @brief Unix域套接字地址结构体。用于本地进程间的高效通信
+     *
+     * 包含了一个本地通信端点的地址信息，侧重于节点内部的管理和协调
+     * ，是节点的一种基础通信能力。
+     */
     struct sockaddr_un addr;
 
+    /**
+     * @brief UTHash句柄，支持将该结构体作为哈希表中的元素进行高效管理。
+     *
+     * 按照name有序排列
+     */
     UT_hash_handle hh;
 } node_entity_t;
 
+/**
+ * @brief 节点管理器结构体，用于管理系统中的所有节点实体。
+ *
+ * 该结构体作为节点管理的核心组件，负责维护和操作系统内的节点信息。
+ * 通指向一个由 `node_entity_t` 结构体实例组成的集合，这些实例
+ * 代表了系统中的各个节点。可以方便地对节点集合进行遍历、查找特定
+ * 节点、添加新节点或移除现有节点等操作
+ */
 struct neu_node_manager {
     node_entity_t *nodes;
 };
@@ -61,6 +114,21 @@ void neu_node_manager_destroy(neu_node_manager_t *mgr)
     free(mgr);
 }
 
+/**
+ * @brief 向节点管理器中添加一个新的节点实体。
+ *
+ * 该函数的主要作用是将一个适配器包装成节点实体，并添加到节点管理器的节点列表中。
+ * 它会分配内存来创建一个新的节点实体，设置节点实体的相关属性，然后使用哈希表将
+ * 其添加到节点管理器中。
+ *
+ * @param mgr 指向节点管理器的指针，用于管理所有的节点实体。
+ * @param adapter 指向适配器的指针，该适配器将被包装成节点实体添加到节点管理器中。
+ *
+ * @warning
+ * 
+ * 总是返回 0 表示操作成功，目前未考虑错误情况。在实际应用中，可能需要添加对内存分配
+ * 失败等情况的错误处理。
+ */
 int neu_node_manager_add(neu_node_manager_t *mgr, neu_adapter_t *adapter)
 {
     node_entity_t *node = calloc(1, sizeof(node_entity_t));
@@ -74,6 +142,20 @@ int neu_node_manager_add(neu_node_manager_t *mgr, neu_adapter_t *adapter)
     return 0;
 }
 
+/**
+ * @brief 向节点管理器中添加一个静态适配器节点。
+ *
+ * 此函数用于将一个静态的 neu_adapter_t 类型的适配器节点添加到 neu_node_manager_t 类型的管理器中。
+ * 它会为节点分配内存，初始化节点信息，并将节点添加到管理器的哈希表中。
+ *
+ * @param mgr 指向 neu_node_manager_t 类型的管理器指针，用于管理节点。
+ * @param adapter 指向 neu_adapter_t 类型的适配器指针，该适配器将被添加到管理器中。
+ *
+ * @return int 若添加成功，返回 0；当前代码未处理可能的错误情况，如内存分配失败等。
+ *
+ * @note 该函数假设传入的 mgr 和 adapter 指针不为 NULL。如果传入 NULL 指针，可能会导致未定义行为。
+ *       同时，函数使用 HASH_ADD_STR 宏添加节点到哈希表，需要确保哈希表的正确初始化。
+ */
 int neu_node_manager_add_static(neu_node_manager_t *mgr, neu_adapter_t *adapter)
 {
     node_entity_t *node = calloc(1, sizeof(node_entity_t));

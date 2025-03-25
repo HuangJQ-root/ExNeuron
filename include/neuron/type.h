@@ -33,6 +33,12 @@ extern "C" {
 
 #include <jansson.h>
 
+/**
+ * @brief 数据标签类型枚举，用于描述数据标签的数据类型。
+ *
+ * 此枚举定义了数据标签可以具有的各种数据类型，
+ * 包括基本数据类型（如整型、浮点型等）以及数组类型和自定义类型。
+ */
 typedef enum {
     NEU_TYPE_INT8          = 1,
     NEU_TYPE_UINT8         = 2,
@@ -68,6 +74,8 @@ typedef enum {
     NEU_TYPE_ARRAY_DOUBLE  = 32,
     NEU_TYPE_ARRAY_BOOL    = 33,
     NEU_TYPE_ARRAY_STRING  = 34,
+
+    /** @brief 自定义类型 */
     NEU_TYPE_CUSTOM        = 40,
 } neu_type_e;
 
@@ -222,6 +230,18 @@ typedef struct {
     uint8_t length;
 } neu_value_array_string_t;
 
+/**
+ * @brief 数据值联合体，用于存储不同类型的数据。
+ *
+ * 此联合体提供了多种数据类型的存储选项，包括基本数据类型（如整型、浮点型）、
+ * 字符串、字节数组、指针以及JSON对象等，适用于需要处理各种不同数据类型的情况。
+ * 
+ * @note 
+ *  - 各种类型数据共享访问空间：在modbus采集的使用中，采集的数据以字节形式按
+ *    顺序存在bytes中。如果标签类型是u16，则dvalue.value.u16 和 dvalue.
+ *    value.bytes.bytes 共享同一块内存空间，所以可以直接通过 dvalue.value
+ *    .u16 来访问之前复制的 2 字节数据
+ */
 typedef union {
     bool                     boolean;
     int8_t                   i8;
@@ -336,11 +356,34 @@ static inline char *neu_value_str(neu_type_e type, neu_value_u value)
     return str;
 }
 
+/**
+ * @brief 数据值结构体，用于表示具有特定类型、值和精度的数据。
+ *
+ * 此结构体包含了数据的类型、实际值以及精度信息，适用于需要处理不同类型数值的情况。
+ */
 typedef struct {
+    /**
+     * @brief 数据类型。
+     *
+     * 使用枚举类型`neu_type_e`定义，可以是整型、浮点型等不同类型的数值。
+     */
     neu_type_e  type;
+
+    /**
+     * @brief 数据值
+     *
+     * 联合体`neu_value_u`，根据`type`的不同存储相应的数值。例如，如果`type`是整型，则存储在`value.i32`中；如果是浮点型，则存储在`value.f64`中。
+     */
     neu_value_u value;
+
+    /**
+     * @brief 精度。
+     *
+     * 一个8位无符号整数，表示数值的精度（小数点后的位数），主要用于浮点数类型的数值。
+     */
     uint8_t     precision;
 } neu_dvalue_t;
+
 typedef union neu_value8 {
     uint8_t value;
     struct {

@@ -74,16 +74,44 @@ static bool  mv_tmp_library_file(neu_plugin_kind_e kind, const char *tmp_path,
 static bool  mv_tmp_schema_file(neu_plugin_kind_e kind, const char *tmp_path,
                                 const char *schema);
 
+/**
+ * @brief 获取并递增端口号。
+ *
+ * 此函数用于从静态变量中获取一个端口号，并在每次调用时将其递增。初始值为10000。
+ * 
+ * @warning
+ * 此函数不检查端口是否已被占用或是否超出有效范围。
+ *
+ * @return uint16_t 返回当前端口号，并在内部将其递增。
+ */
 uint16_t neu_manager_get_port()
 {
     static uint16_t port = 10000;
     return port++;
 }
 
+/**
+ * @brief 创建并初始化一个 neu_manager 实例。
+ *
+ * 该函数负责创建和初始化一个 neu_manager 实例，并设置其事件循环、插件管理器、
+ * 节点管理器等关键组件。它还配置了一个 Unix 域套接字用于进程间通信，并启动定
+ * 时器来更新时间戳。如果任何步骤失败，则会记录警告或错误日志，并可能终止程序执
+ * 行（通过 assert）。
+ *
+ * @return 
+ * - neu_manager_t* 成功时返回指向新创建的 neu_manager 实例的指针；
+ *   如果内存分配失败或其他严重错误发生，则可能不会返回。
+ *
+ * @note 
+ * - 确保在调用此函数之前已经正确设置了默认的日志级别 (`default_log_level`) 
+ *   和全局状态字符串 (`g_status`)。
+ * - 使用抽象域套接字 (`AF_UNIX` with abstract namespace) 来避免文件系统污染。
+ */
 neu_manager_t *neu_manager_create()
 {
     int                  rv      = 0;
     neu_manager_t *      manager = calloc(1, sizeof(neu_manager_t));
+    
     neu_event_io_param_t param   = {
         .usr_data = (void *) manager,
         .cb       = manager_loop,
@@ -96,19 +124,29 @@ neu_manager_t *neu_manager_create()
         .type        = NEU_EVENT_TIMER_NOBLOCK,
     };
 
-    manager->events            = neu_event_new();
-    manager->plugin_manager    = neu_plugin_manager_create();
-    manager->node_manager      = neu_node_manager_create();
-    manager->subscribe_manager = neu_subscribe_manager_create();
-    manager->log_level         = default_log_level;
+    // 初始化 manager 的各个组件
 
+    // 创建事件管理组件
+    manager->events            = neu_event_new();
+    // 创建插件管理组件
+    manager->plugin_manager    = neu_plugin_manager_create();
+    // 创建节点管理组件
+    manager->node_manager      = neu_node_manager_create();
+    // 创建订阅管理组件
+    manager->subscribe_manager = neu_subscribe_manager_create();
+    // 设置日志级别为默认日志级别
+    manager->log_level         = default_log_level;
+    // 创建 Unix 域套接字
     manager->server_fd = socket(AF_UNIX, SOCK_DGRAM, 0);
     assert(manager->server_fd > 0);
 
+    // 设置套接字的发送和接收超时时间
     struct timeval sock_timeout = {
         .tv_sec  = 1,
         .tv_usec = 0,
     };
+
+    // 设置发送超时时间和接收超时时间
     if (setsockopt(manager->server_fd, SOL_SOCKET, SO_SNDTIMEO, &sock_timeout,
                    sizeof(sock_timeout)) < 0 ||
         setsockopt(manager->server_fd, SOL_SOCKET, SO_RCVTIMEO, &sock_timeout,
@@ -116,26 +154,47 @@ neu_manager_t *neu_manager_create()
         assert(!"fail to set manager sock timeout");
     }
 
-    // abstract domain socket is a Linux extension, thus not portable.
-    // use abstract domain socket here to avoid polluting the file system
+    //存储 Unix 域套接字的地址信息
     struct sockaddr_un local = {
-        .sun_family = AF_UNIX,
-        .sun_path   = "#neuron-manager",
+        .sun_family = AF_UNIX,              //地址族
+        .sun_path   = "#neuron-manager",    //套接字对应的文件系统路径名，#：之后替换为\0
     };
+
+    /**
+     * @brief 抽象命名空间套接字说明。
+     *
+     * 当 `sun_path[0]` 为 '\0' 时，不会在文件系统中创建实际的文件。
+     * 套接字的名称从 `sun_path` 的第二个字符开始，仅存在于内核的抽象命名空间里。
+     *
+     * 使用这种方式的好处包括：
+     * - 无需担心文件系统权限问题。
+     * - 不需要处理文件删除的相关问题。
+     * - 可以避免与文件系统中的其他文件产生冲突。
+     */
     local.sun_path[0] = '\0';
+
+    //套接字绑定到特定地址
     rv = bind(manager->server_fd, (struct sockaddr *) &local, sizeof(local));
     assert(rv == 0);
 
+    // 设置 I/O 事件的文件描述符为服务器套接字的文件描述符
     param.fd      = manager->server_fd;
+    // 添加 I/O 事件，并将返回的上下文指针赋值给 manager->loop
     manager->loop = neu_event_add_io(manager->events, param);
 
+    // 初始化时间戳级别管理器
     manager->timestamp_lev_manager = 0;
 
+    // 设置全局状态为 "loading"
     strncpy(g_status, "loading", sizeof(g_status));
 
+    // 初始化指标和静态适配器
     neu_metrics_init();
+
+    // 加载静态适配器（适配dashboard）
     start_static_adapter(manager, DEFAULT_DASHBOARD_PLUGIN_NAME);
 
+    // 加载插件
     if (manager_load_plugin(manager) != 0) {
         nlog_warn("load plugin error");
     }
@@ -150,13 +209,16 @@ neu_manager_t *neu_manager_create()
     }
     utarray_free(single_plugins);
 
+    // 加载节点
     manager_load_node(manager);
     while (neu_node_manager_exist_uninit(manager->node_manager)) {
         usleep(1000 * 100);
     }
 
+    // 加载订阅信息
     manager_load_subscribe(manager);
 
+    // 添加定时器事件以更新时间戳
     timestamp_timer_param.usr_data = (void *) manager;
     manager->timer_timestamp =
         neu_event_add_timer(manager->events, timestamp_timer_param);
@@ -166,21 +228,51 @@ neu_manager_t *neu_manager_create()
     return manager;
 }
 
+/**
+ * @brief 销毁管理器并释放所有关联资源
+ * 
+ * @param manager 管理器对象指针，销毁后指针将不可用
+ * 
+ * @note
+ * - 本函数执行顺序：
+ *   1. 通知所有节点卸载
+ *   2. 等待所有节点退出
+ *   3. 销毁订阅管理器、节点管理器和插件管理器
+ *   4. 关闭网络连接和事件循环
+ * - 资源释放顺序确保无依赖泄漏
+ * - 若节点卸载消息发送失败，会强制进入清理流程不等待节点响应
+ * 
+ * @warning
+ * - 调用此函数后，管理器对象将永久失效
+ * - 需要保证传入的manager指针是通过neu_manager_create创建的有效对象
+ */
 void neu_manager_destroy(neu_manager_t *manager)
 {
+    // 初始化节点卸载请求结构体（空内容，仅消息类型有效）
     neu_req_node_init_t uninit           = { 0 };
+
+    // 消息发送成功标记
     int                 send_msg_success = 1;
 
+    // 步骤1：获取所有已注册节点的UNIX域套接字地址
     UT_array *addrs = neu_node_manager_get_addrs_all(manager->node_manager);
 
+    // 步骤2：移除定时器事件（停止周期任务）
     neu_event_del_timer(manager->events, manager->timer_timestamp);
 
+    // 步骤3：向所有节点发送卸载请求
     utarray_foreach(addrs, struct sockaddr_un *, addr)
     {
+        // 构造节点卸载请求消息（NEU_REQ_NODE_UNINIT类型）
         neu_msg_t *msg = neu_msg_new(NEU_REQ_NODE_UNINIT, NULL, &uninit);
         neu_reqresp_head_t *header = neu_msg_get_header(msg);
+
+        // 设置消息发送者标识
         strcpy(header->sender, "manager");
+
+        // 通过UNIX域套接字发送消息
         if (0 != neu_send_msg_to(manager->server_fd, addr, msg)) {
+            // 发送失败处理：记录错误日志，释放消息，终止发送循环
             nlog_error("manager -> %s uninit msg send fail",
                        &addr->sun_path[1]);
             send_msg_success = 0;
@@ -188,8 +280,11 @@ void neu_manager_destroy(neu_manager_t *manager)
             break;
         }
     }
+
+    // 释放地址数组内存
     utarray_free(addrs);
 
+    // 步骤4：等待所有节点卸载完成（仅当消息全部发送成功时）
     if (send_msg_success) {
         while (1) {
             usleep(1000 * 100);
@@ -199,31 +294,48 @@ void neu_manager_destroy(neu_manager_t *manager)
         }
     }
 
-    neu_subscribe_manager_destroy(manager->subscribe_manager);
-    neu_node_manager_destroy(manager->node_manager);
-    neu_plugin_manager_destroy(manager->plugin_manager);
+    // 步骤5：销毁子模块
+    neu_subscribe_manager_destroy(manager->subscribe_manager);  // 销毁订阅管理
+    neu_node_manager_destroy(manager->node_manager);            // 销毁节点管理 
+    neu_plugin_manager_destroy(manager->plugin_manager);        // 销毁插件管理
 
-    close(manager->server_fd);
-    neu_event_del_io(manager->events, manager->loop);
-    neu_event_close(manager->events);
+    // 步骤6：关闭网络连接
+    close(manager->server_fd);                          // 关闭服务端socket
+    neu_event_del_io(manager->events, manager->loop);   // 移除epoll监听
+    neu_event_close(manager->events);                   // 关闭事件循环实例
 
+    // 步骤7：释放管理器本体内存
     free(manager);
     nlog_notice("manager exit");
 }
 
+/**
+ * @brief 事件循环处理函数，用于监听并响应来自网络的消息。
+ *
+ * 此函数作为事件循环的一部分被调用，它根据接收的消息类型执行相应的操作，
+ * 如节点初始化、插件添加和删除等，并对错误情况进行处理。
+ *
+ * @param type     事件类型，可以是NEU_EVENT_IO_CLOSED（连接关闭）、NEU_EVENT_IO_HUP（挂起）或其他类型的输入输出事件。
+ * @param fd       文件描述符，代表套接字连接。
+ * @param usr_data 用户数据指针，指向neu_manager_t结构体实例。
+ * 
+ * @return         返回0表示正常处理完毕，其他值表示出现错误。
+ */
 static int manager_loop(enum neu_event_io_type type, int fd, void *usr_data)
 {
-    int                 rv       = 0;
-    neu_manager_t *     manager  = (neu_manager_t *) usr_data;
-    struct sockaddr_un  src_addr = { 0 };
-    neu_msg_t *         msg      = NULL;
-    neu_reqresp_head_t *header   = NULL;
+    int                 rv       = 0;                           ///< 返回值，初始为0
+    neu_manager_t *     manager  = (neu_manager_t *) usr_data;  ///< 源地址结构体，初始化为0
+    struct sockaddr_un  src_addr = { 0 };                       ///< 源地址结构体，初始化为0
+    neu_msg_t *         msg      = NULL;                        ///< 消息指针，初始化为空
+    neu_reqresp_head_t *header   = NULL;                        ///< 消息头指针，初始化为空
 
+    // 如果事件类型为连接关闭或挂起，则记录警告日志并返回
     if (type == NEU_EVENT_IO_CLOSED || type == NEU_EVENT_IO_HUP) {
         nlog_warn("manager socket(%d) recv closed or hup %d.", fd, type);
         return 0;
     }
 
+    // 接收消息，若失败则记录警告日志并返回
     rv = neu_recv_msg_from(manager->server_fd, &src_addr, &msg);
     if (rv == -1) {
         nlog_warn("manager recv msg error: %s(%d)", strerror(errno), errno);
@@ -234,7 +346,10 @@ static int manager_loop(enum neu_event_io_type type, int fd, void *usr_data)
 
     nlog_info("manager recv msg from: %s to %s, type: %s", header->sender,
               header->receiver, neu_reqresp_type_string(header->type));
+
+    // 根据消息类型进行不同的处理
     switch (header->type) {
+    // 处理节点初始化请求
     case NEU_REQ_NODE_INIT: {
         neu_req_node_init_t *init = (neu_req_node_init_t *) &header[1];
 
@@ -263,6 +378,7 @@ static int manager_loop(enum neu_event_io_type type, int fd, void *usr_data)
         neu_msg_free(msg);
         break;
     }
+    // 处理添加插件请求
     case NEU_REQ_ADD_PLUGIN: {
         neu_req_add_plugin_t *cmd        = (neu_req_add_plugin_t *) &header[1];
         neu_resp_error_t      e          = { 0 };
@@ -430,6 +546,7 @@ static int manager_loop(enum neu_event_io_type type, int fd, void *usr_data)
         reply(manager, header, &e);
         break;
     }
+    // 处理删除插件请求
     case NEU_REQ_DEL_PLUGIN: {
         neu_req_del_plugin_t *cmd = (neu_req_del_plugin_t *) &header[1];
         neu_resp_error_t      e   = { 0 };
@@ -1452,6 +1569,26 @@ inline static void forward_msg_copy(neu_manager_t *     manager,
     forward_msg(manager, neu_msg_get_header(msg), node);
 }
 
+/**
+ * @brief 启动静态适配器。
+ *
+ * 此函数负责初始化并启动一个静态适配器，该适配器是系统预定义而非动态加载的。
+ * 它首先从插件管理器中加载静态插件实例，然后创建适配器，并将其添加到节点管理器中，
+ * 最后初始化并启动适配器。
+ *
+ * @param manager 指向 neu_manager_t 结构体的指针，表示管理器实例。
+ * @param name    适配器名称的字符串指针。
+ *
+ * 该函数执行以下步骤：
+ * - 使用给定的名称从插件管理器中加载静态插件实例。
+ * - 根据加载的插件实例信息创建一个新的适配器。
+ * - 将新创建的适配器添加到节点管理器中的静态适配器列表中。
+ * - 初始化并启动适配器。
+ * 
+ * @warning 
+ * - BUG：neu_adapter_init(adapter, false);其中false隐式为0,
+ *       但是neu_node_running_state_e 没有0
+ */
 static void start_static_adapter(neu_manager_t *manager, const char *name)
 {
     neu_adapter_t *       adapter      = NULL;
@@ -1460,16 +1597,45 @@ static void start_static_adapter(neu_manager_t *manager, const char *name)
         .name = name,
     };
 
+    /**
+     * @brief
+     * 
+     * 初始化dashboard插件实例结构体实例：完成这些操作后，instance 变量就包含了一个完
+     * 整的插件实例信息，后续可以通过 instance 来访问和使用该插件的各种功能和接口
+     */
     neu_plugin_manager_load_static(manager->plugin_manager, name, &instance);
+
+    //初始化插件相应的适配器信息结构体实例
     adapter_info.handle = instance.handle;
     adapter_info.module = instance.module;
 
+    // 创建并初始化插件相应的适配器实例
     adapter = neu_adapter_create(&adapter_info, true);
+
+    // 适配器添加到node_manager中
     neu_node_manager_add_static(manager->node_manager, adapter);
+    // 向manager发送消息：节点初始化请求
     neu_adapter_init(adapter, false);
+    // 启动dashboard适配器
     neu_adapter_start(adapter);
 }
 
+/**
+ * @brief 启动单个适配器
+ *
+ * 该函数用于启动一个指定名称和插件名称的适配器，并将其添加到节点管理器中，同时可选择是否进行显示和存储。
+ *
+ * @param manager 指向 `neu_manager_t` 类型的管理器结构体指针，包含插件管理器和节点管理器等信息。
+ * @param name 适配器的名称，用于标识该适配器，将作为 `neu_adapter_info_t` 结构体的一部分。
+ * @param plugin_name 适配器所使用的插件名称，用于创建插件实例。
+ * @param display 布尔值，指示是否显示该适配器并将其信息存储到管理器中。若为 `true`，则进行显示和存储操作；
+ *                若为 `false`，则不进行。
+ *
+ * @return 无返回值。若插件实例创建失败，函数将直接返回，不进行后续的适配器创建和启动操作。
+ *
+ * @note 调用该函数前，确保 `manager` 指针有效，且 `plugin_name` 对应的插件在插件管理器中存在。
+ *       该函数会创建一个新的适配器实例，并将其添加到节点管理器中，同时可选择进行显示和存储操作。
+ */
 static void start_single_adapter(neu_manager_t *manager, const char *name,
                                  const char *plugin_name, bool display)
 {

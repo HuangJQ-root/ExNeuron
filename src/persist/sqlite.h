@@ -26,6 +26,14 @@ extern "C" {
 
 #include "persist/persist_impl.h"
 
+/**
+ * @brief 用于表示 SQLite 持久化器的结构体。
+ *
+ * 该结构体是对 SQLite 数据库相关操作的封装，主要用于管理与 SQLite 数据库的
+ * 连接以及相关的持久化操作。通过包含虚函数表指针和数据库连接指针，提供了一种
+ * 灵活且面向对象的方式来处理 SQLite 数据库的访问和数据持久化。
+ * 
+ */
 typedef struct {
     struct neu_persister_vtbl_s *vtbl;
     sqlite3 *                    db;

@@ -636,6 +636,12 @@ do {                                                                            
 #define DL_APPEND(head,add)                                                                    \
     DL_APPEND2(head,add,prev,next)
 
+/**
+ * @note
+ * 
+ * (add) 两侧的括号在宏定义里是为了避免宏展开时因运算符优先级问题导致意外结果，
+ * 确保 add 表达式能正确参与链表操作。
+ */
 #define DL_APPEND2(head,add,prev,next)                                                         \
 do {                                                                                           \
   if (head) {                                                                                  \

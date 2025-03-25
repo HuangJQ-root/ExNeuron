@@ -345,14 +345,79 @@ typedef struct {
     cid_template_t cid_template;
 } cid_t;
 
+/**
+ * @brief 用于存储 CID（可能是某种特定的标识符）数据集信息的结构体。
+ * 
+ * 该结构体包含了一系列与 CID 数据集相关的信息，如控制标志、设备名称、
+ * 实例信息、类信息、缓冲标志、报告名称、报告 ID 以及数据集名称等。
+ * 这些信息用于描述和管理工业物联网（IIoT）中的数据采集、报告和处理相
+ * 关的配置或状态信息。
+ */
 typedef struct {
+    /**
+     * @brief 控制标志。
+     * 
+     * 用于表示某种控制状态，可能控制数据采集、报告的启动或停止等操作。
+     * 当值为 `true` 时，表示启用相关控制；当值为 `false` 时，表示
+     * 禁用相关控制。
+     */
     bool control;
+
+    /**
+     * @brief IED（智能电子设备）的名称。
+     * 
+     * 存储智能电子设备的名称，长度由 `NEU_CID_IED_NAME_LEN` 宏定义指定。
+     * 该名称通常用于唯一标识一个 IED 设备，以便在系统中进行区分和管理。
+     */
     char ied_name[NEU_CID_IED_NAME_LEN];
+
+    /**
+     * @brief 逻辑设备实例的名称。
+     * 
+     * 存储逻辑设备实例的名称 逻辑设备实例是 IED 设备中的一个逻辑部分，
+     * 用于区分不同的功能或操作单元。
+     */
     char ldevice_inst[NEU_CID_LDEVICE_LEN];
+
+    /**
+     * @brief 逻辑节点类的名称。
+     * 
+     * 存储逻辑节点类的名称，逻辑节点类定义了一组相关的功能和数据对象，
+     * 用于描述设备的某种特定功能或行为。
+     */
     char ln_class[NEU_CID_LNCLASS_LEN];
+    
+    /**
+     * @brief 缓冲标志。
+     * 
+     * 用于表示是否启用缓冲功能。当值为 `true` 时，表示启用缓冲；
+     * 当值为 `false` 时，表示禁用缓冲。缓冲功能可能用于临时存储
+     * 数据，以应对网络延迟或数据处理速度不匹配等情况。
+     */
     bool buffered;
+
+    /**
+     * @brief 报告的名称。
+     * 
+     * 存储报告的名称，报告名称用于标识不同的报告，方便用户或系统
+     * 对报告进行管理和查询。
+     */
     char report_name[NEU_CID_REPORT_NAME_LEN];
+
+    /**
+     * @brief 报告的 ID。
+     * 
+     * 存储报告的唯一标识符，报告 ID 可以用于在系统中唯一地标识
+     * 一个报告，便于数据的跟踪和处理。
+     */
     char report_id[NEU_CID_REPORT_ID_LEN];
+
+    /**
+     * @brief 数据集的名称。
+     * 
+     * 存储数据集的名称，数据集名称用于标识不同的数据集，方便用户
+     * 或系统对数据集进行管理和查询。
+     */
     char dataset_name[NEU_CID_DATASET_NAME_LEN];
 } cid_dataset_info_t;
 

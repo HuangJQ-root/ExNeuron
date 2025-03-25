@@ -26,30 +26,56 @@ config_ **/
 #include "errcodes.h"
 #include "tag.h"
 
+/**
+ * @brief 复制neu_datatag_t类型的数据。
+ *
+ * 此函数用于将一个neu_datatag_t类型的源数据复制到目标数据结构中。
+ * 它会逐个字段地复制基本数据类型，并使用strdup复制字符串字段，
+ * 以及使用memcpy复制数组字段。
+ *
+ * @param _dst 目标数据指针。
+ * @param _src 源数据指针。
+ */
 static void tag_array_copy(void *_dst, const void *_src)
 {
     neu_datatag_t *dst = (neu_datatag_t *) _dst;
     neu_datatag_t *src = (neu_datatag_t *) _src;
 
+    // 复制基本数据类型字段
     dst->type        = src->type;
     dst->attribute   = src->attribute;
     dst->precision   = src->precision;
     dst->decimal     = src->decimal;
     dst->bias        = src->bias;
     dst->option      = src->option;
+
+    // 使用strdup复制字符串字段
     dst->address     = strdup(src->address);
     dst->name        = strdup(src->name);
     dst->description = strdup(src->description);
 
+    // 使用memcpy复制固定大小的数组字段
     memcpy(dst->format, src->format, sizeof(src->format));
     dst->n_format = src->n_format;
+
+    // 使用memcpy复制元数据数组字段
     memcpy(dst->meta, src->meta, sizeof(src->meta));
 }
 
+/**
+ * @brief 释放neu_datatag_t类型的数据。
+ *
+ * 此函数用于释放一个neu_datatag_t类型的元素所占用的所有动态分配的内存资源。
+ * 它会释放所有通过strdup分配的字符串字段（如name、address、description），
+ * 以避免内存泄漏。
+ *
+ * @param _elt 要释放的元素指针。
+ */
 static void tag_array_free(void *_elt)
 {
     neu_datatag_t *elt = (neu_datatag_t *) _elt;
 
+    // 释放通过strdup分配的字符串字段
     free(elt->name);
     free(elt->address);
     free(elt->description);
@@ -88,9 +114,26 @@ int neu_format_from_str(const char *format_str, uint8_t *formats)
     return n;
 }
 
+/**
+ * @brief 定义用于管理neu_datatag_t类型数据的UT_icd接口。
+ *
+ * 此静态变量定义了一个UT_icd接口结构体，该结构体包含了处理neu_datatag_t类型数据的
+ * 创建(create)、拷贝(copy)、释放(dtor)和清除(clear)操作所需的信息。通过提供这些信息，
+ * UT_array可以正确地管理这种特定类型的数据。
+ */
 static UT_icd tag_icd = { sizeof(neu_datatag_t), NULL, tag_array_copy,
                           tag_array_free };
 
+/**
+ * @brief 获取用于数据标签管理的UT_icd结构体指针。
+ *
+ * 此函数返回一个静态定义的UT_icd结构体的地址，该结构体包含了处理数据标签类型的
+ * 创建(create)、拷贝(copy)、释放(dtor)和清除(clear)操作的函数指针。
+ * UT_icd（Universal Type Interface for Dynamic Arrays）是用于动态数组管理的一个接口，
+ * 它允许用户自定义这些操作以便于对特定类型的数据进行管理。
+ *
+ * @return 返回指向tag_icd的指针，即数据标签类型的UT_icd结构体。
+ */
 UT_icd *neu_tag_get_icd()
 {
     return &tag_icd;
@@ -139,6 +182,20 @@ static char *find_last_character(char *str, char character)
     return ret;
 }
 
+/**
+ * @brief 解析数据标签地址中的选项信息。
+ *
+ * 该函数根据传入的数据标签的数据类型，从数据标签的地址中解析出相应的选项信息，
+ * 并将解析结果存储在 `option` 指向的结构体中。不同的数据类型有不同的解析规则，
+ * 主要包括字节长度、字符串类型、字节序等选项的解析。
+ *
+ * @param datatag 指向 `neu_datatag_t` 类型的常量指针，代表要解析的数据源标签。
+ * @param option 指向 `neu_datatag_addr_option_u` 类型的指针，用于存储解析得到的选项信息。
+ *
+ * @return 函数的返回值表示解析操作的结果：
+ *         - 0：表示解析成功。
+ *         - -1：表示解析过程中出现错误，例如未找到预期的分隔符、解析出的选项值无效等。
+ */
 int neu_datatag_parse_addr_option(const neu_datatag_t *      datatag,
                                   neu_datatag_addr_option_u *option)
 {

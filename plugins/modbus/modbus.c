@@ -65,16 +65,34 @@ static uint16_t calcrc(uint8_t *buf, int len)
     return crc;
 }
 
+/**
+ * @brief 将 Modbus 协议头部信息封装到缓冲区中
+ *
+ * 该函数用于将 Modbus 协议的头部信息按照协议规范封装到指定的缓冲区中。
+ * 它会根据传入的序列号和当前缓冲区的使用情况，填充 Modbus 头部的各个字段。
+ *
+ * @param buf 用于存储封装后的 Modbus 头部信息。
+ * @param seq 消息的序列号，用于标识不同的 Modbus 消息，在网络通信中辅助
+ *            消息的排序和匹配。
+ */
 void modbus_header_wrap(neu_protocol_pack_buf_t *buf, uint16_t seq)
 {
+    // 断言缓冲区剩余空间足够存储 Modbus 头部信息
     assert(neu_protocol_pack_buf_unused_size(buf) >=
            sizeof(struct modbus_header));
+
+    // 从缓冲区获取存储 Modbus 头部信息的内存地址
     struct modbus_header *header =
         (struct modbus_header *) neu_protocol_pack_buf(
             buf, sizeof(struct modbus_header));
-
+    
+    // 将序列号转换为网络字节序(大端字节序)并赋值给头部的 seq 字段
     header->seq      = htons(seq);
+    
+    // 设置协议字段为 0x0
     header->protocol = 0x0;
+
+    // 计算并将消息长度（减去头部本身大小）转换为网络字节序赋值给头部的 len 字段
     header->len      = htons(neu_protocol_pack_buf_used_size(buf) -
                         sizeof(struct modbus_header));
 }

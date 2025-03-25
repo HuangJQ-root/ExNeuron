@@ -141,6 +141,17 @@ static inline bool file_exists(const char *const path)
     return -1 != stat(path, &buf);
 }
 
+/**
+ * @brief 加载特定的命令行参数。
+ *
+ * 如果第一个命令行参数是 "stop"，则将 args->stop 设置为 true。
+ * 这个函数通常用于快速响应停止请求而不进行完整的参数解析。
+ *
+ * @param argc 命令行参数的数量（包括程序名）。
+ * @param argv 命令行参数数组。
+ * @param args 指向 neu_cli_args_t 结构体的指针，用于存储解析后的参数。
+ * @return 返回 0 表示成功，非零值表示错误。
+ */
 static inline int load_spec_arg(int argc, char *argv[], neu_cli_args_t *args)
 {
     int ret = 0;
@@ -156,7 +167,14 @@ static inline int load_env(neu_cli_args_t *args, char **log_level_out,
 
     int ret = 0;
     do {
-        char *daemon = getenv(NEU_ENV_DAEMON);
+        /**
+         * @brief
+         *  获取linux系统环境变量NEURON_DAEMON
+         * 
+         * @note
+         *  通过 shell 设置环境变量: export NEURON_DAEMON=1
+         */
+        char *daemon = getenv(NEU_ENV_DAEMON); 
         if (daemon != NULL) {
             if (strcmp(daemon, "1") == 0) {
                 args->daemonized = true;
@@ -169,6 +187,21 @@ static inline int load_env(neu_cli_args_t *args, char **log_level_out,
             }
         }
 
+        /**
+         * @brief 检查并解析 NEU_ENV_LOG 环境变量来设置开发日志选项。
+         *
+         * 该段代码首先从环境中获取名为 NEU_ENV_LOG 的变量值。
+         * 如果该变量存在，则根据其值（"1" 或 "0"）设置 args->dev_log 标志。
+         * 若环境变量的值既不是 "1" 也不是 "0"，则输出错误信息，并设置 ret 返回值为 -1。
+         *
+         * @param args 指向 neu_cli_args_t 结构体的指针，用于存储命令行参数和配置选项。
+         * @param ret  指向 int 类型的指针，用于存储函数执行状态，成功时应保持不变或设为 0，失败时设为 -1。
+         *
+         * @note 
+         * - NEU_ENV_LOG 环境变量应该被设置为 "1" 或 "0" 来启用或禁用开发日志功能。
+         * - 如果 NEU_ENV_LOG 环境变量未设置，args->dev_log 将不会被修改。
+         * - 错误处理部分会输出错误信息到标准输出，并通过 ret 参数返回错误码。
+         */
         char *log = getenv(NEU_ENV_LOG);
         if (log != NULL) {
             if (strcmp(log, "1") == 0) {
@@ -182,6 +215,21 @@ static inline int load_env(neu_cli_args_t *args, char **log_level_out,
             }
         }
 
+        /**
+         * @brief 检查并解析 NEU_ENV_SUB_FILTER_ERROR 环境变量来设置订阅过滤器错误选项。
+         *
+         * 该段代码首先从环境中获取名为 NEU_ENV_SUB_FILTER_ERROR 的变量值。
+         * 如果该变量存在，则根据其值（"1" 或 "0"）设置 args->sub_filter_err 标志。
+         * 若环境变量的值既不是 "1" 也不是 "0"，则输出错误信息，并设置 ret 返回值为 -1。
+         *
+         * @param args 指向 neu_cli_args_t 结构体的指针，用于存储命令行参数和配置选项。
+         * @param ret  指向 int 类型的指针，用于存储函数执行状态，成功时应保持不变或设为 0，失败时设为 -1。
+         *
+         * @note 
+         * - NEU_ENV_SUB_FILTER_ERROR 环境变量应该被设置为 "1" 或 "0" 来启用或禁用订阅过滤器错误处理功能。
+         * - 如果 NEU_ENV_SUB_FILTER_ERROR 环境变量未设置，args->sub_filter_err 将不会被修改。
+         * - 错误处理部分会输出错误信息到标准输出，并通过 ret 参数返回错误码。
+         */
         char *sub_filter_e = getenv(NEU_ENV_SUB_FILTER_ERROR);
         if (sub_filter_e != NULL) {
             if (strcmp(sub_filter_e, "1") == 0) {
@@ -226,6 +274,20 @@ static inline int load_env(neu_cli_args_t *args, char **log_level_out,
             }
         }
 
+        /**
+         * @brief 检查并解析 NEU_ENV_CONFIG_DIR 环境变量来设置配置目录。
+         *
+         * 该段代码首先从环境中获取名为 NEU_ENV_CONFIG_DIR 的变量值。
+         * 如果该变量存在，则将其值复制到由 config_dir_out 指针指向的位置。
+         * 在设置新值之前，如果 config_dir_out 已经指向一个已分配的字符串，则释放旧的内存。
+         *
+         * @param config_dir_out 指向 char* 类型的指针，用于存储配置目录路径。该指针应在调用此代码前初始化为 NULL 或已分配的内存。
+         *
+         * @note 
+         * - NEU_ENV_CONFIG_DIR 环境变量应包含配置目录的路径。
+         * - 如果 NEU_ENV_CONFIG_DIR 环境变量未设置，config_dir_out 将不会被修改。
+         * - 函数使用 strdup 进行字符串复制，并确保在覆盖旧值前释放旧的内存，以避免内存泄漏。
+         */
         char *config_dir = getenv(NEU_ENV_CONFIG_DIR);
         if (config_dir != NULL) {
             if (*config_dir_out != NULL) {
@@ -265,38 +327,83 @@ static inline int load_env(neu_cli_args_t *args, char **log_level_out,
     return ret;
 }
 
+/**
+ * @brief 解析命令行参数以确定配置文件路径。
+ *
+ * @details
+ * 该函数通过getopt_long解析命令行参数，查找指定的配置文件选项（如-c或--config_file），
+ * 并将找到的配置文件路径存储在传入的指针中。如果未找到相关选项，则不会修改传入的指针。
+ *
+ * @param argc 命令行参数的数量（包括程序名）。
+ * @param argv 命令行参数数组。
+ * @param long_options 长选项列表，用于解析配置文件路径。
+ * @param opts 短选项字符串，用于解析配置文件路径。
+ * @param config_file 指向char*的指针，用于存储解析后的配置文件路径。
+ * 
+ * @note
+ * -optind:指示下一个要处理的命令行参数在 argv 数组中的索引位置。
+ *  随着 getopt_long 对命令行参数的解析逐步增加其值，直到所有选项都被处理完毕。
+ *  在某些情况下，你可能需要多次解析相同的命令行参数数组，或者你想确保在下一次调
+ *  用 getopt_long 时从头开始解析。这时，将 optind 设为0可以达到这个目的
+ * 
+ * -此处非必要：除非计划在同一个执行流程中再次调用 getopt_long 来解析相同的参数列表。
+ *  更常见的做法是让 getopt_long 自动管理 optind 的值，而不需要手动干预。
+ */
 static inline void resolve_config_file_path(int argc, char *argv[],
                                             struct option *long_options,
                                             char *opts, char **config_file)
 {
     int c            = 0;
     int option_index = 0;
+
+    // 遍历所有命令行选项
     while ((c = getopt_long(argc, argv, opts, long_options, &option_index)) !=
            -1) {
         switch (c) {
-        case 'c':
-            if (0 == strcmp("config_file", long_options[option_index].name)) {
+        case 'c': ///< 如果是短选项'-c'
+            if (0 == strcmp("config_file", long_options[option_index].name)) {  ///< 检查是否为长选项'--config_file'
                 *config_file = strdup(optarg);
                 goto end;
             }
             break;
-        default:
+        default: ///< 对于未知选项，忽略处理
             break;
         }
     }
 end:
-    optind = 0;
+    optind = 0; ///< 重置getopt库的状态变量
 }
 
+
+/**
+ * @brief 加载配置文件并更新CLI参数结构体。
+ *
+ * @details
+ * 该函数尝试根据命令行参数找到配置文件的位置，
+ * 如果找不到则使用默认配置文件名。接着读取文件内容，
+ * 解析其中的JSON数据，并更新提供的neu_cli_args_t结构体。
+ *
+ * @param argc 命令行参数的数量（包括程序名）。
+ * @param argv 命令行参数数组。
+ * @param long_options 长选项列表，用于解析配置文件路径。
+ * @param opts 短选项字符串，用于解析配置文件路径。
+ * @param args 指向neu_cli_args_t结构体的指针，用于存储解析后的参数。
+ * @return 返回0表示成功，非零值表示错误。
+ * 
+ * @note
+ * -加载配置元素有：
+ *  disable_auth ip port syslog_host syslog_port sub_filter_error
+ */
 static inline int load_config_file(int argc, char *argv[],
                                    struct option *long_options, char *opts,
                                    neu_cli_args_t *args)
 {
-    char *config_file = NULL;
-    int   ret         = -1;
-    int   fd          = -1;
-    void *root        = NULL;
+    char *config_file = NULL; // 配置文件路径
+    int   ret         = -1;   // 返回状态码
+    int   fd          = -1;   // 文件描述符
+    void *root        = NULL; // JSON根节点
 
+    // 定义要解析的JSON元素
     neu_json_elem_t elems[] = {
         { .name = "disable_auth", .t = NEU_JSON_INT },
         { .name = "ip", .t = NEU_JSON_STR },
@@ -306,11 +413,12 @@ static inline int load_config_file(int argc, char *argv[],
         { .name = "sub_filter_error", .t = NEU_JSON_INT },
     };
 
+    // 解析命令行参数获取配置文件路径
     resolve_config_file_path(argc, argv, long_options, opts, &config_file);
 
     do {
         if (!config_file) {
-            config_file = strdup(NEURON_CONFIG_FNAME);
+            config_file = strdup(NEURON_CONFIG_FNAME);  // 使用默认配置文件名
         }
 
         if (!file_exists(config_file)) {
@@ -331,16 +439,17 @@ static inline int load_config_file(int argc, char *argv[],
             break;
         }
 
-        root = neu_json_decode_new(buf);
+        root = neu_json_decode_new(buf); // 解析JSON数据
         if (root == NULL) {
             printf("config file %s foramt error!\n", config_file);
             nlog_error("config file %s foramt error!\n", config_file);
             break;
         }
 
+        // 解析具体的JSON元素并更新参数
         if (neu_json_decode_by_json(root, NEU_JSON_ELEM_SIZE(elems), elems) ==
             0) {
-            if (elems[0].v.val_int == 1) {
+            if (elems[0].v.val_int == 1) { //解析 disable_auth字段值
                 args->disable_auth = true;
             } else if (elems[0].v.val_int == 0) {
                 args->disable_auth = false;
@@ -350,14 +459,14 @@ static inline int load_config_file(int argc, char *argv[],
                 break;
             }
 
-            if (elems[1].v.val_str != NULL) {
+            if (elems[1].v.val_str != NULL) { //解析ip字段值
                 args->ip = strdup(elems[1].v.val_str);
             } else {
                 printf("config file %s ip setting error!\n", config_file);
                 break;
             }
 
-            if (elems[2].v.val_int > 0) {
+            if (elems[2].v.val_int > 0) { //解析port字段值
                 args->port = elems[2].v.val_int;
             } else {
                 printf("config file %s port setting error! must greater than "
@@ -415,8 +524,14 @@ static inline int load_config_file(int argc, char *argv[],
         neu_json_decode_free(root);
     }
 
+    /**
+     * @details
+     * 由strdup() 分配内存，必须在使用结束后释放。
+     * strdup 返回的指针是动态分配的内存，因此需要调用 free() 释放它。
+     * 
+     */
     if (elems[1].v.val_str != NULL) {
-        free(elems[1].v.val_str);
+        free(elems[1].v.val_str); 
     }
 
     if (elems[3].v.val_str != NULL) {
@@ -426,13 +541,39 @@ static inline int load_config_file(int argc, char *argv[],
     return ret;
 }
 
+/**
+ * @brief 初始化命令行参数结构体。
+ *
+ * @details
+ * 该函数解析命令行参数，并将它们存储到 neu_cli_args_t 结构体中。它支持短选项和长选项，
+ * 并处理特定的配置项如守护进程模式、日志级别、重启策略等。如果遇到未知选项或错误，
+ * 它会打印帮助信息并退出程序。
+ *
+ * @param args 指向 neu_cli_args_t 结构体的指针，用于存储解析后的参数。
+ * @param argc 命令行参数的数量。
+ * @param argv 命令行参数数组。
+ * 
+ * @note
+ * -opts: 短选项字符串，每个字符代表一个可接受的短选项，后面跟冒号表示需要参数。
+ * -long_options: 长选项的描述数组，每个元素是一个 option 结构体，包含名称、是否需要参数、标志和对应的短选项字符
+ *  最后一个元素必须是全零的 struct option，以表示数组的结束。
+ * 
+ * @example
+ * 启用守护进程模式:./neuron -d
+ * 显示帮助信息: ./neuron -h / ./neuron --help
+ * 设置日志级别: ./neuron -o DEBUG / ./neuron --log_level=DEBUG
+ * 重置密码: ./neuron --reset-password  注：这里不能用-r 
+ * 设置重启次数: ./neuron --restart=3
+ * 同时使用多个选项： ./neuron -d --log_level=INFO --syslog_host=localhost --syslog_port=514
+ */
 void neu_cli_args_init(neu_cli_args_t *args, int argc, char *argv[])
 {
     int           ret                 = 0;
-    bool          reset_password_flag = false;
-    char *        config_dir          = NULL;
-    char *        plugin_dir          = NULL;
-    char *        log_level           = NULL;
+    bool          reset_password_flag = false; ///< 标记是否需要重置密码
+    char *        config_dir          = NULL;  ///< 配置目录路径
+    char *        plugin_dir          = NULL;  ///< 插件目录路径
+    char *        log_level           = NULL;  ///< 日志级别字符串
+
     char *        opts                = "dh";
     struct option long_options[]      = {
         { "help", no_argument, NULL, 'h' },
@@ -450,7 +591,7 @@ void neu_cli_args_init(neu_cli_args_t *args, int argc, char *argv[])
         { "syslog_host", required_argument, NULL, 'S' },
         { "syslog_port", required_argument, NULL, 'P' },
         { "sub_filter_error", no_argument, NULL, 'f' },
-        { NULL, 0, NULL, 0 },
+        { NULL, 0, NULL, 0 }, 
     };
 
     memset(args, 0, sizeof(*args));
@@ -458,48 +599,50 @@ void neu_cli_args_init(neu_cli_args_t *args, int argc, char *argv[])
     int c            = 0;
     int option_index = 0;
 
+    // 加载特定参数 --实际不执行代码快
     if (load_spec_arg(argc, argv, args) < 0) {
         ret = 1;
         goto quit;
     }
 
-    // load config file
+    // 加载配置文件
     if (load_config_file(argc, argv, long_options, opts, args) < 0) {
         ret = 1;
         goto quit;
     }
 
-    // load env
+    // 加载环境变量
     if (load_env(args, &log_level, &config_dir, &plugin_dir) < 0) {
         ret = 1;
         goto quit;
     }
 
+    // 解析命令行选项
     while ((c = getopt_long(argc, argv, opts, long_options, &option_index)) !=
            -1) {
         switch (c) {
         case 'h':
-            usage();
+            usage(); ///< 打印使用说明
             goto quit;
         case 'd':
-            args->daemonized = true;
+            args->daemonized = true; ///< 设置为守护进程模式
             break;
         case ':':
             usage();
             goto quit;
         case 'l':
-            args->dev_log = true;
+            args->dev_log = true; // 启用开发日志
             break;
         case 'o':
             if (log_level != NULL) {
                 free(log_level);
             }
-            log_level = strdup(optarg);
+            log_level = strdup(optarg); //设置日至级别
             break;
         case 'r':
             if (0 ==
                 strcmp("reset-password", long_options[option_index].name)) {
-                reset_password_flag = true;
+                reset_password_flag = true; // 标记需要重置密码
             } else if (0 != parse_restart_policy(optarg, &args->restart)) {
                 fprintf(stderr, "%s: option '--restart' invalid policy: `%s`\n",
                         argv[0], optarg);
@@ -508,7 +651,7 @@ void neu_cli_args_init(neu_cli_args_t *args, int argc, char *argv[])
             }
             break;
         case 'v':
-            version();
+            version(); // 打印版本信息
             goto quit;
         case 'a':
             args->disable_auth = true;
@@ -518,14 +661,14 @@ void neu_cli_args_init(neu_cli_args_t *args, int argc, char *argv[])
                 if (config_dir != NULL) {
                     free(config_dir);
                 }
-                config_dir = strdup(optarg);
+                config_dir = strdup(optarg); // 设置配置目录路径
             }
             break;
         case 'p':
             if (plugin_dir != NULL) {
                 free(plugin_dir);
             }
-            plugin_dir = strdup(optarg);
+            plugin_dir = strdup(optarg);  // 设置插件目录路径
             break;
         case 'P': {
             int syslog_port = atoi(optarg);
@@ -534,26 +677,27 @@ void neu_cli_args_init(neu_cli_args_t *args, int argc, char *argv[])
                         argv[0], optarg);
                 goto quit;
             }
-            args->syslog_port = syslog_port;
+            args->syslog_port = syslog_port;  // 设置 Syslog 端口号
             break;
         }
         case 'S':
             if (args->syslog_host) {
                 free(args->syslog_host);
             }
-            args->syslog_host = strdup(optarg);
+            args->syslog_host = strdup(optarg); // 设置 Syslog 主机名
             break;
         case 'f':
-            args->sub_filter_err = true;
+            args->sub_filter_err = true;  // 设置子过滤器错误标志
             break;
         case '?':
         default:
-            usage();
+            usage(); // 打印使用说明
             ret = 1;
             goto quit;
         }
     }
 
+    // 如果没有启用守护进程模式，则忽略重启策略
     if (!args->daemonized && args->restart != NEU_RESTART_NEVER) {
         fprintf(stderr,
                 "%s: option '--restart' has no effects without '--daemon'\n",
@@ -561,6 +705,7 @@ void neu_cli_args_init(neu_cli_args_t *args, int argc, char *argv[])
         args->restart = NEU_RESTART_NEVER;
     }
 
+    // 设置默认配置目录
     args->config_dir = config_dir ? config_dir : strdup("./config");
     if (!file_exists(args->config_dir)) {
         fprintf(stderr, "configuration directory `%s` not exists\n",
@@ -569,6 +714,7 @@ void neu_cli_args_init(neu_cli_args_t *args, int argc, char *argv[])
         goto quit;
     }
 
+    // 设置默认插件目录
     args->plugin_dir = plugin_dir ? plugin_dir : strdup("./plugins");
     if (!file_exists(args->plugin_dir)) {
         fprintf(stderr, "plugin directory `%s` not exists\n", args->plugin_dir);
@@ -587,7 +733,7 @@ void neu_cli_args_init(neu_cli_args_t *args, int argc, char *argv[])
         goto quit;
     }
 
-    // passing information by global variable is not a good style
+     // 全局变量赋值（非推荐做法）
     g_config_dir = args->config_dir;
     g_plugin_dir = args->plugin_dir;
 
@@ -609,7 +755,7 @@ void neu_cli_args_init(neu_cli_args_t *args, int argc, char *argv[])
     return;
 
 quit:
-    neu_cli_args_fini(args);
+    neu_cli_args_fini(args); // 清理资源
     exit(ret);
 }
 

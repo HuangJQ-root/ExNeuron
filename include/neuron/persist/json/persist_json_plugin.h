@@ -41,10 +41,35 @@ typedef struct {
 int  neu_json_decode_plugin_req(char *buf, neu_json_plugin_req_t **result);
 void neu_json_decode_plugin_req_free(neu_json_plugin_req_t *req);
 
+/**
+ * @brief 定义用于存储插件响应信息的字符串指针类型
+ * 
+ * 该类型本质上是一个字符指针，用于指向存储插件相关响应信息的字符串，
+ * 字符串内的信息以 JSON 格式组织，包含插件的各种属性数据。
+ */
 typedef char *neu_json_plugin_resp_plugin_t;
 
+/**
+ * @brief 用于表示 JSON 格式的插件响应数据的结构体
+ * 
+ * 该结构体主要用于组织和存储与插件相关的响应信息，
+ * 例如插件的数量以及插件的具体信息列表等内容。
+ */
 typedef struct {
+    /**
+     * @brief 插件的数量
+     * 
+     * 表示响应中包含的插件的总数，通过该成员可以了解到后续插件信息数组的大小。
+     */
     int                            n_plugin;
+
+    /**
+     * @brief 指向存储插件信息的字符串指针
+     * 
+     * 该指针指向的内存区域存储了表示插件详细响应信息的字符串，
+     * 字符串内容可能包含插件的名称、版本等信息，具体格式取决于实际的 JSON 数据格式要求。
+     * 可以存在多个这样的字符串，其数量由 n_plugin 成员指定。
+     */
     neu_json_plugin_resp_plugin_t *plugins;
 } neu_json_plugin_resp_t;
 

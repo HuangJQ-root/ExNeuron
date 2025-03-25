@@ -83,15 +83,41 @@ static int path_cat(char *dst, size_t len, size_t size, const char *src)
     return i;
 }
 
+/**
+ * @brief 执行格式化的 SQLite SQL 语句。
+ *
+ * 该内联函数用于执行带有可变参数的 SQLite SQL 语句。它接收一个 SQLite 数据库
+ * 连接句柄、一个格式化的 SQL 语句模板，以及一系列可变参数，将这些参数填充到 SQL
+ * 语句模板中，然后执行生成的 SQL 语句。
+ *
+ * @param db 指向 SQLite 数据库连接的指针，代表要执行 SQL 语句的数据库实例。
+ * @param sql 格式化的 SQL 语句模板，其中可以包含占位符（如 `%Q`、`%i` 等），用于后续填充可变参数。
+ * @param ... 可变参数列表，用于填充 `sql` 中的占位符。
+ *
+ * @return 执行结果的状态码：
+ *         - 如果 SQL 语句执行成功，返回 0。
+ *         - 如果在分配 SQL 语句内存或执行 SQL 语句过程中出现错误，返回 `NEU_ERR_EINTERNAL`，
+ *           表示内部错误。
+ *
+ * @note 
+ * 该函数使用了 `sqlite3_vmprintf` 函数来格式化 SQL 语句，因此需要确保 `sql` 中的占位符与
+ * 可变参数的类型和数量匹配。
+ *
+ * @warning 
+ * 如果传入的 `db` 指针为 `NULL`，会导致未定义行为，因为函数会尝试使用该指针执行 SQL 操作。
+ */
 static inline int execute_sql(sqlite3 *db, const char *sql, ...)
 {
     int rv = 0;
 
+    // 初始化可变参数列表,args 指向第一个可变参数
     va_list args;
     va_start(args, sql);
+    // 使用可变参数格式化 SQL 语句
     char *query = sqlite3_vmprintf(sql, args);
     va_end(args);
 
+    // 检查 SQL 语句格式化是否成功
     if (NULL == query) {
         nlog_error("allocate SQL `%s` fail", sql);
         return NEU_ERR_EINTERNAL;
@@ -105,7 +131,10 @@ static inline int execute_sql(sqlite3 *db, const char *sql, ...)
         nlog_info("query %s success", query);
     }
 
+    // 释放错误消息的内存
     sqlite3_free(err_msg);
+
+    // 释放格式化后的 SQL 语句的内存
     sqlite3_free(query);
 
     return rv;
@@ -373,16 +402,38 @@ static int apply_schemas(sqlite3 *db, const char *dir)
     return rv;
 }
 
+/**
+ * @brief 打开或创建一个 SQLite 数据库，并应用模式文件。
+ *
+ * 该函数尝试打开或创建一个位于指定路径（通过宏定义 DB_FILE 指定）的 SQLite 数据库。
+ * 如果数据库成功打开，则会设置一些配置选项（如启用外键支持和设置日志模式为 WAL），
+ * 并应用提供的模式文件目录中的 SQL 脚本。如果任何步骤失败，将记录错误信息并关闭数据库
+ * 连接，最终返回 -1 表示失败；如果所有操作都成功，则返回 0。
+ *
+ * @param schema_dir 指向包含数据库模式文件的目录路径的字符串。
+ * @param db_p       指向 sqlite3* 类型指针的地址，用于存储打开或创建的数据库连接。
+ *
+ * @return int 返回 0 表示成功，返回 -1 表示失败。
+ *
+ * @note 
+ * - 确保 schema_dir 指向有效的目录路径，且该目录中包含所需的 SQL 模式文件。
+ * - 宏定义 DB_FILE 应指向正确的数据库文件路径，确保数据库文件所在的目录存在。
+ */
 static inline int open_db(const char *schema_dir, sqlite3 **db_p)
 {
     sqlite3 *db = NULL;
+
+    // 尝试打开或创建数据库
     int      rv = sqlite3_open(DB_FILE, &db);
     if (SQLITE_OK != rv) {
         nlog_fatal("db `%s` fail: %s", DB_FILE, sqlite3_errstr(rv));
         return -1;
     }
+
+    // 设置数据库忙等待超时时间为 100 秒
     sqlite3_busy_timeout(db, 100 * 1000);
 
+    // 启用外键支持: 数据一致性
     rv = sqlite3_exec(db, "PRAGMA foreign_keys=ON", NULL, NULL, NULL);
     if (rv != SQLITE_OK) {
         nlog_fatal("db foreign key support fail: %s", sqlite3_errmsg(db));
@@ -390,6 +441,7 @@ static inline int open_db(const char *schema_dir, sqlite3 **db_p)
         return -1;
     }
 
+    // 设置日志模式为 Write-Ahead Logging (WAL):1.崩溃恢复能力增强 2.减少磁盘 I/O 3.并发性能提升
     rv = sqlite3_exec(db, "PRAGMA journal_mode=WAL", NULL, NULL, NULL);
     if (rv != SQLITE_OK) {
         nlog_fatal("db journal_mode WAL fail: %s", sqlite3_errmsg(db));
@@ -397,6 +449,7 @@ static inline int open_db(const char *schema_dir, sqlite3 **db_p)
         return -1;
     }
 
+    // 应用 schema_dir 中的模式文件到数据库
     rv = apply_schemas(db, schema_dir);
     if (rv != 0) {
         nlog_fatal("db apply schemas fail");
@@ -404,10 +457,19 @@ static inline int open_db(const char *schema_dir, sqlite3 **db_p)
         return -1;
     }
 
+    // 将打开的数据库连接赋值给 db_p 指向的变量
     *db_p = db;
     return 0;
 }
 
+/**
+ * @brief 全局的 SQLite 持久化器虚函数表实例。
+ *
+ * 该虚函数表包含了一系列函数指针，这些指针指向了针对 SQLite 数据库实现的
+ * 持久化操作函数。通过这个虚函数表，可以在运行时根据实际的持久化对象类型调
+ * 用相应的 SQLite 操作函数，从而实现对 SQLite 数据库的各种持久化操作，
+ * 如节点信息、标签信息、订阅信息等的存储、加载、更新和删除。
+ */
 static struct neu_persister_vtbl_s g_sqlite_persister_vtbl = {
     .destroy             = neu_sqlite_persister_destroy,
     .native_handle       = neu_sqlite_persister_native_handle,
@@ -440,6 +502,21 @@ static struct neu_persister_vtbl_s g_sqlite_persister_vtbl = {
     .delete_user         = neu_sqlite_persister_delete_user,
 };
 
+/**
+ * @brief 创建并初始化一个 SQLite 持久化实例。
+ *
+ * 该函数接收一个指向包含数据库模式文件目录路径的字符串，并使用该目录中的
+ * 模式文件创建和初始化一个 SQLite 持久化实例。如果成功创建持久化实例，
+ * 则返回指向该实例的指针；如果创建失败（例如内存分配失败或数据库打开失败），则返回 NULL。
+ *
+ * @param schema_dir 指向包含数据库模式文件的目录路径的字符串。
+ *
+ * @return neu_persister_t* 成功时返回指向新创建的持久化实例的指针，失败时返回 NULL。
+ *
+ * @note 
+ * - 确保 schema_dir 指向有效的目录路径，且该目录中包含所需的 SQL 模式文件。
+ * - 内部调用 open_db 函数来打开或创建数据库，并应用 schema_dir 中的模式文件。
+ */
 neu_persister_t *neu_sqlite_persister_create(const char *schema_dir)
 {
     neu_sqlite_persister_t *persister = calloc(1, sizeof(*persister));
@@ -447,8 +524,15 @@ neu_persister_t *neu_sqlite_persister_create(const char *schema_dir)
         return NULL;
     }
 
+    //定义sqlite实例能执行的sql相关的功能
     persister->vtbl = &g_sqlite_persister_vtbl;
 
+    /**
+     * @note
+     * C 语言中函数参数传递是值传递, persister->db 就是这个指针的值，也就是它所指向的地址
+     * 传递 persister->db 而不是 &persister->db，open_db 函数只能修改传入的指针的副本，
+     * 而无法修改 persister->db 本身，这样就无法将打开的数据库连接句柄正确返回给调用者。
+     */
     if (0 != open_db(schema_dir, &persister->db)) {
         free(persister);
         return NULL;
@@ -457,20 +541,76 @@ neu_persister_t *neu_sqlite_persister_create(const char *schema_dir)
     return (neu_persister_t *) persister;
 }
 
+/**
+ * @brief 获取 SQLite 持久化器的底层数据库句柄。
+ *
+ * 该函数用于返回 SQLite 持久化器所使用的底层 SQLite 数据库连接句柄。
+ * 通过这个句柄，调用者可以直接访问和操作 SQLite 数据库，例如执行自定
+ * 义的 SQL 语句等。它提供了一种方式，让调用者在需要时能够绕过持久化器
+ * 提供的高级接口，直接与底层数据库进行交互。
+ *
+ * @param self 指向 `neu_persister_t` 类型的指针，代表当前的持久化器对象。
+ *             实际上，该指针指向的是 `neu_sqlite_persister_t` 类型的对象，
+ *             函数内部会将其进行类型转换以获取底层数据库句柄。
+ *
+ * @return 
+ * 返回一个 `void *` 类型的指针，该指针指向底层的 SQLite 数据库连接句柄（`sqlite3 *`）。
+ *         
+ * @warning 
+ * -调用者有责任管理通过该句柄进行的数据库操作，包括资源的释放和错误处理。
+ * -如果传入的 `self` 指针为 `NULL`，可能会导致未定义行为，因此调用者
+ *  需要确保传入有效的指针。
+ */
 void *neu_sqlite_persister_native_handle(neu_persister_t *self)
 {
     return ((neu_sqlite_persister_t *) self)->db;
 }
 
+/**
+ * @brief 销毁 SQLite 持久化器对象。
+ *
+ * 该函数用于释放 SQLite 持久化器对象所占用的资源，包括关闭与之关联的 SQLite 
+ * 数据库连接，并释放持久化器对象本身占用的内存。通常在不再需要使用该持久化器时
+ * 调用此函数，以避免资源泄漏。
+ *
+ * @param self 指向 `neu_persister_t` 类型的指针，代表要销毁的持久化器对象。
+ *             该指针实际上指向的是 `neu_sqlite_persister_t` 类型的对象，
+ *             函数内部会进行类型转换以访问其成员。
+ *
+ * @note 调用此函数后，传入的 `self` 指针将不再有效，不应该再对其进行操作。
+ * @warning 如果传入的 `self` 指针为 `NULL`，函数将不执行任何操作。
+ */
 void neu_sqlite_persister_destroy(neu_persister_t *self)
 {
     neu_sqlite_persister_t *persister = (neu_sqlite_persister_t *) self;
     if (persister) {
+        // 关闭 SQLite 数据库连接
         sqlite3_close(persister->db);
+
+        // 释放持久化器对象占用的内存
         free(persister);
     }
 }
 
+/**
+ * @brief 将节点信息持久化到 SQLite 数据库。
+ *
+ * 此函数用于将给定的节点信息存储到 SQLite 数据库的 `nodes` 表中。
+ * 它会执行一条 SQL 插入语句，将节点的名称、类型、状态和插件名称插入到相应的表字段中。
+ *
+ * @param self 指向 `neu_persister_t` 类型的指针，代表当前的持久化器对象。
+ *             实际上，该指针指向的是 `neu_sqlite_persister_t` 类型的对象，
+ *             函数内部会将其进行类型转换以获取底层的 SQLite 数据库连接。
+ * @param info 指向 `neu_persist_node_info_t` 类型的指针，包含要持久化的节点信息，
+ *             如节点名称、类型、状态和插件名称等。
+ *
+ * @return 执行 SQL 插入操作的返回值。如果操作成功，通常返回 0；
+ *         如果出现错误，返回一个非零值，表示操作失败。具体的错误信息可以通过其他方式（如日志）获取。
+ *
+ * @warning 
+ * 如果传入的 `self` 指针为 `NULL`，可能会导致未定义行为，因为函数会尝试访问其指向的对象。
+ * 同样，如果 `info` 指针为 `NULL`，SQL 插入语句可能会使用无效的数据，从而导致错误。
+ */
 int neu_sqlite_persister_store_node(neu_persister_t *        self,
                                     neu_persist_node_info_t *info)
 {
@@ -489,6 +629,29 @@ static UT_icd node_info_icd = {
     (dtor_f *) neu_persist_node_info_fini,
 };
 
+/**
+ * @brief 从 SQLite 数据库中加载节点信息。
+ *
+ * 该函数用于从 SQLite 数据库的 `nodes` 表中查询所有节点的信息，并将查询结果
+ * 存储到一个 `UT_array` 数组中。每个节点信息由 `neu_persist_node_info_t` 结构体表示，
+ * 包含节点的名称、类型、状态和插件名称。
+ *
+ * @param self 指向 `neu_persister_t` 类型的指针，实际上指向 `neu_sqlite_persister_t` 类型的对象，
+ *             用于获取底层的 SQLite 数据库连接。
+ * @param node_infos 指向 `UT_array` 指针的指针，用于存储从数据库中加载的节点信息。
+ *                   函数会为该 `UT_array` 分配内存，并将查询到的节点信息依次添加到数组中。
+ *
+ * @return 执行结果的状态码：
+ *         - 如果 SQL 语句准备失败，返回 `NEU_ERR_EINTERNAL`，表示内部错误。
+ *         - 其他情况下返回 0，即使查询过程中出现警告，也会返回部分或空的结果。
+ *
+ * @note 该函数会为每个节点的名称和插件名称分配新的内存（使用 `strdup` 函数），
+ *       调用者在使用完 `node_infos` 数组后，需要负责释放这些内存。
+ * @note 函数内部会自动释放 `sqlite3_stmt` 对象的资源，调用者无需手动释放。
+ *
+ * @warning 如果传入的 `self` 指针为 `NULL`，会导致未定义行为，因为函数会尝试访问其指向的对象。
+ * @warning 如果传入的 `node_infos` 指针为 `NULL`，会导致程序崩溃，因为函数会尝试对其进行解引用操作。
+ */
 int neu_sqlite_persister_load_nodes(neu_persister_t *self,
                                     UT_array **      node_infos)
 {
@@ -1020,11 +1183,29 @@ static UT_icd group_info_icd = {
     (dtor_f *) neu_persist_group_info_fini,
 };
 
+/**
+ * @brief 从 SQLite 语句句柄中收集组信息并存储到 UT_array 中。
+ *
+ * 此函数通过遍历 SQLite 语句执行结果的每一行，将每行中的组信息提取出来，
+ * 填充到 `neu_persist_group_info_t` 结构体中，然后将该结构体添加到 `UT_array` 中。
+ * 如果在内存分配过程中出现错误（如 `strdup` 失败），则会提前终止遍历。
+ * 若最终的执行状态不是 `SQLITE_DONE`，表示执行过程中出现异常，函数将返回 -1。
+ *
+ * @param stmt 指向 SQLite 语句句柄的指针，用于执行 SQL 查询并获取结果。
+ * @param group_infos 指向 `UT_array` 指针的指针，用于存储收集到的组信息。
+ * @return 成功收集信息并执行完毕返回 0，否则返回 -1。
+ */
 static int collect_group_info(sqlite3_stmt *stmt, UT_array **group_infos)
 {
+    // 获取当前行的状态
     int step = sqlite3_step(stmt);
+
+    // 当前行状态为 SQLITE_ROW 时，表示有数据行
     while (SQLITE_ROW == step) {
+        // 存储当前组的信息
         neu_persist_group_info_t info = {};
+
+        // 复制 SQL 结果集中第 0 列（name 字段）的文本数据
         char *name = strdup((char *) sqlite3_column_text(stmt, 0));
         if (NULL == name) {
             break;
@@ -1040,9 +1221,11 @@ static int collect_group_info(sqlite3_stmt *stmt, UT_array **group_infos)
         }
         utarray_push_back(*group_infos, &info);
 
+        // 获取下一行的状态
         step = sqlite3_step(stmt);
     }
 
+    // 如果最终状态不是 SQLITE_DONE,表示 SQL 执行未正常结束
     if (SQLITE_DONE != step) {
         return -1;
     }
@@ -1050,18 +1233,41 @@ static int collect_group_info(sqlite3_stmt *stmt, UT_array **group_infos)
     return 0;
 }
 
+/**
+ * @brief 从 SQLite 数据库中加载指定驱动程序的组信息。
+ *
+ * 此函数会根据给定的驱动程序名称，从 SQLite 数据库中查询相关组的信息，
+ * 并将结果存储在 `group_infos` 指向的 UT_array 中。
+ *
+ * @param self 持久化器对象指针，包含数据库连接等信息。
+ * @param driver_name 要查询的驱动程序名称。
+ * @param group_infos 用于存储查询结果的 UT_array 指针的指针。
+ * @return 成功返回 0，失败返回 NEU_ERR_EINTERNAL。
+ */
 int neu_sqlite_persister_load_groups(neu_persister_t *self,
                                      const char *     driver_name,
                                      UT_array **      group_infos)
 {
     neu_sqlite_persister_t *persister = (neu_sqlite_persister_t *) self;
 
+    // 用于存储 SQLite 语句句柄，初始化为 NULL
     sqlite3_stmt *stmt = NULL;
     const char *  query =
         "SELECT name, interval, context FROM groups WHERE driver_name=?";
 
+    /**
+     * @brief
+     * 
+     * 创建一个新的 UT_array 来存储组信息，使用 group_info_icd 作为元素初始化信息
+     * 
+     * @note
+     * - 修改了group_infos指针本身的值，所以传入UT_array **  group_infos
+     * - 使用 UT_array *group_infos，因为函数只能修改 group_infos 所指向的
+     *   UT_array 的内容
+     */
     utarray_new(*group_infos, &group_info_icd);
 
+    // 准备 SQL 语句
     if (SQLITE_OK !=
         sqlite3_prepare_v2(persister->db, query, -1, &stmt, NULL)) {
         nlog_error("prepare `%s` fail: %s", query,
@@ -1069,6 +1275,7 @@ int neu_sqlite_persister_load_groups(neu_persister_t *self,
         goto error;
     }
 
+    // 绑定 driver_name 参数到 SQL 语句的第一个占位符，
     if (SQLITE_OK != sqlite3_bind_text(stmt, 1, driver_name, -1, NULL)) {
         nlog_error("bind `%s` with `%s` fail: %s", query, driver_name,
                    sqlite3_errmsg(persister->db));
@@ -1110,6 +1317,23 @@ int neu_sqlite_persister_store_node_setting(neu_persister_t *self,
         node_name, setting);
 }
 
+/**
+ * @brief 从 SQLite 数据库中加载指定节点的设置信息。
+ *
+ * 该函数用于从 SQLite 数据库中检索指定节点的设置信息。它首先准备一个 SQL 查询语句，
+ * 然后绑定节点名称参数，执行查询，并处理查询结果。如果查询成功且有匹配的记录，
+ * 则将设置信息复制到传入的指针所指向的位置。
+ *
+ * @param self 指向 neu_persister_t 类型的指针，实际指向 neu_sqlite_persister_t 结构体，
+ *             该结构体包含了与 SQLite 数据库相关的信息，如数据库连接指针等。
+ * @param node_name 指向表示节点名称的字符串的指针，用于在数据库中定位要加载设置信息的节点。
+ * @param setting 指向常量字符指针的常量指针，函数会将从数据库中读取到的设置信息的指针存储在这里。
+ *                调用者需要确保该指针指向的内存可以存储返回的设置信息，或者在不再需要时进行适当的内存释放。
+ * @return 函数的返回值表示操作的结果：
+ *         - 如果操作成功，即从数据库中成功读取并设置了设置信息，返回 0。
+ *         - 如果在准备 SQL 语句、绑定参数、执行查询或内存分配等过程中出现错误，
+ *           则返回 NEU_ERR_EINTERNAL（表示内部错误），并记录相应的错误日志。
+ */
 int neu_sqlite_persister_load_node_setting(neu_persister_t *  self,
                                            const char *       node_name,
                                            const char **const setting)
@@ -1117,9 +1341,10 @@ int neu_sqlite_persister_load_node_setting(neu_persister_t *  self,
     neu_sqlite_persister_t *persister = (neu_sqlite_persister_t *) self;
 
     int           rv    = 0;
-    sqlite3_stmt *stmt  = NULL;
+    sqlite3_stmt *stmt  = NULL; // 表示 SQLite 数据库的预编译语句对象
     const char *  query = "SELECT setting FROM settings WHERE node_name=?";
 
+    // 预编译 SQL 语句, &stmt 用于接收预编译后的语句对象指针
     if (SQLITE_OK !=
         sqlite3_prepare_v2(persister->db, query, -1, &stmt, NULL)) {
         nlog_error("prepare `%s` with `%s` fail: %s", query, node_name,
@@ -1127,13 +1352,15 @@ int neu_sqlite_persister_load_node_setting(neu_persister_t *  self,
         return NEU_ERR_EINTERNAL;
     }
 
+    // 绑定参数: node_name
     if (SQLITE_OK != sqlite3_bind_text(stmt, 1, node_name, -1, NULL)) {
         nlog_error("bind `%s` with `%s` fail: %s", query, node_name,
                    sqlite3_errmsg(persister->db));
         rv = NEU_ERR_EINTERNAL;
         goto end;
     }
-
+    
+    // 执行 SQL 语句
     if (SQLITE_ROW != sqlite3_step(stmt)) {
         nlog_warn("SQL `%s` with `%s` fail: %s", query, node_name,
                   sqlite3_errmsg(persister->db));
@@ -1141,6 +1368,7 @@ int neu_sqlite_persister_load_node_setting(neu_persister_t *  self,
         goto end;
     }
 
+    // 提取查询结果
     char *s = strdup((char *) sqlite3_column_text(stmt, 0));
     if (NULL == s) {
         nlog_error("strdup fail");

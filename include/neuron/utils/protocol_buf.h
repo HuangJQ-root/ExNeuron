@@ -29,9 +29,32 @@ typedef struct {
     uint16_t need;
 } neu_buf_result_t;
 
+/**
+ * @brief
+ * - 定义通用的协议缓冲区类型
+ * - 定义协议打包缓冲区类型
+ * - 定义协议解包缓冲区类型
+ */
 typedef struct {
+    /**
+     * @brief 缓冲区的基地址
+     *
+     * 指向缓冲区内存的起始位置，所有存储在该缓冲区的数据都从这个地址开始。
+     */
     uint8_t *base;
+
+    /**
+     * @brief 缓冲区的总大小
+     *
+     * 表示缓冲区所能容纳的最大数据量，以字节为单位。
+     */
     uint16_t size;
+
+    /**
+     * @brief 缓冲区的当前偏移量
+     *
+     * 指示当前可用于存储或读取数据的位置相对于基地址的偏移量，以字节为单位。
+     */
     uint16_t offset;
 } neu_protocol_buf_t, neu_protocol_pack_buf_t, neu_protocol_unpack_buf_t;
 
@@ -113,15 +136,32 @@ inline static void neu_protocol_pack_buf_reset(neu_protocol_buf_t *buf)
     memset(buf->base, 0, buf->size);
 }
 
+/**
+ * @brief 从协议解包缓冲区中提取指定大小的数据。
+ *
+ * 该内联函数用于从 缓冲区中提取指定大小的数据。它会检查缓冲区中剩余的可用数据量是否足够，
+ * 如果足够则更新缓冲区的偏移量，并返回指向提取数据的指针；如果不足，则返回 `NULL` 表示
+ * 提取失败。
+ *
+ * @param buf 指向 `neu_protocol_unpack_buf_t` 结构体的指针，该结构体管理着协议数
+ *            据的解包缓冲区，包含缓冲区的基地址、总大小和当前偏移量等信息。
+ * @param size 无符号 16 位整数，表示要从缓冲区中提取的数据的字节数。
+ *
+ * @return 如果缓冲区中剩余的可用数据量足够，返回指向提取数据的指针；
+ *         如果剩余数据量不足，返回 `NULL`。
+ */
 inline static uint8_t *neu_protocol_unpack_buf(neu_protocol_unpack_buf_t *buf,
                                                uint16_t                   size)
 {
+    // 检查缓冲区中剩余的可用数据量是否小于要提取的数据大小
     if (buf->size - buf->offset < size) {
         return NULL;
     }
 
+    // 更新缓冲区的偏移量，将其增加要提取的数据大小
     buf->offset += size;
 
+    // 返回指向提取数据的指针，即缓冲区基地址加上偏移量减去要提取的数据大小
     return buf->base + buf->offset - size;
 }
 
@@ -141,6 +181,22 @@ neu_protocol_unpack_buf_get(neu_protocol_unpack_buf_t *buf, uint16_t size)
     return buf->base + buf->offset;
 }
 
+/**
+ * @brief 从协议打包缓冲区中分配指定大小的内存块
+ *
+ * 该内联函数用于从 `neu_protocol_pack_buf_t` 类型的缓冲区中分配指定大小的内存块。
+ * 它会检查缓冲区剩余空间是否足够，如果足够则更新缓冲区的偏移量，并返回分配内存块的起始地址；
+ * 若空间不足则返回 `NULL`。
+ *
+ * @param buf  协议打包缓冲区的指针。该缓冲区用于存储协议数据。
+ * @param size 需要从缓冲区中分配的内存块大小，单位为字节。
+ *
+ * @return 若缓冲区剩余空间足够，返回分配的内存块的起始地址；若剩余空间不足，返回 `NULL`。
+ *
+ * @note 该函数会修改传入的 `buf` 结构体中的 `offset` 字段，以反映缓冲区剩余可用空间的变化。
+ * 
+ * @warning 调用者需要确保传入的 `buf` 指针不为 `NULL`，否则可能会导致未定义行为。
+ */
 inline static uint8_t *neu_protocol_pack_buf(neu_protocol_pack_buf_t *buf,
                                              uint16_t                 size)
 {

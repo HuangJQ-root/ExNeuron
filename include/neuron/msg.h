@@ -41,93 +41,205 @@ typedef struct {
     int                      log_level;
 } neu_node_state_t;
 
+/**
+ * @brief 请求/响应类型枚举，用于区分不同类型的消息。
+ * 涵盖读取、写入、订阅、节点管理等多方面。
+ */
 typedef enum neu_reqresp_type {
+    /** @brief 错误响应，含错误信息用于调试 */
     NEU_RESP_ERROR,
 
+    /**
+     * @name 数据读取相关
+     * @{
+     */
+    /** @brief 读取组请求 */
     NEU_REQ_READ_GROUP,
+    /** @brief 读取组响应 */
     NEU_RESP_READ_GROUP,
+    /** @brief 分页读取组请求 */
     NEU_REQ_READ_GROUP_PAGINATE,
+    /** @brief 分页读取组响应 */
     NEU_RESP_READ_GROUP_PAGINATE,
+    /** @brief 测试读取标签请求 */
     NEU_REQ_TEST_READ_TAG,
+    /** @brief 测试读取标签响应 */
     NEU_RESP_TEST_READ_TAG,
+    /** @} */
+
+    /**
+     * @name 数据写入相关
+     * @{
+     */
+    /** @brief 写入标签请求 */
     NEU_REQ_WRITE_TAG,
+    /** @brief 批量写入标签请求 */
     NEU_REQ_WRITE_TAGS,
+    /** @brief 写入组标签请求 */
     NEU_REQ_WRITE_GTAGS,
+    /** @} */
 
+    /**
+     * @name 订阅管理相关
+     * @{
+     */
+    /** @brief 订阅组请求 */
     NEU_REQ_SUBSCRIBE_GROUP,
+    /** @brief 取消订阅组请求 */
     NEU_REQ_UNSUBSCRIBE_GROUP,
+    /** @brief 更新订阅组请求 */
     NEU_REQ_UPDATE_SUBSCRIBE_GROUP,
+    /** @brief 批量订阅组请求 */
     NEU_REQ_SUBSCRIBE_GROUPS,
+    /** @brief 获取订阅组请求 */
     NEU_REQ_GET_SUBSCRIBE_GROUP,
+    /** @brief 获取订阅组响应 */
     NEU_RESP_GET_SUBSCRIBE_GROUP,
+    /** @brief 获取驱动器标签请求 */
     NEU_REQ_GET_SUB_DRIVER_TAGS,
+    /** @brief 获取驱动器标签响应 */
     NEU_RESP_GET_SUB_DRIVER_TAGS,
+    /** @} */
 
+    /**
+     * @name 节点管理相关
+     * @{
+     */
+    /** @brief 节点初始化请求 */
     NEU_REQ_NODE_INIT,
+    /** @brief 节点反初始化请求 */
     NEU_REQ_NODE_UNINIT,
+    /** @brief 节点反初始化响应 */
     NEU_RESP_NODE_UNINIT,
+    /** @brief 添加节点请求 */
     NEU_REQ_ADD_NODE,
+    /** @brief 更新节点请求 */
     NEU_REQ_UPDATE_NODE,
+    /** @brief 删除节点请求 */
     NEU_REQ_DEL_NODE,
+    /** @brief 获取节点请求 */
     NEU_REQ_GET_NODE,
+    /** @brief 获取节点响应 */
     NEU_RESP_GET_NODE,
+    /** @brief 设置节点配置请求 */
     NEU_REQ_NODE_SETTING,
+    /** @brief 获取节点配置请求 */
     NEU_REQ_GET_NODE_SETTING,
+    /** @brief 获取节点配置响应 */
     NEU_RESP_GET_NODE_SETTING,
+    /** @brief 获取节点状态请求 */
     NEU_REQ_GET_NODE_STATE,
+    /** @brief 获取节点状态响应 */
     NEU_RESP_GET_NODE_STATE,
+    /** @brief 获取所有节点状态请求 */
     NEU_REQ_GET_NODES_STATE,
+    /** @brief 获取所有节点状态响应 */
     NEU_RESP_GET_NODES_STATE,
+    /** @brief 控制节点请求 */
     NEU_REQ_NODE_CTL,
+    /** @brief 重命名节点请求 */
     NEU_REQ_NODE_RENAME,
+    /** @brief 重命名节点响应 */
     NEU_RESP_NODE_RENAME,
+    /** @} */
 
+    /**
+     * @name 组管理相关
+     * @{
+     */
+    /** @brief 添加组请求 */
     NEU_REQ_ADD_GROUP,
+    /** @brief 删除组请求 */
     NEU_REQ_DEL_GROUP,
+    /** @brief 更新组请求 */
     NEU_REQ_UPDATE_GROUP,
+    /** @brief 更新驱动器组请求 */
     NEU_REQ_UPDATE_DRIVER_GROUP,
+    /** @brief 更新驱动器组响应 */
     NEU_RESP_UPDATE_DRIVER_GROUP,
+    /** @brief 获取组请求 */
     NEU_REQ_GET_GROUP,
+    /** @brief 获取组响应 */
     NEU_RESP_GET_GROUP,
+    /** @brief 获取驱动器组请求 */
     NEU_REQ_GET_DRIVER_GROUP,
+    /** @brief 获取驱动器组响应 */
     NEU_RESP_GET_DRIVER_GROUP,
+    /** @} */
 
+    /**
+     * @name 标签管理相关
+     * @{
+     */
+    /** @brief 添加标签请求 */
     NEU_REQ_ADD_TAG,
+    /** @brief 添加标签响应 */
     NEU_RESP_ADD_TAG,
+    /** @brief 添加组标签请求 */
     NEU_REQ_ADD_GTAG,
+    /** @brief 添加组标签响应 */
     NEU_RESP_ADD_GTAG,
+    /** @brief 删除标签请求 */
     NEU_REQ_DEL_TAG,
+    /** @brief 更新标签请求 */
     NEU_REQ_UPDATE_TAG,
+    /** @brief 更新标签响应 */
     NEU_RESP_UPDATE_TAG,
+    /** @brief 获取标签请求 */
     NEU_REQ_GET_TAG,
+    /** @brief 获取标签响应 */
     NEU_RESP_GET_TAG,
+    /** @} */
 
+    /**
+     * @name 插件管理相关
+     * @{
+     */
+    /** @brief 添加插件请求 */
     NEU_REQ_ADD_PLUGIN,
+    /** @brief 删除插件请求 */
     NEU_REQ_DEL_PLUGIN,
+    /** @brief 更新插件请求 */
     NEU_REQ_UPDATE_PLUGIN,
+    /** @brief 获取插件请求 */
     NEU_REQ_GET_PLUGIN,
+    /** @brief 获取插件响应 */
     NEU_RESP_GET_PLUGIN,
+    /** @} */
 
+    /**
+     * @name 其他请求/响应类型
+     * @{
+     */
+    /** @brief 数据传输请求/响应 */
     NEU_REQRESP_TRANS_DATA,
+    /** @brief 节点状态请求/响应 */
     NEU_REQRESP_NODES_STATE,
+    /** @brief 节点删除通知 */
     NEU_REQRESP_NODE_DELETED,
-
+    /** @brief 添加驱动器请求 */
     NEU_REQ_ADD_DRIVERS,
-
+    /** @brief 更新日志级别请求 */
     NEU_REQ_UPDATE_LOG_LEVEL,
-
+    /** @brief 程序文件上传请求 */
     NEU_REQ_PRGFILE_UPLOAD,
+    /** @brief 程序文件处理请求 */
     NEU_REQ_PRGFILE_PROCESS,
+    /** @brief 程序文件处理响应 */
     NEU_RESP_PRGFILE_PROCESS,
-
+    /** @brief 扫描标签请求 */
     NEU_REQ_SCAN_TAGS,
+    /** @brief 扫描标签响应 */
     NEU_RESP_SCAN_TAGS,
-
+    /** @brief 检查模式请求 */
     NEU_REQ_CHECK_SCHEMA,
+    /** @brief 检查模式响应 */
     NEU_RESP_CHECK_SCHEMA,
-
+    /** @brief 驱动器动作请求 */
     NEU_REQ_DRIVER_ACTION,
+    /** @brief 驱动器动作响应 */
     NEU_RESP_DRIVER_ACTION,
+    /** @} */
 } neu_reqresp_type_e;
 
 static const char *neu_reqresp_type_string_t[] = {
@@ -231,12 +343,53 @@ typedef enum {
     NEU_OTEL_TRACE_TYPE_EKUIPER,
 } neu_otel_trace_type_e;
 
+/**
+ * @brief 请求/响应头部结构体，用于描述消息的基本信息。
+ *
+ * 此结构体包含了消息类型、上下文指针、发送者与接收者的名称、追踪类型以及消息长度等信息。
+ * 它是构建请求和响应消息的基础，提供了必要的元数据以便于消息的处理和路由。
+ */
 typedef struct neu_reqresp_head {
+    /**
+     * @brief 消息类型。
+     *
+     * 使用枚举类型`neu_reqresp_type_e`表示消息的类型，如请求或响应。
+     */
     neu_reqresp_type_e type;
+
+    /**
+     * @brief 上下文指针。
+     *
+     * 一个通用指针，用于携带额外的信息或上下文数据，具体用途取决于消息类型。
+     */
     void *             ctx;
+
+    /**
+     * @brief 发送者名称。
+     *
+     * 固定长度的字符数组，存储发送者的名称，用于标识消息的来源节点。
+     */
     char               sender[NEU_NODE_NAME_LEN];
+
+    /**
+     * @brief 接收者名称。
+     *
+     * 固定长度的字符数组，存储接收者的名称，用于标识消息的目标节点。
+     */
     char               receiver[NEU_NODE_NAME_LEN];
+
+    /**
+     * @brief 追踪类型。
+     *
+     * 表示是否以及如何对消息进行分布式追踪，值为`uint8_t`类型。
+     */
     uint8_t            otel_trace_type;
+
+    /**
+     * @brief 消息长度。
+     *
+     * 表示消息体的实际长度，单位为字节。
+     */
     uint32_t           len;
 } neu_reqresp_head_t;
 
@@ -282,19 +435,88 @@ typedef struct neu_req_del_plugin {
 typedef struct neu_req_get_plugin {
 } neu_req_get_plugin_t;
 
+/**
+ * @brief 描述插件信息的结构体。
+ *
+ * 该结构体用于存储插件的详细信息，包括其模式文件名、名称、描述（包括中文描述）、库名称、
+ * 插件种类、类型、版本号以及是否为单例插件等。
+ */
 typedef struct neu_resp_plugin_info {
+    /**
+     * @brief 插件的模式文件名。
+     *
+     * 存储插件使用的JSON模式文件名，用于验证配置文件的正确性。
+     */
     char schema[NEU_PLUGIN_NAME_LEN];
+
+    /**
+     * @brief 插件的名称。
+     *
+     * 存储插件的唯一标识符名称。
+     */
     char name[NEU_PLUGIN_NAME_LEN];
+
+    /**
+     * @brief 插件的描述信息。
+     *
+     * 存储插件的功能描述信息，便于用户了解插件的作用。
+     */
     char description[NEU_PLUGIN_DESCRIPTION_LEN];
+
+    /**
+     * @brief 插件的中文描述信息。
+     *
+     * 存储插件的中文功能描述信息，适用于中文用户环境。
+     */
     char description_zh[NEU_PLUGIN_DESCRIPTION_LEN];
+
+    /**
+     * @brief 插件的库名称。
+     *
+     * 存储插件对应的共享库或动态链接库的名称。
+     */
     char library[NEU_PLUGIN_LIBRARY_LEN];
 
+    /**
+     * @brief 插件的种类。
+     *
+     * 使用 `neu_plugin_kind_e` 枚举类型定义插件的种类，例如系统插件或自定义插件。
+     */
     neu_plugin_kind_e kind;
-    neu_node_type_e   type;
-    uint32_t          version;
 
+    /**
+     * @brief 插件的类型。
+     *
+     * 使用 `neu_node_type_e` 枚举类型定义插件的类型，例如输入节点、输出节点等。
+     */
+    neu_node_type_e type;
+
+    /**
+     * @brief 插件的版本号。
+     *
+     * 存储插件的版本号，便于版本管理和更新。
+     */
+    uint32_t version;
+
+    /**
+     * @brief 是否为单例插件。
+     *
+     * 如果为 `true`，表示该插件是单例插件；否则为普通插件。
+     */
     bool single;
+
+    /**
+     * @brief 是否显示插件。
+     *
+     * 如果为 `true`，表示该插件在用户界面中可见；否则不可见。
+     */
     bool display;
+
+    /**
+     * @brief 单例插件的名称。
+     *
+     * 如果插件是单例插件，则存储其唯一的实例名称。
+     */
     char single_name[NEU_NODE_NAME_LEN];
 } neu_resp_plugin_info_t;
 
@@ -721,16 +943,65 @@ typedef struct neu_resp_tag_value {
 
 typedef neu_resp_tag_value_t neu_tag_value_t;
 
+/**
+ * @brief 用于存储标签值及其元数据信息的结构体。
+ *
+ * 此结构体包含了与特定标签相关的所有必要信息，包括标签名称、标签值、
+ * 元数据数组和数据标签的详细信息。它在数据响应场景中使用，以完整地
+ * 描述一个数据点的所有相关信息。
+ * 
+ * @note
+ * 
+ * 在数据响应场景中完整地描述一个数据点的所有相关信息。它是一个综合
+ * 性的数据结构，用于将标签名称、标签值、元数据以及数据标签的详细信
+ * 息整合在一起，方便在不同模块之间传递和处理与特定标签相关的完整数据。
+ */
 typedef struct neu_resp_tag_value_meta {
+    /**
+     * @brief 标签名称。
+     *
+     * 这是一个固定大小的字符数组，用于存储标签的名称。
+     */
     char           tag[NEU_TAG_NAME_LEN];
+
+    /**
+     * @brief 标签值。
+     *
+     * 包含标签的实际值。这个字段可以表示不同类型的数据值
+     * （如整数、浮点数等）。
+     */
     neu_dvalue_t   value;
+
+    /**
+     * @brief 元数据数组。
+     *
+     * 存储了一组与标签相关的元数据信息，
+     */
     neu_tag_meta_t metas[NEU_TAG_META_SIZE];
+
+    /**
+     * @brief 数据标签的详细信息。
+     *
+     * 包含关于数据标签的更详细信息，例如属性、精度、地址等。
+     */
     neu_datatag_t  datatag;
 } neu_resp_tag_value_meta_t;
 
+/**
+ * @brief 获取用于管理 neu_resp_tag_value_meta_t 类型数据的 UT_icd 接口。
+ *
+ * 此函数返回一个静态定义的 UT_icd 结构体的地址，该结构体包含了处理 neu_resp_tag_value_meta_t 
+ * 类型数据的创建(create)、拷贝(copy)、释放(dtor)和清除(clear)操作所需的信息。
+ * 在这个例子中，仅定义了元素的大小，其他操作（初始化、拷贝、释放）均未定义。
+ *
+ * @return 返回指向静态定义的 icd 的指针，即 neu_resp_tag_value_meta_t 类型的 UT_icd 结构体。
+ */
 static inline UT_icd *neu_resp_tag_value_meta_icd()
-{
+{   
+    // 静态定义的 UT_icd 结构体，包含元素大小和其他操作的函数指针（如果有的话）
     static UT_icd icd = { sizeof(neu_resp_tag_value_meta_t), NULL, NULL, NULL };
+    
+    // 返回静态定义的 icd 的地址
     return &icd;
 }
 
@@ -837,18 +1108,71 @@ neu_resp_read_paginate_free(neu_resp_read_group_paginate_t *resp)
     utarray_free(resp->tags);
 }
 
+/**
+ * @brief 用于存储传输数据请求和响应上下文信息的结构体。
+ *
+ * 此结构体包含了与数据传输相关的上下文信息，包括一个索引和一个互斥锁，
+ * 主要用于在多线程环境中同步对共享资源的访问。
+ */
 typedef struct {
+    /**
+     * @brief 索引。
+     *
+     * 这个集合指的是与某个组（group_t 结构体中的 apps 数组）关联的应用实例集合
+     *  具体来说，它的值等于 apps 数组的长度
+     */
     uint16_t        index;
+
+    /**
+     * @brief 互斥锁。
+     *
+     * 用于确保在多线程环境中对共享资源的安全访问。通过使用互斥锁，
+     * 可以避免多个线程同时修改同一资源导致的数据不一致问题。
+     */
     pthread_mutex_t mtx;
 } neu_reqresp_trans_data_ctx_t;
 
+/**
+ * @brief 用于存储传输数据请求和响应相关信息的结构体。
+ *
+ * 此结构体包含了一系列字段，用于描述从驱动程序到应用程序的数据传输请求或响应。
+ * 它包含了目标驱动程序名称、组信息、跟踪上下文、上下文信息以及标签值元数据数组。
+ */
 typedef struct {
+    /**
+     * @brief 目标驱动程序的名称。
+     *
+     * 这个字段指定了数据传输的目标驱动程序名称，通常是字符串形式。
+     */
     char *driver;
+
+    /**
+     * @brief 组名称。
+     *
+     * 这个字段指定了与数据传输相关的组名称，也是字符串形式。
+     */
     char *group;
+
+    /**
+     * @brief 跟踪上下文。
+     *
+     * 用于分布式跟踪系统的上下文信息。可以为空，如果不需要跟踪的话。
+     */
     void *trace_ctx;
 
+    /**
+     * @brief 上下文信息。
+     *
+     * 包含了额外的上下文信息
+     */
     neu_reqresp_trans_data_ctx_t *ctx;
-    UT_array *                    tags; // neu_resp_tag_value_meta_t
+
+    /**
+     * @brief 标签值元数据数组。
+     *
+     * 存储了一组标签值元数据（neu_resp_tag_value_meta_t类型），这些是实际要传输的数据。
+     */
+    UT_array *                    tags; 
 } neu_reqresp_trans_data_t;
 
 typedef struct {
@@ -1332,15 +1656,25 @@ typedef struct neu_req_update_log_level {
 
 void neu_msg_gen(neu_reqresp_head_t *header, void *data);
 
+/**
+ * @brief 交换消息头中的发送者和接收者信息。
+ *
+ * 此函数用于交换 `neu_reqresp_head_t` 结构体中 `sender` 和 `receiver` 字段的内容。
+ *
+ * @param header 指向 `neu_reqresp_head_t` 结构体的指针，表示要交换发送者和接收者信息的消息头部。
+ */
 inline static void neu_msg_exchange(neu_reqresp_head_t *header)
 {
     char tmp[NEU_NODE_NAME_LEN] = { 0 };
 
+    // 将 sender 字段的内容复制到临时缓冲区
     strcpy(tmp, header->sender);
 
+    // 清空 sender 字段并用 receiver 字段的内容填充
     memset(header->sender, 0, sizeof(header->sender));
     strcpy(header->sender, header->receiver);
 
+    // 清空 receiver 字段并用临时缓冲区中的内容填充
     memset(header->receiver, 0, sizeof(header->receiver));
     strcpy(header->receiver, tmp);
 }
@@ -1379,11 +1713,26 @@ typedef struct {
     neu_type_e type;
 } neu_scan_tag_t;
 
+/**
+ * @brief 扫描标签响应的数据结构。
+ *
+ * 此结构体用于存储从适配器收到的扫描标签的响应信息。
+ * 它包括了扫描到的标签列表、错误码、数据类型、是否为数组以及上下文信息。
+ */
 typedef struct {
+    /** @brief 标签数组，使用UT_array存储多个扫描到的标签。*/
     UT_array * scan_tags;
+
+    /** @brief 错误码，0表示成功，其他值表示具体的错误。*/
     int32_t    error;
+
+    /** @brief 数据类型，指示标签的数据类型。*/
     neu_type_e type;
+
+    /** @brief 是否为数组，true表示该标签代表一个数组，false表示单个值。*/
     bool       is_array;
+
+    /** @brief 上下文信息，通常用于携带额外的信息或状态。*/
     char       ctx[NEU_VALUE_SIZE];
 } neu_resp_scan_tags_t;
 
@@ -1406,10 +1755,22 @@ typedef struct neu_req_test_rea_tag {
     neu_datatag_addr_option_u option;
 } neu_req_test_read_tag_t;
 
+/**
+ * @brief 用于表示测试读取标签响应的数据结构。
+ *
+ * 此结构体包含从适配器收到的测试读取标签响应的所有必要信息，包括数据类型、JSON类型、值和错误码。
+ */
 typedef struct {
+    /** @brief 数据类型，指示标签的具体数据类型（例如整型、浮点型等）。 */
     neu_type_e       type;
+
+    /** @brief JSON类型，指示值在JSON格式中的类型。 */
     neu_json_type_e  t;
+
+    /** @brief 值（联合体），根据数据类型存储实际的值。 */
     neu_json_value_u value;
+
+    /** @brief 错误码，0表示成功，其他值表示具体的错误。 */
     int64_t          error;
 } neu_resp_test_read_tag_t;
 

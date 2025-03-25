@@ -29,6 +29,24 @@
 
 #include "persist/json/persist_json_plugin.h"
 
+/**
+ * @brief 对包含插件请求信息的 JSON 字符串进行解码
+ *
+ * 该函数接收一个包含 JSON 格式插件请求信息的字符串，将其解码为 `neu_json_plugin_req_t` 结构体。
+ * 解码过程包括解析 JSON 数据，提取插件数量和每个插件的信息，并将这些信息存储在分配的结构体中。
+ *
+ * @param buf 指向包含 JSON 格式插件请求信息的字符串的指针。该字符串应符合特定的 JSON 结构，
+ *            包含一个名为 "plugins" 的数组，数组元素为插件相关信息。
+ * @param result 一个指向指针的指针，用于存储解码后得到的 `neu_json_plugin_req_t` 结构体的地址。
+ *               如果解码成功，该指针将指向分配的 `neu_json_plugin_req_t` 结构体；如果失败，该指针值不变。
+ *
+ * @return 解码操作的结果状态码：
+ *         - 0：解码成功，`*result` 指向有效的 `neu_json_plugin_req_t` 结构体。
+ *         - -1：解码失败，可能是由于内存分配失败、JSON 解析错误或数据格式不符合要求等原因。
+ *
+ * @note 调用该函数后，调用者有责任在不再使用 `*result` 指向的结构体时，释放其占用的内存，
+ *       以避免内存泄漏。
+ */
 int neu_json_decode_plugin_req(char *buf, neu_json_plugin_req_t **result)
 {
     int                    ret      = 0;
@@ -45,6 +63,7 @@ int neu_json_decode_plugin_req(char *buf, neu_json_plugin_req_t **result)
         goto decode_fail;
     }
 
+    // 为存储 char* 类型指针的数组分配了内存。指针的大小在32位系统上是4 字节，在64位系统上是8字节
     req->plugins = calloc(req->n_plugin, sizeof(neu_json_plugin_req_plugin_t));
     neu_json_plugin_req_plugin_t *p_plugin = req->plugins;
     for (int i = 0; i < req->n_plugin; i++) {
