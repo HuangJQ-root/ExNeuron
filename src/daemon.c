@@ -138,49 +138,73 @@ static int neuron_wait_exit(uint32_t ms)
     return ret;
 }
 
+/**
+ * @brief 检查是否有另一个 neuron 进程已经在运行。
+ *
+ * 该函数尝试创建或打开一个锁定文件，并试图获取对该文件的独占锁。如果成功，则写入当前进程ID到锁定文件中；
+ * 如果失败且错误是由于另一个进程已经持有锁（EACCES 或 EAGAIN），则认为已经有另一个 neuron 实例在运行并返回1。
+ * 如果发生其他类型的错误，则记录错误信息并退出程序。
+ *
+ * 锁定文件用于确保在同一时间只有一个 neuron 实例在运行。这对于守护进程特别有用，可以防止多个实例竞争资源。
+ *
+ * @return int 返回0表示没有其他实例在运行，返回1表示已经有另一个实例在运行。
+ *
+ * @note 
+ * - 使用了 `umask(0)` 来确保新创建的锁定文件具有预期的权限。
+ * - 锁定文件的名字由宏 NEURON_DAEMON_LOCK_FNAME 定义。
+ * - 在获取锁之前和之后，都对可能发生的错误进行了处理，以确保即使在出现异常的情况下也能正确关闭文件描述符。
+ */
 int neuron_already_running()
 {
-    int     fd      = -1;
-    char    buf[16] = { 0 };
-    int     ret     = -1;
-    ssize_t size    = -1;
+    int     fd      = -1;     //< 文件描述符初始化为-1
+    char    buf[16] = { 0 };  //< 用于存储进程ID的缓冲区
+    int     ret     = -1;     //< 返回值初始化为-1
+    ssize_t size    = -1;     //< 写入操作的返回值初始化为-1
 
-    umask(0);
+    // 清除umask，确保新创建的文件具有预期的权限
+    umask(0);  
+    
+    // 尝试以读写模式打开或创建锁定文件，并设置文件权限
     fd = open(NEURON_DAEMON_LOCK_FNAME, O_RDWR | O_CREAT,
               S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
     if (fd < 0) {
-        // work around fs.protected_regular
+        // 如果第一次尝试失败，尝试仅以读写模式打开文件（绕过fs.protected_regular限制）
         fd = open(NEURON_DAEMON_LOCK_FNAME, O_RDWR,
                   S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
         if (fd < 0) {
+            // 打开文件失败，记录错误并退出
             nlog_error("cannot open %s reason: %s\n", NEURON_DAEMON_LOCK_FNAME,
                        strerror(errno));
             exit(1);
         }
     }
 
-    // try to lock file
+    // 尝试对文件加锁
     if (lock_file(fd) < 0) {
         if (EACCES == errno || EAGAIN == errno) {
-            // a neuron process already running
-            close(fd);
-            return 1;
+            // 如果锁已经被占用，说明有另一个实例正在运行
+            close(fd);  //< 关闭文件描述符
+            return 1;   //< 返回1表示已有实例在运行
         }
         nlog_error("cannot lock %s reason: %s\n", NEURON_DAEMON_LOCK_FNAME,
                    strerror(errno));
         exit(1);
     }
 
-    // write process id to file
+    // 清空文件内容以便写入新的进程ID
     ret = ftruncate(fd, 0);
+
+    // 确保清空操作成功
     assert(ret != -1);
 
+    // 将当前进程ID转换为字符串并写入锁定文件
     snprintf(buf, sizeof(buf), "%ld", (long) getpid());
     size = write(fd, buf, strlen(buf) + 1);
     nlog_warn("write %s, error %s(%d)", NEURON_DAEMON_LOCK_FNAME,
               strerror(errno), errno);
     assert(size != -1);
 
+    // 返回0表示没有其他实例在运行
     return 0;
 }
 

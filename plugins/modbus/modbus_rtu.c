@@ -69,6 +69,12 @@ static const neu_plugin_intf_funs_t plugin_intf_funs = {
     .driver.fdown_data    = NULL,
 };
 
+/**
+ * @brief 插件模块信息
+ *
+ * 该结构体定义了插件的基本信息，如版本号、模式名称、描述等。
+ * 生成的 .so 库可通过该结构体定位并获取插件的接口函数。
+ */
 const neu_plugin_module_t neu_plugin_module = {
     .version     = NEURON_PLUGIN_VER_1_0,
     .schema      = "modbus-rtu",

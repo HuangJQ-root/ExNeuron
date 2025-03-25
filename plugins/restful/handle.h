@@ -29,7 +29,7 @@ typedef struct neu_rest_handle_ctx neu_rest_handle_ctx_t;
 
 neu_rest_handle_ctx_t *neu_rest_init_ctx(void *plugin);
 void                   neu_rest_free_ctx(neu_rest_handle_ctx_t *ctx);
-void *                 neu_rest_get_plugin();
+void                  *neu_rest_get_plugin();
 
 void neu_rest_handler(const struct neu_http_handler **handlers, uint32_t *size);
 void neu_rest_api_cors_handler(const struct neu_http_handler **handlers,

@@ -209,9 +209,31 @@ int modbus_write_tag_to_point(const neu_plugin_tag_value_t *tag,
     return ret;
 }
 
+/**
+ * @brief 对 Modbus 标签进行排序并生成优化后的读取命令序列。
+ *
+ * 该函数接收一个包含 Modbus 标签的数组和一个最大字节数限制，
+ * 通过对标签进行排序和分组，生成一系列优化后的 Modbus 读取
+ * 命令，以提高 Modbus 通信的效率。
+ *
+ * @param tags 该数组中存储着指向 modbus_point_t 结构体的指针，
+ *             每个结构体代表一个 Modbus 标签，包含了从站 ID、
+ *             数据区域、起始地址等信息。
+ * @param max_byte 一个无符号 16 位整数，表示每次 Modbus 读取
+ *                 操作允许的最大字节数。该参数用于在排序和分组
+ *                 过程中限制每个读取命令的数据量，避免超出
+ *                 Modbus 设备的处理能力。
+ *
+ * @return 一个指向 modbus_read_cmd_sort_t 结构体的指针，该结构体
+ *         包含了排序后的 Modbus 读取命令序列。如果内存分配失败，可能
+ *         会返回 NULL。调用者负责在使用完该指针后释放其关联的内存。
+ */
 modbus_read_cmd_sort_t *modbus_tag_sort(UT_array *tags, uint16_t max_byte)
 {
+    // 设置全局变量 modbus_read_max_byte 为传入的最大字节数，用于后续排序和分组时的限制
     modbus_read_max_byte          = max_byte;
+
+    // 调用 neu_tag_sort 函数对标签数组进行排序，使用 tag_sort 和 tag_cmp 作为排序和比较函数
     neu_tag_sort_result_t *result = neu_tag_sort(tags, tag_sort, tag_cmp);
 
     modbus_read_cmd_sort_t *sort_result =
@@ -230,10 +252,14 @@ modbus_read_cmd_sort_t *modbus_tag_sort(UT_array *tags, uint16_t max_byte)
         sort_result->cmd[i].start_address = tag->start_address;
         sort_result->cmd[i].n_register    = ctx->end - ctx->start;
 
+        // 释放当前分组的上下文信息所占用的内存
         free(result->sorts[i].info.context);
     }
 
+    // 释放 neu_tag_sort 函数返回的排序结果结构体所占用的内存
     neu_tag_sort_free(result);
+
+    // 返回排序后的 Modbus 读取命令序列结构体指针
     return sort_result;
 }
 

@@ -73,10 +73,20 @@ void hdzlog(const char *file, size_t filelen,
 	long line, int level,
 	const void *buf, size_t buflen);
 
+/**
+ * @brief 日志消息结构体定义。
+ *
+ * 该结构体用于存储和传递日志消息的相关信息，包括：
+ * - `buf`: 指向包含日志消息数据的缓冲区。
+ * - `len`: 缓冲区中的数据长度。
+ * - `path`: 日志路径或标识符，用于确定日志的优先级。
+ *
+ * @see remote_syslog
+ */
 typedef struct zlog_msg_s {
-	char *buf;
-	size_t len;
-	char *path;
+	char *buf;    ///< 指向包含日志消息数据的缓冲区。
+	size_t len;   ///< 缓冲区中的数据长度。
+	char *path;   ///< 日志路径或标识符，用于确定日志的优先级。
 } zlog_msg_t;
 
 typedef int (*zlog_record_fn)(zlog_msg_t *msg);

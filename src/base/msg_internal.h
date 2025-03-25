@@ -30,6 +30,12 @@ extern "C" {
 
 #include "msg.h"
 
+/**
+ * @brief NEU_REQRESP_TYPE_MAP 宏展开
+ * 
+ * NEU_REQRESP_TYPE_MAP(XX) 是一个宏调用，NEU_REQRESP_TYPE_MAP 这个宏
+ * 会多次调用 XX 宏，每次调用时会传入不同的 type 和 structure 参数。
+ */
 #define NEU_REQRESP_TYPE_MAP(XX)                                     \
     XX(NEU_RESP_ERROR, neu_resp_error_t)                             \
     XX(NEU_REQ_READ_GROUP, neu_req_read_group_t)                     \
@@ -133,17 +139,30 @@ extern "C" {
     XX(NEU_REQ_SUBSCRIBE_GROUPS_EVENT, neu_req_subscribe_groups_t)   \
     XX(NEU_RESP_WRITE_TAGS, neu_resp_write_tags_t)
 
+/**
+ *   
+ * @brief XX 宏的作用
+ * #define XX(type, structure) \ case type: \ return sizeof(structure); 
+ * 定义了一个宏 XX，它接受两个参数 type 和 structure。这个宏的作用是生成一个 case 语句，
+ * 当 switch 语句中的变量值等于 type 时，返回 structure 结构体的大小。
+ * 
+ * @note
+ * -宏定义只是给一段代码片段起了一个别名。在实际编译之前的预编译阶段，
+ *  预处理器会将代码中所有宏调用的地方进行文本替换。
+ * -"#undef XX": 宏取消定义
+ */
+
 static inline size_t neu_reqresp_size(neu_reqresp_type_e t)
 {
     switch (t) {
-#define XX(type, structure) \
-    case type:              \
-        return sizeof(structure);
+    #define XX(type, structure) \
+        case type:              \
+            return sizeof(structure);
         NEU_REQRESP_TYPE_MAP(XX)
-#undef XX
-    default:
-        assert(false);
-    }
+    #undef XX
+        default:
+            assert(false);
+        }
 
     return 0;
 }
@@ -155,22 +174,50 @@ union neu_reqresp_u {
 #define NEU_REQRESP_MAX_SIZE sizeof(union neu_reqresp_u)
 #undef XX
 
+/**
+ * @brief 定义消息结构体，包含消息头和柔性数组存储消息体
+ */
 struct neu_msg_s {
+    /** 消息请求响应头 */
     neu_reqresp_head_t head;
-    //  NOTE: we keep the data layout intact only to save refactor efforts.
-    // FIXME: potential alignment problem here.
+
+    /** 
+     * @brief 柔性数组，用于存储消息体数据
+     * @note 该柔性数组本身不占用结构体大小，可动态分配内存存储不同长度的数据。
+     *       在数据复制时，会将其他结构体的数据按字节复制到该柔性数组对应的内存区域；
+     *       在数据解释时，需通过强制类型转换将其解释为实际存储的数据类型。
+     * 
+     * @warning
+     * NOTE: we keep the data layout intact only to save refactor efforts.
+     * FIXME: potential alignment problem here.
+     */
     neu_reqresp_head_t body[];
 };
 
 typedef struct neu_msg_s neu_msg_t;
 
+/**
+ * @brief 创建一个新的消息对象。
+ *
+ * 此函数用于创建一个新的消息对象，并根据请求/响应类型分配足够的内存空间以容纳消息体数据。
+ * 它首先计算所需的消息体大小，然后分配内存并初始化消息头和消息体。如果在操作过程中遇到任何错误
+ * （如内存分配失败），则返回 `NULL`。
+ *
+ * @param t 请求/响应类型。
+ * @param ctx 上下文信息，可以是任意指针，通常用于关联请求与响应。
+ * @param data 消息体数据，其具体格式取决于请求/响应类型。
+ * @return 成功时返回指向新创建的消息对象的指针；如果发生错误（如内存分配失败），则返回 `NULL`。
+ */
 static inline neu_msg_t *neu_msg_new(neu_reqresp_type_e t, void *ctx,
                                      void *data)
 {
+    //获取消息对象字节大小
     size_t data_size = neu_reqresp_size(t);
 
-    // NOTE: ensure enough space to reuse message
+    //存储消息体的大小，初始化为 0
     size_t body_size = 0;
+    
+    //根据消息类型 t 来计算消息体（body）的大小。
     switch (t) {
     case NEU_REQ_CHECK_SCHEMA:
         body_size = neu_reqresp_size(NEU_RESP_CHECK_SCHEMA);
@@ -199,13 +246,15 @@ static inline neu_msg_t *neu_msg_new(neu_reqresp_type_e t, void *ctx,
         body_size = data_size;
     }
 
+    //计算消息对象的总大小: sizeof(neu_msg_t)只计算柔性输入之前的大小即neu_msg_s
     size_t     total = sizeof(neu_msg_t) + body_size;
+
     neu_msg_t *msg   = calloc(1, total);
     if (msg) {
-        msg->head.type = t;
-        msg->head.len  = total;
-        msg->head.ctx  = ctx;
-        if (data) {
+        msg->head.type = t;                      // 设置为传入的消息类型
+        msg->head.len  = total;                  // 设置为消息对象的总大小
+        msg->head.ctx  = ctx;                    // 设置为传入的上下文指针
+        if (data) {                              // 传入的数据指针 data 不为空
             memcpy(msg->body, data, data_size);
         }
     }
@@ -221,6 +270,15 @@ static inline neu_msg_t *neu_msg_copy(const neu_msg_t *other)
     return msg;
 }
 
+/**
+ * @brief 释放消息对象占用的内存。
+ *
+ * 此函数用于释放由 `neu_msg_new` 或其他类似函数分配的消息对象所占用的内存。
+ * 它首先检查传入的消息指针是否非空，然后调用 `free` 函数释放该消息对象。
+ *
+ * @param msg 指向 `neu_msg_t` 结构体的指针，表示要释放的消息对象。
+ *            可以为 `NULL`，此时函数不做任何操作。
+ */
 static inline void neu_msg_free(neu_msg_t *msg)
 {
     if (msg) {
@@ -248,24 +306,77 @@ static inline void *neu_msg_get_body(neu_msg_t *msg)
     return &msg->body;
 }
 
+/**
+ * @brief 通过文件描述符发送消息。
+ *
+ * 此函数用于通过指定的文件描述符发送一个 `neu_msg_t` 类型的消息。它将消息指针本身（而不是消息的内容）
+ * 发送出去，并检查发送的字节数是否与预期相符。如果发送成功且发送的字节数与消息指针的大小相匹配，
+ * 则返回 0 表示成功；否则返回实际发送的字节数作为错误码。
+ *
+ * @warning 
+ * 
+ * 此实现仅发送消息指针的值，而不是消息的实际内容。这通常不是期望的行为，因为接收方无法直接使用这个
+ * 指针值（除非在特定共享内存环境下）。正常情况下，应该发送消息的实际内容而非指针。
+ *
+ * @param fd 文件描述符，用于指定发送的目的地。
+ * @param msg 指向 `neu_msg_t` 结构体的指针，表示要发送的消息对象。
+ * @return 成功时返回 0；如果发送的字节数与预期不符，则返回实际发送的字节数作为错误码。
+ * 
+ * @note  
+ * -ret 表示实际发送的字节数；发送失败则为-1
+ * -使用inline：函数体短小，频繁调用，无递归，无复杂控制流
+ */
 inline static int neu_send_msg(int fd, neu_msg_t *msg)
 {
     int ret = send(fd, &msg, sizeof(neu_msg_t *), 0);
     return sizeof(neu_msg_t *) == ret ? 0 : ret;
 }
 
+/**
+ * @brief 从指定的文件描述符接收一条消息。
+ *
+ * 此函数用于从给定的文件描述符接收一条消息，并将其指针存储在 `msg_p` 参数指向的位置。
+ * 它通过调用 `recv` 函数读取数据，并检查是否成功接收到预期大小的数据
+ *（即一个 `neu_msg_t*` 指针的大小）。如果接收到的数据大小不匹配或 `recv` 返回 0（表示连接关闭），
+ * 则函数将返回错误码；否则，将接收到的消息指针赋值给 `msg_p` 并返回 0 表示成功。
+ *
+ * @param fd 文件描述符，用于接收数据。
+ * @param msg_p 双重指针，用于存储接收到的消息指针。
+ * @return 成功时返回 0；如果接收到的数据大小不匹配，则返回 -1 或实际接收到的字节数。
+ * 
+ * @note 
+ * -函数参数传递采用的是值传递方式,为了在函数内部修改调用者的变量，可以传递该变量的地址（指针）。
+ * -消息指针本身是一个指针变量，为了能够在函数内部修改这个指针变量的值，需要传递该指针变量的地址
+ */
 inline static int neu_recv_msg(int fd, neu_msg_t **msg_p)
 {
     neu_msg_t *msg = NULL;
     int        ret = recv(fd, &msg, sizeof(neu_msg_t *), 0);
     if (sizeof(neu_msg_t *) != ret) {
-        // recv may return 0 bytes
+        //如果 ret 为 0，表示对方已经关闭了连接，返回 -1 表示错误
         return 0 == ret ? -1 : ret;
     }
     *msg_p = msg;
     return 0;
 }
 
+/**
+ * @brief 通过指定的 Unix 域套接字地址发送消息。
+ *
+ * 此函数用于通过指定的文件描述符和 Unix 域套接字地址发送一个 `neu_msg_t` 类型的消息。
+ * 它将消息指针本身（而不是消息的内容）发送出去，并检查发送的字节数是否与预期相符。
+ * 如果发送成功且发送的字节数与消息指针的大小相匹配，则返回 0 表示成功；否则返回实际发送的字节数作为错误码。
+ *
+ * @warning
+ * 
+ * 此实现仅发送消息指针的值，而不是消息的实际内容。这通常不是期望的行为，
+ * 因为接收方无法直接使用这个指针值（除非在特定共享内存环境下）。正常情况下，应该发送消息的实际内容而非指针。
+ *
+ * @param fd   文件描述符，用于指定发送的目的地。
+ * @param addr 指向 `sockaddr_un` 结构体的指针，表示目标地址信息。
+ * @param msg  指向 `neu_msg_t` 结构体的指针，表示要发送的消息对象。
+ * @return 成功时返回 0；如果发送的字节数与预期不符，则返回实际发送的字节数作为错误码。
+ */
 inline static int neu_send_msg_to(int fd, struct sockaddr_un *addr,
                                   neu_msg_t *msg)
 {

@@ -23,6 +23,12 @@
 
 #include "modbus_stack.h"
 
+/**
+ * @brief 表示modbus插件的结构体
+ *
+ * 该结构体用于封装插件的相关信息和状态，
+ * 包括通用信息、网络套接字、互斥锁、启动状态等。
+ */
 struct neu_plugin {
     neu_plugin_common_t common;
 

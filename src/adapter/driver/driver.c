@@ -55,35 +55,156 @@ typedef struct {
     struct sockaddr_un addr;
 } sub_app_t;
 
+/**
+ * @brief 表示一个组的信息。
+ *  
+ * 主要用于管理与特定组相关的数据和操作。
+ */
 typedef struct group {
+    /**
+     * @brief 组的名字。
+     *
+     * 这个字段存储了组的名称，通常用于标识不同的组实例。
+     */
     char *name;
 
+    /**
+     * @brief 时间戳。
+     *
+     * 记录了与该组相关的最新操作的时间戳（以毫秒为单位）。
+     */
     int64_t         timestamp;
+
+    /**
+     * @brief 指向 neu_group_t 类型结构体的指针。
+     *
+     * 包含了与该组相关的详细信息和配置。：标签列表，周期
+     */
     neu_group_t *   group;
+
+    /**
+     * @brief 插件组信息。
+     * 
+     * 侧重于管理与该组相关的插件实现的具体细节。
+     * 插件通常是为了扩展组的功能而存在的
+     */
+    neu_plugin_group_t    grp;
+
+    /**
+     * @brief 写标签列表。
+     *
+     * 使用 UT_array 存储需要写入的标签信息。
+     */
     UT_array *      wt_tags;
+
+    /**
+     * @brief 写标签列表的互斥锁。
+     *
+     * 用于保护 wt_tags 的并发访问。
+     */
     pthread_mutex_t wt_mtx;
 
-    neu_event_timer_t *report;
-    neu_event_timer_t *read;
-    neu_event_timer_t *write;
-
-    UT_array *      apps; // sub_app_t array
+    /**
+     * @brief 应用列表的互斥锁。
+     *
+     * 用于保护 apps 的并发访问。
+     */
     pthread_mutex_t apps_mtx;
 
-    neu_plugin_group_t    grp;
+
+    /**
+     * @brief 报告定时器。
+     *
+     * 用于定期上报组状态或数据。
+     * start_group_timer中启动。
+     */
+    neu_event_timer_t *report;
+
+    /**
+     * @brief 读取定时器。
+     *
+     * 用于触发周期性的数据读取操作。
+     * start_group_timer中启动。
+     */
+    neu_event_timer_t *read;
+
+    /**
+     * @brief 写入定时器。
+     *
+     * 用于触发周期性的数据写入操作。
+     * start_group_timer中启动。
+     */
+    neu_event_timer_t *write;
+
+    /**
+     * @brief 应用列表。
+     *
+     * 存储与该组关联的应用实例数组（sub_app_t类型）。
+     */
+    UT_array *      apps; 
+
+    /**
+     * @brief 指向驱动适配器的指针。
+     *
+     * 表示当前组所属的驱动适配器。
+     */
     neu_adapter_driver_t *driver;
 
+    /**
+     * @brief UTHash句柄。
+     *
+     * 支持将该结构体作为哈希表中的元素进行高效管理。
+     */
     UT_hash_handle hh;
 } group_t;
 
+/**
+ * @struct neu_adapter_driver
+ * @brief 该结构体用于表示驱动适配器的信息。
+ *
+ * 包含一个基础适配器结构体、缓存、事件处理机制、标签计数以及组信息。
+ * 主要用于管理与硬件设备交互的驱动程序。
+ */
 struct neu_adapter_driver {
-    neu_adapter_t adapter;
+    /**
+     * @brief 基础适配器结构体。
+     *
+     * 这个字段包含了所有适配器共有的基本信息和功能，如名称、状态、回调函数等。
+     * 
+     * @warning
+     * -neu_adapter_t类必须为第一个元素。因为会使用强转(neu_adapter_t *)类型
+     * -指针类型的转换仅仅改变了编译器对指针所指向内存区域的解释方式，
+     *  而不会改变指针实际存储的内存地址。
+     */
+    neu_adapter_t       adapter;
 
-    neu_driver_cache_t *cache;
-    neu_events_t *      driver_events;
+    /**
+     * @brief 驱动适配器的缓存。
+     *
+     * 用于存储驱动适配器相关的数据缓存，便于快速访问和操作。
+     */
+    neu_driver_cache_t *cache;  
 
-    size_t        tag_cnt;
-    struct group *groups;
+    /**
+     * @brief 指向驱动适配器事件处理结构体的指针。
+     *
+     * 此字段包含驱动适配器的所有事件处理逻辑，支持异步事件通知和处理。
+     */
+    neu_events_t       *driver_events;
+
+    /**
+     * @brief 标签计数。
+     *
+     * 表示该驱动适配器管理的标签数量。
+     */
+    size_t              tag_cnt;
+
+    /**
+     * @brief 组信息。
+     *
+     * 存储了该驱动适配器管理的所有组的信息，每个组可能包含多个标签。
+     */
+    struct group       *groups;
 };
 
 static void report_to_app(neu_adapter_driver_t *driver, group_t *group,
@@ -133,12 +254,24 @@ static inline void start_group_timer(neu_adapter_driver_t *driver,
                                      group_t *             grp);
 static inline void stop_group_timer(neu_adapter_driver_t *driver, group_t *grp);
 
+/**
+ * @brief 对 neu_dvalue_t 类型的双精度浮点数进行格式化处理。
+ *
+ * 该函数的主要目的是对双精度浮点数的小数部分进行简化，去除末尾连续的 0 或 9，
+ * 以减少小数位数。处理过程包括处理负数、分离整数和小数部分、对小数部分进行
+ * 四舍五入和字符串处理，最后合并整数和小数部分并恢复符号。
+ *
+ * @param value 指向 neu_dvalue_t 类型的指针，包含要格式化的双精度浮点数。
+ */
 static void format_tag_value(neu_dvalue_t *value)
 {
+    // 定义缩放因子，用于将小数部分放大 10^5 倍
     double scale = pow(10, 5);
 
+    // 记录符号，初始为正数
     int negative = 1;
 
+    // 如果输入的双精度浮点数为负数，将其转换为正数，并记录符号为负数
     if (value->value.d64 < 0) {
         value->value.d64 *= -1;
         negative = -1;
@@ -147,8 +280,13 @@ static void format_tag_value(neu_dvalue_t *value)
     int64_t integer_part = (int64_t) value->value.d64;
     double  decimal_part = value->value.d64 - integer_part;
     decimal_part *= scale;
+
+    // 对小数部分进行四舍五入
     decimal_part = round(decimal_part);
+
+    // 定义一个字符串，用于存储小数部分转换后的结果
     char str[6]  = { 0 };
+    // 将四舍五入后的小数部分转换为字符串，格式为 5 位整数
     snprintf(str, sizeof(str), "%05" PRId64 "", (int64_t) decimal_part);
     int i = 0, flag = 0;
     for (; i < 4; i++) {
@@ -196,54 +334,86 @@ static void write_responses(neu_adapter_t *adapter, void *r,
     adapter->cb_funs.response(adapter, req, &nresp);
 }
 
+/**
+ * @brief 处理并响应写入标签请求。
+ *
+ * 根据请求类型执行清理操作，并根据请求的结果设置适当的响应，
+ * 最终通过适配器的回调函数发送响应。如果启用了OpenTelemetry，则会记录跟踪信息。
+ *
+ * @param adapter 指向neu_adapter_t结构体的指针，包含适配器的相关信息。
+ * @param r 请求的头部指针，转换为neu_reqresp_head_t类型使用。
+ * @param error 错误码，表示请求处理的结果。
+ */
 static void write_response(neu_adapter_t *adapter, void *r, neu_error error)
 {
+    // 将传入的void指针转换为neu_reqresp_head_t类型的指针
     neu_reqresp_head_t *req    = (neu_reqresp_head_t *) r;
+
+    // 创建一个包含错误码的响应对象
     neu_resp_error_t    nerror = { .error = error };
 
+    // OpenTelemetry相关变量声明
     neu_otel_trace_ctx trace = NULL;
     neu_otel_scope_ctx scope = NULL;
+
+    // 如果OpenTelemetry已启动，则获取当前请求的跟踪上下文
     if (neu_otel_control_is_started()) {
+        // 查找与请求关联的跟踪上下文
         trace = neu_otel_find_trace(req->ctx);
-        if (trace) {
+        if (trace) { //找到了跟踪上下文，
+            // 为当前请求添加一个新的span，并将其作用域上下文存储在 scope 中
             scope                = neu_otel_add_span(trace);
             char new_span_id[36] = { 0 };
             neu_otel_new_span_id(new_span_id);
+
+            //设置 Span ID
             neu_otel_scope_set_span_id(scope, new_span_id);
             uint8_t *p_sp_id = neu_otel_scope_get_pre_span_id(scope);
             if (p_sp_id) {
                 neu_otel_scope_set_parent_span_id2(scope, p_sp_id, 8);
             }
+
+            //添加 Span 属性，记录当前线程的 ID
             neu_otel_scope_add_span_attr_int(scope, "thread id",
                                              (int64_t) pthread_self());
+
+            //设置 Span 开始时间
             neu_otel_scope_set_span_start_time(scope, neu_time_ns());
         }
     }
 
+    // 根据请求类型执行相应的清理操作
     if (NEU_REQ_WRITE_TAG == req->type) {
+        // 清理单个标签写入请求
         neu_req_write_tag_fini((neu_req_write_tag_t *) &req[1]);
         if (neu_otel_control_is_started() && trace) {
             neu_otel_scope_set_span_name(scope, "driver write tag response");
         }
     } else if (NEU_REQ_WRITE_TAGS == req->type) {
+        // 清理多个标签写入请求
         neu_req_write_tags_fini((neu_req_write_tags_t *) &req[1]);
         if (neu_otel_control_is_started() && trace) {
             neu_otel_scope_set_span_name(scope, "driver write tags response");
         }
     } else if (NEU_REQ_WRITE_GTAGS == req->type) {
+        // 清理全局标签写入请求
         neu_req_write_gtags_fini((neu_req_write_gtags_t *) &req[1]);
         if (neu_otel_control_is_started() && trace) {
             neu_otel_scope_set_span_name(scope, "driver write gtags response");
         }
     }
 
+    // 设置响应类型为错误响应
     req->type = NEU_RESP_ERROR;
 
     nlog_notice("write tag response start <%p>", req->ctx);
 
+    // 调用适配器的回调函数发送响应
     adapter->cb_funs.response(adapter, req, &nerror);
 
+    // 如果OpenTelemetry已启用且有跟踪上下文
     if (neu_otel_control_is_started() && trace) {
+        // 根据错误状态设置span状态码
         if (error == NEU_ERR_SUCCESS) {
             neu_otel_scope_set_status_code2(scope, NEU_OTEL_STATUS_OK, error);
         } else {
@@ -251,6 +421,7 @@ static void write_response(neu_adapter_t *adapter, void *r, neu_error error)
                                             error);
         }
 
+        // 设置span结束时间
         neu_otel_scope_set_span_end_time(scope, neu_time_ns());
     }
 }
@@ -329,14 +500,31 @@ static void directory_response(neu_adapter_t *adapter, void *r, int error,
     adapter->cb_funs.response(adapter, req, &resp);
 }
 
+/**
+ * @brief 更新带有元数据的值。
+ *
+ * 该函数用于更新指定组和标签的数据值，并根据值的类型（正常或错误）进行相应的处理。
+ * 如果是错误类型，会更新错误码和时间戳等指标；如果是正常类型，则直接更新缓存并增加读取计数。
+ *
+ * @param adapter 指向适配器结构体的指针。
+ * @param group 组名字符串，标识所属的组。
+ * @param tag 标签名字符串，标识组内的具体标签。对于某些错误情况，此参数可能为NULL。
+ * @param value 包含新值及类型的 neu_dvalue_t 结构体。
+ * @param metas 元数据数组，包含与该值相关的元数据信息。
+ * @param n_meta 元数据的数量。
+ */
 static void update_with_meta(neu_adapter_t *adapter, const char *group,
                              const char *tag, neu_dvalue_t value,
                              neu_tag_meta_t *metas, int n_meta)
 {
+    // 将适配器转换为驱动适配器类型
     neu_adapter_driver_t *         driver = (neu_adapter_driver_t *) adapter;
+
+    // 获取更新指标的回调函数
     neu_adapter_update_metric_cb_t update_metric =
         driver->adapter.cb_funs.update_metric;
 
+    // 如果值的类型是错误类型，更新错误码和时间戳指标
     if (value.type == NEU_TYPE_ERROR) {
         update_metric(&driver->adapter, NEU_METRIC_GROUP_LAST_ERROR_CODE,
                       value.value.i32, group);
@@ -344,28 +532,45 @@ static void update_with_meta(neu_adapter_t *adapter, const char *group,
                       global_timestamp, group);
     }
 
+    // 如果值的类型是错误且标签为空，则遍历组中的所有属性符合的标签进行错误处理
     if (value.type == NEU_TYPE_ERROR && tag == NULL) {
         group_t *g = find_group(driver, group);
         if (g != NULL) {
+            // 获取组中所有需要可读或可订阅的标签
             UT_array *tags      = neu_group_get_read_tag(g->group);
             uint64_t  err_count = 0;
 
+            // 遍历指定组中的所有可读取标签，将每个标签的值更新为错误值
             utarray_foreach(tags, neu_datatag_t *, t)
             {
                 neu_driver_cache_update(driver->cache, group, t->name,
                                         global_timestamp, value, NULL, 0);
                 ++err_count;
             }
+
+            // 更新读取总数和错误总数指标
             update_metric(&driver->adapter, NEU_METRIC_TAG_READS_TOTAL,
                           err_count, NULL);
             update_metric(&driver->adapter, NEU_METRIC_TAG_READ_ERRORS_TOTAL,
                           err_count, NULL);
+            
             utarray_free(tags);
         }
     } else {
+        // 对于正常值或者有特定标签的错误值，更新缓存
         neu_driver_cache_update(driver->cache, group, tag, global_timestamp,
                                 value, metas, n_meta);
+        
+        /**
+         * @bug
+         *  -此处如果 value.type ！= NEU_TYPE_ERROR && tag == NULL，
+         *   则neu_driver_cache_update 不会修改任何数量，读取指标应该为0
+         */
+
+        // 更新读取总数指标
         update_metric(&driver->adapter, NEU_METRIC_TAG_READS_TOTAL, 1, NULL);
+
+        // 如果值的类型是错误，更新错误总数指标
         update_metric(&driver->adapter, NEU_METRIC_TAG_READ_ERRORS_TOTAL,
                       NEU_TYPE_ERROR == value.type, NULL);
     }
@@ -376,18 +581,50 @@ static void update_with_meta(neu_adapter_t *adapter, const char *group,
         global_timestamp, n_meta);
 }
 
+/**
+ * @brief 使用元数据和跟踪上下文更新适配器中的值。
+ *
+ * 此函数首先使用给定的元数据更新指定组和标签的值，然后如果提供了跟踪上下文，则进一步更新驱动缓存中的跟踪信息。
+ *
+ * @param adapter 指向适配器对象的指针。
+ * @param group 组名称。
+ * @param tag 标签名称。
+ * @param value 要更新的数据值。
+ * @param metas 元数据数组。
+ * @param n_meta 元数据数组的大小。
+ * @param trace_ctx 跟踪上下文，用于更新驱动缓存中的跟踪信息。
+ */
 static void update_with_trace(neu_adapter_t *adapter, const char *group,
                               const char *tag, neu_dvalue_t value,
                               neu_tag_meta_t *metas, int n_meta,
                               void *trace_ctx)
 {
+    // 使用元数据更新指定组和标签的值
     update_with_meta(adapter, group, tag, value, metas, n_meta);
+
+    // 如果提供了跟踪上下文，则进一步更新驱动缓存中的跟踪信息
     if (trace_ctx) {
+        // 将适配器转换为驱动适配器类型以访问其缓存
         neu_adapter_driver_t *driver = (neu_adapter_driver_t *) adapter;
+
+        // 更新驱动缓存中的跟踪信息
         neu_driver_cache_update_trace(driver->cache, group, trace_ctx);
     }
 }
 
+/**
+ * @brief 更新指定适配器的立即更新组中的数据。
+ *
+ * 此函数用于处理来自特定适配器的数据更新请求，并根据提供的参数更新缓存中的数据。
+ * 它还会检查数据类型并记录日志。如果数据有效，则会生成相应的响应并发送给订阅的应用程序。
+ *
+ * @param adapter 适配器对象指针。
+ * @param group 组名称。
+ * @param tag 标签名称。
+ * @param value 数据值。
+ * @param metas 元数据数组。
+ * @param n_meta 元数据的数量。
+ */
 static void update_im(neu_adapter_t *adapter, const char *group,
                       const char *tag, neu_dvalue_t value,
                       neu_tag_meta_t *metas, int n_meta)
@@ -399,20 +636,29 @@ static void update_im(neu_adapter_t *adapter, const char *group,
         return;
     }
 
+    // 更新驱动缓存中的更改
     neu_driver_cache_update_change(driver->cache, group, tag, global_timestamp,
                                    value, metas, n_meta, true);
+    
+    // 调用回调函数更新度量
     driver->adapter.cb_funs.update_metric(&driver->adapter,
                                           NEU_METRIC_TAG_READS_TOTAL, 1, NULL);
+    
+    // 如果数据值类型是错误类型，则直接返回
     if (value.type == NEU_TYPE_ERROR) {
         return;
     }
 
+    // 获取与组和标签关联的所有标签
     UT_array *tags = neu_adapter_driver_get_ptag(driver, group, tag);
     if (tags == NULL) {
         return;
     }
+
+    // 获取第一个标签
     neu_datatag_t *first = utarray_front(tags);
 
+    // 如果没有找到任何标签，则记录调试信息并释放资源
     if (first == NULL) {
         utarray_free(tags);
         nlog_debug("update immediately, driver: %s, "
@@ -429,6 +675,7 @@ static void update_im(neu_adapter_t *adapter, const char *group,
                driver->adapter.name, group, tag, neu_type_string(value.type),
                global_timestamp);
 
+    // 初始化响应头和数据结构
     neu_reqresp_head_t header = {
         .type = NEU_REQRESP_TRANS_DATA,
     };
@@ -439,10 +686,12 @@ static void update_im(neu_adapter_t *adapter, const char *group,
     data->group  = strdup(group);
     utarray_new(data->tags, neu_resp_tag_value_meta_icd());
 
+    // 读取并报告组数据
     read_report_group(global_timestamp, 0,
                       neu_adapter_get_tag_cache_type(&driver->adapter),
                       driver->cache, group, tags, data->tags);
 
+    // 如果有有效的标签数据
     if (utarray_len(data->tags) > 0) {
         group_t *find = NULL;
         HASH_FIND_STR(driver->groups, group, find);
@@ -454,6 +703,7 @@ static void update_im(neu_adapter_t *adapter, const char *group,
                 data->ctx->index = utarray_len(find->apps);
                 pthread_mutex_init(&data->ctx->mtx, NULL);
 
+                // 遍历所有应用程序并发送响应
                 utarray_foreach(find->apps, sub_app_t *, app)
                 {
                     if (driver->adapter.cb_funs.responseto(
@@ -462,6 +712,7 @@ static void update_im(neu_adapter_t *adapter, const char *group,
                     }
                 }
             } else {
+                // 清理无效数据
                 utarray_foreach(data->tags, neu_resp_tag_value_meta_t *,
                                 tag_value)
                 {
@@ -476,6 +727,7 @@ static void update_im(neu_adapter_t *adapter, const char *group,
 
             pthread_mutex_unlock(&find->apps_mtx);
         } else {
+            // 清理无效数据
             utarray_foreach(data->tags, neu_resp_tag_value_meta_t *, tag_value)
             {
                 if (tag_value->value.type == NEU_TYPE_PTR) {
@@ -487,12 +739,16 @@ static void update_im(neu_adapter_t *adapter, const char *group,
             free(data->driver);
         }
     } else {
+        // 清理无效数据
         utarray_free(data->tags);
         free(data->group);
         free(data->driver);
     }
 
+    // 释放标签数组
     utarray_free(tags);
+
+    // 释放数据结构
     free(data);
 }
 
@@ -502,38 +758,79 @@ static void update(neu_adapter_t *adapter, const char *group, const char *tag,
     update_with_meta(adapter, group, tag, value, NULL, 0);
 }
 
+/**
+ * @brief 处理扫描标签响应。
+ *
+ * 此函数用于处理从适配器收到的扫描标签的响应。它首先设置请求头部的类型为 `NEU_RESP_SCAN_TAGS`，
+ * 然后记录一条通知日志，并调用适配器的回调函数来处理这个响应。
+ *
+ * @param adapter 指向适配器对象的指针。
+ * @param r 指向请求响应头部的指针。
+ * @param resp_scan 指向包含扫描标签响应数据的结构体的指针。
+ */
 static void scan_tags_response(neu_adapter_t *adapter, void *r,
                                neu_resp_scan_tags_t *resp_scan)
 {
-    neu_reqresp_head_t *req = (neu_reqresp_head_t *) r;
-    req->type               = NEU_RESP_SCAN_TAGS;
+    neu_reqresp_head_t *req = (neu_reqresp_head_t *) r;  // 将传入的指针转换为请求响应头部类型的指针
+    req->type               = NEU_RESP_SCAN_TAGS;        // 设置请求类型为扫描标签响应
     nlog_notice("scan tags response <%p>", req->ctx);
-    adapter->cb_funs.response(adapter, req, resp_scan);
+    adapter->cb_funs.response(adapter, req, resp_scan);  // 调用适配器的回调函数来处理这个响应
 }
 
+/**
+ * @brief 处理测试读取标签响应。
+ *
+ * 此函数用于处理从适配器收到的测试读取标签的响应。它设置请求头部的类型，
+ * 记录一条通知日志，并调用适配器的回调函数来处理这个响应。
+ *
+ * @param adapter 指向适配器对象的指针。
+ * @param r 指向请求响应头部的指针。
+ * @param t JSON类型。
+ * @param type 数据类型。
+ * @param value 值（联合体）。
+ * @param error 错误码。
+ */
 static void test_read_tag_response(neu_adapter_t *adapter, void *r,
                                    neu_json_type_e t, neu_type_e type,
                                    neu_json_value_u value, int64_t error)
 {
     neu_reqresp_head_t *     req    = (neu_reqresp_head_t *) r;
+
+    // 构造响应数据结构
     neu_resp_test_read_tag_t dvalue = {
         .t     = t,
         .type  = type,
         .value = value,
         .error = error,
     };
+
+    // 设置请求类型为测试读取标签响应
     req->type = NEU_RESP_TEST_READ_TAG;
     nlog_notice("test reading tag response <%p>", req->ctx);
 
+    // 使用构造好的响应数据调用适配器的回调函数来处理这个响应
     adapter->cb_funs.response(adapter, req, &dvalue);
 }
 
+/**
+ * @brief 创建一个新的驱动适配器实例。
+ *
+ * 该函数分配内存并初始化一个新的 `neu_adapter_driver_t` 实例，包括设置缓存、事件处理机制以及回调函数等。
+ * 它主要用于创建驱动类型的适配器，这些适配器通常用于与硬件设备进行交互。
+ *
+ * @return 成功时返回指向新创建的驱动适配器的指针；失败时返回 `NULL`。
+ */
 neu_adapter_driver_t *neu_adapter_driver_create()
 {
     neu_adapter_driver_t *driver = calloc(1, sizeof(neu_adapter_driver_t));
 
+    // 初始化驱动适配器的缓存
     driver->cache                                      = neu_driver_cache_new();
+
+    // 创建新的事件对象，用于驱动适配器的事件处理
     driver->driver_events                              = neu_event_new();
+
+    // 设置驱动适配器的北向回调函数集
     driver->adapter.cb_funs.driver.update              = update;
     driver->adapter.cb_funs.driver.write_response      = write_response;
     driver->adapter.cb_funs.driver.write_responses     = write_responses;
@@ -557,6 +854,15 @@ void neu_adapter_driver_destroy(neu_adapter_driver_t *driver)
     neu_driver_cache_destroy(driver->cache);
 }
 
+/**
+ * @brief 初始化适配器驱动。
+ *
+ * 此函数用于初始化给定的适配器驱动对象。当前实现是一个空实现，不执行任何实际操作，
+ * 该函数总是返回 0 表示成功。
+ *
+ * @param driver 表示要初始化的适配器驱动对象。
+ * @return 总是返回 0，表示成功。
+ */
 int neu_adapter_driver_init(neu_adapter_driver_t *driver)
 {
     (void) driver;
@@ -598,38 +904,78 @@ int neu_adapter_driver_uninit(neu_adapter_driver_t *driver)
     return 0;
 }
 
+/**
+ * @brief 启动驱动适配器的组定时器。
+ *
+ *为指定的驱动适配器（neu_adapter_driver_t 类型）中的特定组（group_t 类型）
+ *启动多个定时器，这些定时器分别用于读取数据、报告数据和写入数据的操作。
+ *
+ * @param adapter 指向 neu_adapter_driver_t 类型的驱动适配器指针，
+ *        代表要启动组定时器的驱动适配器。
+ *
+ * @return neu_err_code_e 启动操作的结果，可能的返回值如下：
+ *         - NEU_ERR_SUCCESS: 定时器成功启动。
+ *         - 其他错误码: 表示启动过程中出现错误，具体错误码的含义可参考错误码定义。
+ *
+ * @note 该函数假设传入的 adapter 指针不为 NULL。如果传入 NULL 指针，可能会导致未定义行为。
+ *       同时，需要确保定时器相关的资源（如内存、系统调用等）可用。
+ */
 static inline void start_group_timer(neu_adapter_driver_t *driver, group_t *grp)
 {
+    // 从组中获取数据采集的时间间隔，单位为毫秒
     uint32_t interval = neu_group_get_interval(grp->group);
 
+    // 初始化一个定时器参数结构体
     neu_event_timer_param_t param = {
         .second      = interval / 1000,
         .millisecond = interval % 1000,
         .usr_data    = (void *) grp,
         .type        = NEU_EVENT_TIMER_NOBLOCK,
     };
-
+    
+    // 启动读取数据定时器
     param.type = driver->adapter.module->timer_type;
     param.cb   = read_callback;
     grp->read  = neu_event_add_timer(driver->driver_events, param);
 
+    // 定义一个 20 毫秒的延迟时间：避免多个定时器同时启动产生冲突。
     struct timespec t1 = {
         .tv_sec  = 0,
         .tv_nsec = 1000 * 1000 * 20,
     };
     struct timespec t2 = { 0 };
+    // 线程休眠 20 毫秒
     nanosleep(&t1, &t2);
 
+    // 启动报告定时器，并保存写入句柄
     param.type  = NEU_EVENT_TIMER_NOBLOCK;
     param.cb    = report_callback;
     grp->report = neu_adapter_add_timer((neu_adapter_t *) driver, param);
 
+    // 启动写入数据定时器
     param.second      = 0;
     param.millisecond = 3;
     param.cb          = write_callback;
     grp->write        = neu_event_add_timer(driver->driver_events, param);
 }
 
+/**
+ * @brief 启动驱动适配器的组定时器。
+ *
+ * 该函数用于启动指定驱动适配器中组的定时器。定时器的作用通常是触发周期性的操作，
+ * 例如数据采集、状态更新等。在启动定时器之前，函数可能会进行一些必要的初始化操作，
+ * 如设置定时器的间隔时间、回调函数等。
+ *
+ * @param adapter 指向 neu_adapter_driver_t 类型的驱动适配器指针，
+ *        代表要启动组定时器的驱动适配器。
+ *
+ * @return neu_err_code_e 启动操作的结果，可能的返回值如下：
+ *         - NEU_ERR_SUCCESS: 定时器成功启动。
+ *         - 其他错误码: 表示启动过程中出现错误，具体错误码的含义可参考错误码定义。
+ *
+ * @note 该函数假设传入的 adapter 指针不为 NULL。如果传入 NULL 指针，可能会导致未定义行为。
+ *       同时，需要确保定时器相关的资源（如内存、系统调用等）可用。
+ */
 void neu_adapter_driver_start_group_timer(neu_adapter_driver_t *driver)
 {
     group_t *el = NULL, *tmp = NULL;
@@ -1316,40 +1662,66 @@ int is_value_in_range(neu_type_e tag_type, int64_t value, double value_d,
     }
 }
 
+/**
+ * @brief 处理向驱动适配器写入多个标签值的请求。
+ *
+ * 该函数接收一个驱动适配器指针和一个请求头指针，用于处理写入多个标签值的请求。
+ * 它会检查适配器的状态、插件是否支持写入标签值、组是否存在以及标签值是否合法，
+ * 若所有检查都通过，则将待写入的标签信息存储起来。
+ *
+ * @param driver 指向驱动适配器的指针，包含适配器的状态、模块信息等。
+ * @param req 指向请求头的指针，包含请求的基本信息。
+ *
+ * @return int 返回操作结果的错误码。
+ *         - NEU_ERR_SUCCESS: 操作成功。
+ *         - NEU_ERR_PLUGIN_NOT_RUNNING: 适配器未处于运行状态。
+ *         - NEU_ERR_PLUGIN_NOT_SUPPORT_WRITE_TAGS: 插件不支持写入标签值。
+ *         - NEU_ERR_GROUP_NOT_EXIST: 请求的组不存在。
+ *         - 其他错误码: 表示标签值检查失败等情况。
+ */
 int neu_adapter_driver_write_tags(neu_adapter_driver_t *driver,
                                   neu_reqresp_head_t *  req)
-{
+{   
+    // 从请求头之后的位置获取写入标签的请求结构体指针
     neu_req_write_tags_t *cmd = (neu_req_write_tags_t *) &req[1];
 
+    // 检查适配器的状态是否为运行状态
     if (driver->adapter.state != NEU_NODE_RUNNING_STATE_RUNNING) {
         driver->adapter.cb_funs.driver.write_response(
             &driver->adapter, req, NEU_ERR_PLUGIN_NOT_RUNNING);
         return NEU_ERR_PLUGIN_NOT_RUNNING;
     }
 
+    // 检查插件的接口函数中是否支持写入多个标签值的操作
     if (driver->adapter.module->intf_funs->driver.write_tags == NULL) {
         driver->adapter.cb_funs.driver.write_response(
             &driver->adapter, req, NEU_ERR_PLUGIN_NOT_SUPPORT_WRITE_TAGS);
         return NEU_ERR_PLUGIN_NOT_SUPPORT_WRITE_TAGS;
     }
 
+    // 在驱动适配器中查找请求的组
     group_t *g = find_group(driver, cmd->group);
-
     if (g == NULL) {
         driver->adapter.cb_funs.driver.write_response(&driver->adapter, req,
                                                       NEU_ERR_GROUP_NOT_EXIST);
         return NEU_ERR_GROUP_NOT_EXIST;
     }
 
+    // 定义一个 UT_array 用于存储待写入的标签值信息
     UT_array *tags = NULL;
     UT_icd    icd  = { sizeof(neu_plugin_tag_value_t), NULL, NULL, NULL };
     utarray_new(tags, &icd);
+
+    // 初始化值检查的错误码为成功
     int value_err = NEU_ERR_SUCCESS;
+    // 用于存储每次值检查的结果
     int value_check;
 
+    // 遍历请求中的每个标签
     for (int i = 0; i < cmd->n_tag; i++) {
         neu_datatag_t *tag = neu_group_find_tag(g->group, cmd->tags[i].tag);
 
+        // 若标签存在，检查值是否在合法范围内
         if (tag != NULL) {
             value_check =
                 is_value_in_range(tag->type, cmd->tags[i].value.value.i64,
@@ -1359,6 +1731,7 @@ int neu_adapter_driver_write_tags(neu_adapter_driver_t *driver,
             value_check = NEU_ERR_TAG_NOT_EXIST;
         }
 
+         // 若标签存在、标签可写且值检查通过
         if (tag != NULL && neu_tag_attribute_test(tag, NEU_ATTRIBUTE_WRITE) &&
             value_check == NEU_ERR_SUCCESS) {
             if (tag->type == NEU_TYPE_FLOAT || tag->type == NEU_TYPE_DOUBLE) {
@@ -1368,12 +1741,15 @@ int neu_adapter_driver_write_tags(neu_adapter_driver_t *driver,
                 }
             }
 
+            // 若标签有小数位数要求，进行小数位数处理
             if (tag->decimal != 0) {
                 cal_decimal(tag->type, cmd->tags[i].value.type,
                             &cmd->tags[i].value.value, tag->decimal);
             }
+            // 修正标签值
             fix_value(tag, cmd->tags[i].value.type, &cmd->tags[i].value);
 
+            // 创建一个新的标签值结构体
             neu_plugin_tag_value_t tv = {
                 .tag   = neu_tag_dup(tag),
                 .value = cmd->tags[i].value.value,
@@ -1387,6 +1763,7 @@ int neu_adapter_driver_write_tags(neu_adapter_driver_t *driver,
         }
     }
 
+    // 若值检查存在错误，调用回调函数通知写入响应，释放 UT_array 资源并返回错误码
     if (value_err != NEU_ERR_SUCCESS) {
         driver->adapter.cb_funs.driver.write_response(&driver->adapter, req,
                                                       value_err);
@@ -1398,6 +1775,7 @@ int neu_adapter_driver_write_tags(neu_adapter_driver_t *driver,
         return value_err;
     }
 
+    // 若 UT_array 中存储的标签数量与请求的标签数量不一致，说明有标签不存在
     if (utarray_len(tags) != (unsigned int) cmd->n_tag) {
         driver->adapter.cb_funs.driver.write_response(&driver->adapter, req,
                                                       NEU_ERR_TAG_NOT_EXIST);
@@ -1409,11 +1787,13 @@ int neu_adapter_driver_write_tags(neu_adapter_driver_t *driver,
         return NEU_ERR_TAG_NOT_EXIST;
     }
 
+    // 定义一个待写入标签的结构体
     to_be_write_tag_t wtag = { 0 };
     wtag.single            = false;
     wtag.req               = (void *) req;
     wtag.tvs               = tags;
 
+    // 将待写入的标签信息存储到组中
     store_write_tag(g, &wtag);
 
     return NEU_ERR_SUCCESS;
@@ -1615,6 +1995,22 @@ int neu_adapter_driver_write_tag(neu_adapter_driver_t *driver,
     neu_adapter_register_group_metric((adapter), group, name, name##_HELP, \
                                       name##_TYPE, (init))
 
+/**
+ * @brief 向适配器驱动中添加一个新的组。
+ *
+ * 该函数会检查指定名称的组是否已经存在于适配器驱动中。如果组不存在，
+ * 则会创建一个新的组，初始化组的相关信息（如标签数组、订阅应用数组、互斥锁等），
+ * 启动组的定时器（如果适配器驱动正在运行），注册组的各项指标，并将新组添加到适配器驱动的组哈希表中。
+ *
+ * @param driver 指向适配器驱动实例的指针，用于操作适配器驱动相关的数据和功能。
+ * @param name 指向组名称的字符串指针，用于唯一标识要添加的组。
+ * @param interval 无符号 32 位整数，表示组的采集间隔。
+ * @param context 
+ *
+ * @return 整数类型，表示操作结果：
+ *         - NEU_ERR_SUCCESS：组添加成功。
+ *         - NEU_ERR_GROUP_EXIST：指定名称的组已经存在，未进行添加操作。
+ */
 int neu_adapter_driver_add_group(neu_adapter_driver_t *driver, const char *name,
                                  uint32_t interval, void *context)
 {
@@ -1625,6 +2021,7 @@ int neu_adapter_driver_add_group(neu_adapter_driver_t *driver, const char *name,
 
     HASH_FIND_STR(driver->groups, name, find);
     if (find == NULL) {
+        // 创建一个新的组对象,添加到 driver->groups 哈希表
         find = calloc(1, sizeof(group_t));
 
         pthread_mutex_init(&find->wt_mtx, NULL);
@@ -1633,6 +2030,7 @@ int neu_adapter_driver_add_group(neu_adapter_driver_t *driver, const char *name,
         utarray_new(find->wt_tags, &icd);
         utarray_new(find->apps, &sub_icd);
 
+        // 初始化组结构体成员
         find->driver         = driver;
         find->name           = strdup(name);
         find->group          = neu_group_new(name, interval);
@@ -1642,18 +2040,26 @@ int neu_adapter_driver_add_group(neu_adapter_driver_t *driver, const char *name,
         find->grp.tags       = neu_group_get_tag(find->group);
 
         if (NEU_NODE_RUNNING_STATE_RUNNING == driver->adapter.state) {
+            // 启动组定时器
             start_group_timer(driver, find);
         }
 
+        /// 注册组指标
+
+        // 组的标签总数
         REGISTER_GROUP_METRIC(&driver->adapter, find->name,
                               NEU_METRIC_GROUP_TAGS_TOTAL,
                               neu_group_tag_size(find->group));
+        // 最后发送消息数
         REGISTER_GROUP_METRIC(&driver->adapter, find->name,
                               NEU_METRIC_GROUP_LAST_SEND_MSGS, 0);
+        // 最后定时器时间
         REGISTER_GROUP_METRIC(&driver->adapter, find->name,
                               NEU_METRIC_GROUP_LAST_TIMER_MS, 0);
+        // 最后错误代码
         REGISTER_GROUP_METRIC(&driver->adapter, find->name,
                               NEU_METRIC_GROUP_LAST_ERROR_CODE, 0);
+        // 最后错误时间戳
         REGISTER_GROUP_METRIC(&driver->adapter, find->name,
                               NEU_METRIC_GROUP_LAST_ERROR_TS, 0);
 
@@ -1818,14 +2224,25 @@ uint16_t neu_adapter_driver_new_group_count(neu_adapter_driver_t *driver,
     return new_groups_count;
 }
 
+/**
+ * @brief 查找指定名称的组。
+ *
+ * 该函数用于在驱动适配器中查找具有指定名称的组。它使用 UTHash 库中的 HASH_FIND_STR 宏来高效地查找组。
+ *
+ * @param driver 指向 neu_adapter_driver_t 结构体的指针，表示驱动适配器。
+ * @param name 组名字符串，标识需要查找的组。
+ * @return 返回找到的组指针；如果未找到，则返回 NULL。
+ */
 static group_t *find_group(neu_adapter_driver_t *driver, const char *name)
 {
+    // 声明一个指向 group_t 结构体的指针，用于存储查找结果
     group_t *find = NULL;
 
     HASH_FIND_STR(driver->groups, name, find);
 
     return find;
 }
+
 int neu_adapter_driver_group_exist(neu_adapter_driver_t *driver,
                                    const char *          name)
 {
@@ -1949,29 +2366,58 @@ int neu_adapter_driver_validate_tag(neu_adapter_driver_t *driver,
     return NEU_ERR_SUCCESS;
 }
 
+/**
+ * @brief 向适配器驱动中添加标签信息。
+ *
+ * 该函数用于将一个标签添加到指定组的适配器驱动中。在添加标签之前，会对标签地址选项进行解析，并验证标签的有效性。
+ * 如果指定的组不存在，会先创建该组。添加成功后，会更新适配器驱动的标签计数以及相关的指标信息。
+ *
+ * @param driver 指向 neu_adapter_driver_t 类型的指针，代表要添加标签的适配器驱动实例。
+ * @param group 指向常量字符的指针，指定要添加标签的组名称。
+ * @param tag 指向 neu_datatag_t 类型的指针，代表要添加的标签信息。
+ * @param interval 无符号 16 位整数，表示标签的采集间隔
+ * @return 函数的返回值为整数类型，代表操作结果：
+ *         - NEU_ERR_SUCCESS：表示标签添加成功。
+ *         - 其他非零值：表示添加过程中出现错误，具体错误码含义可参考相关定义。
+ */
 int neu_adapter_driver_add_tag(neu_adapter_driver_t *driver, const char *group,
                                neu_datatag_t *tag, uint16_t interval)
 {
     int      ret  = NEU_ERR_SUCCESS;
     group_t *find = NULL;
 
+    // 解析标签的地址选项，并将结果存储在 tag->option 中
     neu_datatag_parse_addr_option(tag, &tag->option);
+
+    // 调用插件的验证函数，验证标签的有效性
     driver->adapter.module->intf_funs->driver.validate_tag(
         driver->adapter.plugin, tag);
 
+    // 在驱动的组哈希表中查找指定名称的组
     HASH_FIND_STR(driver->groups, group, find);
     if (find == NULL) {
+        // 向适配器驱动中添加该组
         neu_adapter_driver_add_group(driver, group, interval, NULL);
+        // 将该组信息存储到持久化存储中
         adapter_storage_add_group(driver->adapter.name, group, interval, NULL);
     }
+
+    // 再次在驱动的组哈希表中查找指定名称的组
     HASH_FIND_STR(driver->groups, group, find);
+    // 确保组已成功找到
     assert(find != NULL);
+    // 向找到的组中添加标签
     ret = neu_group_add_tag(find->group, tag);
 
     if (ret == NEU_ERR_SUCCESS) {
+        // 增加驱动的标签计数
         driver->tag_cnt += 1;
+        
+        // 调用适配器的回调函数，更新标签总数的指标信息
         driver->adapter.cb_funs.update_metric(
             &driver->adapter, NEU_METRIC_TAGS_TOTAL, driver->tag_cnt, NULL);
+        
+        // 更新指定组的标签总数指标信息
         neu_adapter_update_group_metric(&driver->adapter, group,
                                         NEU_METRIC_GROUP_TAGS_TOTAL,
                                         neu_group_tag_size(find->group));
@@ -2107,6 +2553,13 @@ void neu_adapter_driver_get_value_tag(neu_adapter_driver_t *driver,
     }
 }
 
+/**
+ * @brief 获取可读标签集
+ * 
+ * @param driver 驱动适配器对象指针。
+ * @param group 组名称。
+ * @return 返回包含找到的数据标签的UT_array数组；如果没有找到匹配项，则返回NULL。
+ */
 UT_array *neu_adapter_driver_get_read_tag(neu_adapter_driver_t *driver,
                                           const char *          group)
 {
@@ -2121,18 +2574,37 @@ UT_array *neu_adapter_driver_get_read_tag(neu_adapter_driver_t *driver,
     return tags;
 }
 
+/**
+ * @brief 获取与特定组和标签关联的所有数据标签。
+ *
+ * 此函数用于查找并返回与指定适配器、组和标签相关联的数据标签数组。
+ * 如果找到匹配的组和标签，则将相应的数据标签添加到UT_array数组中并返回。
+ * 若未找到匹配项，则返回NULL。
+ *
+ * @param driver 驱动适配器对象指针。
+ * @param group 组名称。
+ * @param tag 标签名称。
+ * @return 返回包含找到的数据标签的UT_array数组；如果没有找到匹配项，则返回NULL。
+ */
 UT_array *neu_adapter_driver_get_ptag(neu_adapter_driver_t *driver,
                                       const char *group, const char *tag)
 {
     group_t * find = NULL;
     UT_array *tags = NULL;
 
+    // 在驱动适配器的组哈希表中查找指定的组
     HASH_FIND_STR(driver->groups, group, find);
     if (find != NULL) {
+        // 查找该组中的指定标签
         neu_datatag_t *t = neu_group_find_tag(find->group, tag);
         if (t != NULL) {
+            // 创建一个新的UT_array数组，并设置其元素销毁函数
             utarray_new(tags, neu_tag_get_icd());
+
+            // 将找到的标签添加到数组中
             utarray_push_back(tags, t);
+
+            // 释放找到的单个标签（因为它的副本已经存储在数组中）
             neu_tag_free(t);
         }
     }
@@ -2188,6 +2660,17 @@ static void report_to_app(neu_adapter_driver_t *driver, group_t *group,
     free(data);
 }
 
+/**
+ * @brief 定期报告指定组的标签数据的回调函数。
+ *
+ * 该函数会在指定的时间间隔内被调用，用于报告指定组的标签数据。
+ * 它会检查驱动节点的运行状态，准备消息头和数据，获取标签数据，
+ * 处理跟踪上下文，读取报告数据，并将数据发送给订阅该组的应用。
+ * 最后释放相关的资源。
+ *
+ * @param usr_data 指向 group_t 结构体的指针，包含了要报告的组的信息。
+ * @return 始终返回 0。
+ */
 static int report_callback(void *usr_data)
 {
     group_t *                group = (group_t *) usr_data;
@@ -2200,37 +2683,62 @@ static int report_callback(void *usr_data)
         .type = NEU_REQRESP_TRANS_DATA,
     };
 
+    // 从驱动中获取指定组的标签数据集（neu_datatag_t类型，含标签的信息）
     UT_array *tags =
         neu_adapter_driver_get_read_tag(group->driver, group->name);
 
-    neu_reqresp_trans_data_t *data =
+    // 分配内存用于存储传输的数据
+    neu_reqresp_trans_data_t *data = 
         calloc(1, sizeof(neu_reqresp_trans_data_t));
 
     data->driver = strdup(group->driver->adapter.name);
     data->group  = strdup(group->name);
+
+    // 初始化标签数组
     utarray_new(data->tags, neu_resp_tag_value_meta_icd());
 
+    // 从从本地驱动缓存中获取跟踪上下文信息
     void *trace_ctx =
         neu_driver_cache_get_trace(group->driver->cache, group->name);
 
+    /**
+     * @brief 初始化跟踪和跨度上下文
+     * 
+     * -trans_trace：是一个跟踪上下文对象，用于存储整个跟踪过程的相关信息，例如跟踪的起始时间、跟踪
+     *  的 ID 等。一个跟踪可以包含多个跨度（span），这些跨度共同描述了一个请求在分布式系统中的完整执行路径。
+     * -trans_scope：是一个跨度上下文对象，用于存储一个特定操作的相关信息，例如操作的名称、开始时间、
+     *  结束时间、状态码等。每个跨度代表了一个独立的操作或任务，它可以嵌套在其他跨度中，形成一个树形结构。
+     */
     neu_otel_trace_ctx trans_trace = NULL;
     neu_otel_scope_ctx trans_scope = NULL;
+
+    // 如果存在跟踪上下文且 OpenTelemetry 数据收集已启动
     if (trace_ctx) {
         data->trace_ctx = trace_ctx;
         if (neu_otel_data_is_started() && data->trace_ctx) {
+            // 将本地获取的跟踪上下文指针转换为 OpenTelemetry 跟踪对象
             trans_trace = neu_otel_find_trace(data->trace_ctx);
+            
             if (trans_trace) {
+                // 生成一个新的跨度 ID
                 char new_span_id[36] = { 0 };
                 neu_otel_new_span_id(new_span_id);
+
+                // 在指定的跟踪上下文中添加一个新的跨度。
                 trans_scope =
                     neu_otel_add_span2(trans_trace, "report cb", new_span_id);
+
+                // 添加跨度属性，记录线程 ID
                 neu_otel_scope_add_span_attr_int(trans_scope, "thread id",
                                                  (int64_t)(pthread_self()));
+
+                // 设置跨度的开始时间
                 neu_otel_scope_set_span_start_time(trans_scope, neu_time_ns());
             }
         }
     }
 
+    // 读取报告数据
     read_report_group(global_timestamp,
                       neu_group_get_interval(group->group) *
                           NEU_DRIVER_TAG_CACHE_EXPIRE_TIME,
@@ -2242,26 +2750,33 @@ static int report_callback(void *usr_data)
 
         if (utarray_len(group->apps) > 0) {
             int app_num      = 0;
+
+            // 分配内存用于存储传输数据的上下文
             data->ctx        = calloc(1, sizeof(neu_reqresp_trans_data_ctx_t));
             data->ctx->index = utarray_len(group->apps);
+
             pthread_mutex_init(&data->ctx->mtx, NULL);
 
+            // 复制标签数据，为每个应用准备一份
             for (uint16_t i = 0; i < utarray_len(group->apps) - 1; i++) {
                 utarray_foreach(data->tags, neu_resp_tag_value_meta_t *,
                                 tag_value)
                 {
                     if (tag_value->value.type == NEU_TYPE_CUSTOM) {
+                        // 增加 JSON 对象的引用计数
                         json_incref(tag_value->value.value.json);
                     }
                 }
             }
 
+            // 遍历订阅该组的应用列表
             utarray_foreach(group->apps, sub_app_t *, app)
             {
-
+                // 发送数据给应用
                 if (group->driver->adapter.cb_funs.responseto(
                         &group->driver->adapter, &header, data, app->addr) !=
                     0) {
+                    // 发送失败，释放相关资源
                     utarray_foreach(data->tags, neu_resp_tag_value_meta_t *,
                                     tag_value)
                     {
@@ -2269,12 +2784,14 @@ static int report_callback(void *usr_data)
                             json_decref(tag_value->value.value.json);
                         }
                     }
+                    // 释放传输数据
                     neu_trans_data_free(data);
                     if (trans_trace) {
                         neu_otel_scope_add_span_attr_int(trans_scope, app->app,
                                                          0);
                     }
                 } else {
+                    // 发送成功，增加成功发送的应用数量
                     app_num += 1;
                     if (trans_trace) {
                         neu_otel_scope_add_span_attr_int(trans_scope, app->app,
@@ -2292,6 +2809,7 @@ static int report_callback(void *usr_data)
             }
 
         } else {
+            // 如果没有订阅该组的应用，释放标签数据
             utarray_foreach(data->tags, neu_resp_tag_value_meta_t *, tag_value)
             {
                 if (tag_value->value.type == NEU_TYPE_PTR) {
@@ -2318,6 +2836,7 @@ static int report_callback(void *usr_data)
 
         pthread_mutex_unlock(&group->apps_mtx);
     } else {
+        // 如果没有标签数据，释放相关资源
         utarray_free(data->tags);
         free(data->group);
         free(data->driver);
@@ -2332,6 +2851,19 @@ static int report_callback(void *usr_data)
     return 0;
 }
 
+/**
+ * @brief 处理组数据发生变化时的回调函数。
+ *
+ * 当组数据发生变化时，该函数会更新组的时间戳，清除旧的缓存数据，
+ * 添加新的缓存数据，并更新组的配置信息。
+ *
+ * @param arg 指向组对象的指针，用于标识发生变化的组。
+ * @param timestamp 组数据发生变化的时间戳，用于更新组的时间戳信息。
+ * @param tags 指向新的标签数组的指针，包含了组中最新的标签信息。
+ * @param interval 组的采集间隔，当前函数未使用该参数。
+ *
+ * @return 无返回值。
+ */
 static void group_change(void *arg, int64_t timestamp, UT_array *tags,
                          uint32_t interval)
 {
@@ -2339,14 +2871,18 @@ static void group_change(void *arg, int64_t timestamp, UT_array *tags,
     group->timestamp = timestamp;
     (void) interval;
 
+    // 如果组的 group_free 函数指针不为空，则调用该函数释放旧的组资源
     if (group->grp.group_free != NULL)
         group->grp.group_free(&group->grp);
-
+    
+    // 遍历旧的标签数组，从驱动缓存中删除每个标签的缓存数据
     utarray_foreach(group->grp.tags, neu_datatag_t *, tag)
     {
         neu_driver_cache_del(group->driver->cache, group->name, tag->name);
     }
 
+    // 为每个标签创建一个初始值为错误状态的 neu_dvalue_t 对象，并将其添加到驱动缓存中
+    // 确保在新数据还未有效填充之前，缓存中的数据不会被错误使用
     utarray_foreach(tags, neu_datatag_t *, tag)
     {
         neu_dvalue_t value = { 0 };
@@ -2359,6 +2895,8 @@ static void group_change(void *arg, int64_t timestamp, UT_array *tags,
                              value);
     }
 
+    // 组数据变化可能伴随着标签的添加、删除或修改；和配置信息更改
+    // 所以要创建一个新的 neu_plugin_group_t 对象，用于更新组的配置信息
     neu_plugin_group_t grp = {
         .group_name = strdup(group->name),
         .interval   = neu_group_get_interval(group->group),
@@ -2367,14 +2905,20 @@ static void group_change(void *arg, int64_t timestamp, UT_array *tags,
         .user_data  = NULL,
         .context    = NULL,
     };
-
+    
+    // 将新的上下文信息和标签数组赋值给新的组对象
     grp.context = group->grp.context;
     grp.tags    = tags;
+
+    // 释放旧的组名称内存
     free(group->grp.group_name);
+
+    // 如果旧的标签数组不为空，则释放其内存
     if (group->grp.tags != NULL) {
         utarray_free(group->grp.tags);
     }
 
+    // 更新组的配置信息
     group->grp = grp;
 
     nlog_notice("group: %s changed, timestamp: %" PRIi64, group->name,
@@ -2466,22 +3010,39 @@ static int write_callback(void *usr_data)
     return 0;
 }
 
+/**
+ * @brief 读取回调函数，在定时器到期时被调用，用于处理组数据的读取操作。
+ *
+ * 该函数会检查组所属的驱动适配器的运行状态，若状态为运行中，则进一步检查组数据是否发生变化，
+ * 若有变化则进行相应测试。如果组中存在标签，则调用驱动适配器模块的 group_timer 函数执行组定时器操作，
+ * 记录操作的时间消耗并更新相关的指标。
+ *
+ * @param usr_data 指向用户数据的指针，这里是一个 group_t 类型的结构体指针。
+ * @return int 操作结果，通常返回 0 表示操作成功。
+ */
 static int read_callback(void *usr_data)
 {
+    // 将用户数据转换为 group_t 类型的结构体指针
     group_t *                group = (group_t *) usr_data;
+    // 获取组所属的驱动适配器的运行状态
     neu_node_running_state_e state = group->driver->adapter.state;
+    
     if (state != NEU_NODE_RUNNING_STATE_RUNNING) {
         return 0;
     }
 
+    // 检查组的数据是否发生变化
     if (neu_group_is_change(group->group, group->timestamp)) {
+        // 若组数据发生变化，则进行组变化测试
         neu_group_change_test(group->group, group->timestamp, (void *) group,
                               group_change);
     }
 
+    // 检查组中是否存在标签
     if (group->grp.tags != NULL && utarray_len(group->grp.tags) > 0) {
         int64_t spend = global_timestamp;
 
+        // 调用驱动适配器模块，执行组定时器操作
         group->driver->adapter.module->intf_funs->driver.group_timer(
             group->driver->adapter.plugin, &group->grp);
 
@@ -2489,6 +3050,7 @@ static int read_callback(void *usr_data)
         nlog_debug("%s-%s timer: %" PRId64, group->driver->adapter.name,
                    group->name, spend);
 
+        // 更新组的最后一次定时器操作时间指标
         neu_adapter_update_group_metric(&group->driver->adapter, group->name,
                                         NEU_METRIC_GROUP_LAST_TIMER_MS, spend);
     }
@@ -2496,17 +3058,34 @@ static int read_callback(void *usr_data)
     return 0;
 }
 
+/**
+ * @brief 从缓存中读取标签值并根据特定条件进行报告。
+ *
+ * 此函数遍历一组标签，检查每个标签的值是否发生了变化或是否有效，并将结果存储在一个动态数组中。
+ * 它处理不同类型的数据（如整数、浮点数等），进行字节序转换，并根据标签的精度和偏置调整值。
+ *
+ * @param timestamp 当前时间戳，用于判断缓存中的数据是否过期。
+ * @param timeout 超时时间，超过此时间的数据将被视为过期。
+ * @param cache_type 缓存类型（如 NEU_TAG_CACHE_TYPE_INTERVAL 或 NEU_TAG_CACHE_TYPE_NEVER）。
+ * @param cache 指向缓存对象的指针，包含所有标签的缓存数据。
+ * @param group 组名称，标识属于同一组的标签。
+ * @param tags 包含需要处理的所有标签的动态数组。
+ * @param tag_values 用于存储处理后的标签值及其元数据的动态数组。
+ */
 static void read_report_group(int64_t timestamp, int64_t timeout,
                               neu_tag_cache_type_e cache_type,
                               neu_driver_cache_t *cache, const char *group,
                               UT_array *tags, UT_array *tag_values)
 {
+    // 遍历所有的标签
     utarray_foreach(tags, neu_datatag_t *, tag)
     {
-        neu_driver_cache_value_t  value     = { 0 };
-        neu_resp_tag_value_meta_t tag_value = { 0 };
+        neu_driver_cache_value_t  value     = { 0 }; // 初始化缓存值
+        neu_resp_tag_value_meta_t tag_value = { 0 }; // 初始化标签值及元数据
 
-        if (neu_tag_attribute_test(tag, NEU_ATTRIBUTE_SUBSCRIBE)) {
+        // 判断标签设置了订阅属性
+        if (neu_tag_attribute_test(tag, NEU_ATTRIBUTE_SUBSCRIBE)) {   
+            //只有当标签的值发生变化时，才会继续后续的处理
             if (neu_driver_cache_meta_get_changed(cache, group, tag->name,
                                                   &value, tag_value.metas,
                                                   NEU_TAG_META_SIZE) != 0) {
@@ -2514,9 +3093,11 @@ static void read_report_group(int64_t timestamp, int64_t timeout,
                 continue;
             }
         } else {
+            //从缓存中获取指定组和标签的值，无论该值是否发生了变化
             if (neu_driver_cache_meta_get(cache, group, tag->name, &value,
                                           tag_value.metas,
                                           NEU_TAG_META_SIZE) != 0) {
+                // 找不到标签的值，修改标签的元数据
                 strcpy(tag_value.tag, tag->name);
                 tag_value.value.type      = NEU_TYPE_ERROR;
                 tag_value.value.value.i32 = NEU_ERR_PLUGIN_TAG_NOT_READY;
@@ -2529,13 +3110,14 @@ static void read_report_group(int64_t timestamp, int64_t timeout,
 
         tag_value.datatag.bias = tag->bias;
 
+        //缓存数据损坏或者数据源出现问题，则跳过后续处理逻辑
         if (value.value.type == NEU_TYPE_ERROR) {
             tag_value.value = value.value;
-
             utarray_push_back(tag_values, &tag_value);
             continue;
         }
 
+        //获取到的是 NaN（表示一个无效的或未定义的数值），跳过后续处理逻辑
         if ((tag->type == NEU_TYPE_FLOAT && isnan(value.value.value.f32)) ||
             (tag->type == NEU_TYPE_DOUBLE && isnan(value.value.value.d64))) {
             tag_value.value.type      = NEU_TYPE_ERROR;
@@ -2549,6 +3131,7 @@ static void read_report_group(int64_t timestamp, int64_t timeout,
         case NEU_TYPE_INT16:
             switch (tag->option.value16.endian) {
             case NEU_DATATAG_ENDIAN_B16:
+                //数据从主机字节序转换为网络字节序，以确保数据在不同系统之间的正确传输和处理
                 value.value.value.u16 = htons(value.value.value.u16);
                 break;
             case NEU_DATATAG_ENDIAN_L16:
@@ -2600,8 +3183,11 @@ static void read_report_group(int64_t timestamp, int64_t timeout,
             break;
         }
 
+        ///< 对缓存数据的有效性检查和数据处理逻辑
+
         if (cache_type != NEU_TAG_CACHE_TYPE_NEVER &&
-            (timestamp - value.timestamp) > timeout && timeout > 0) {
+            (timestamp - value.timestamp) > timeout && timeout > 0) {           
+            // 缓存数据过期处理
             if (value.value.type == NEU_TYPE_PTR) {
                 free(value.value.value.ptr.ptr);
             } else if (value.value.type == NEU_TYPE_CUSTOM) {
@@ -2623,6 +3209,17 @@ static void read_report_group(int64_t timestamp, int64_t timeout,
                 tag_value.value = value.value;
             }
 
+            /**
+             * @brief
+             * 
+             * 当 tag 的 decimal（缩放因子）或 bias（偏移量）不为 0 时，
+             * 需要对 tag_value 的值进行数学运算（乘以 decimal 并加上 bias）
+             * 
+             * @note
+             * 前提：只有数值类型的value才会有 decimal（缩放因子）和 bias（偏移量）的概念。
+             * 不同类型的数据（如整数、浮点数等）在进行这些运算时，为了保证计算的精度和一致性，
+             * 将所有数据统一转换为 double 类型进行处理是一种常见且有效的做法
+             */
             if (tag->decimal != 0 || tag->bias != 0) {
                 double decimal = tag->decimal != 0 ? tag->decimal : 1;
                 double bias    = tag->bias;

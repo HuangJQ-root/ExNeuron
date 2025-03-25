@@ -83,47 +83,78 @@ static void binary_to_hex(const unsigned char *binary, size_t length, char *hex)
     }
 }
 
+/**
+ * @brief 发送数据到指定的插件
+ *
+ * 此函数用于将传输数据编码为 JSON 格式，并通过网络套接字发送出去。
+ * 同时，它还支持 OpenTelemetry 跟踪，可记录数据发送操作的详细信息。
+ *
+ * @param plugin 指向 `neu_plugin_t` 结构体的指针，代表要发送数据的插件。
+ * @param trans_data 指向 `neu_reqresp_trans_data_t` 结构体的指针，包含要发送的传输数据。
+ */
 void send_data(neu_plugin_t *plugin, neu_reqresp_trans_data_t *trans_data)
 {
     int rv = 0;
 
+    // 用于存储编码后的 JSON 字符串
     char *           json_str = NULL;
+
+    // 用于 JSON 编码的响应结构体
     json_read_resp_t resp     = {
         .plugin     = plugin,
         .trans_data = trans_data,
     };
 
+    // OpenTelemetry 跟踪相关变量
     neu_otel_trace_ctx trans_trace     = NULL;
     neu_otel_scope_ctx trans_scope     = NULL;
     uint8_t *          trace_id        = NULL;
     char               new_span_id[36] = { 0 };
+
+    // 检查 OpenTelemetry 数据跟踪是否启用，并且传输数据包含跟踪上下文
     if (neu_otel_data_is_started() && trans_data->trace_ctx) {
         trans_trace = neu_otel_find_trace(trans_data->trace_ctx);
         if (trans_trace) {
+            // 生成新的跨度 ID
             neu_otel_new_span_id(new_span_id);
+
+            // 在跟踪中添加一个新的跨度，命名为 "ekuiper send"
             trans_scope =
                 neu_otel_add_span2(trans_trace, "ekuiper send", new_span_id);
+
+            // 为跨度添加线程 ID 属性
             neu_otel_scope_add_span_attr_int(trans_scope, "thread id",
                                              (int64_t)(pthread_self()));
+
+            // 设置跨度的开始时间
             neu_otel_scope_set_span_start_time(trans_scope, neu_time_ns());
         }
     }
 
+    // 执行数据发送操作的主循环，仅执行一次
     do {
-
+        // 将传输数据编码为 JSON 字符串
         rv = neu_json_encode_by_fn(&resp, json_encode_read_resp, &json_str);
         if (0 != rv || json_str == NULL) {
             plog_error(plugin, "fail encode trans data to json");
             break;
         }
 
+        // 存储要发送的消息
         nng_msg *msg              = NULL;
+
+        // 获取 JSON 字符串的长度
         size_t   json_len         = strlen(json_str);
+
+        // 跟踪头部的长度
         size_t   trace_header_len = 0;
+
+        // 如果启用了 OpenTelemetry 数据跟踪且传输数据包含跟踪上下文
         if (neu_otel_data_is_started() && trans_data->trace_ctx) {
             trace_header_len = 26;
         }
 
+        // 分配消息内存
         rv = nng_msg_alloc(&msg, json_len + trace_header_len);
         if (0 != rv) {
             plog_error(plugin, "nng cannot allocate msg");
@@ -132,24 +163,39 @@ void send_data(neu_plugin_t *plugin, neu_reqresp_trans_data_t *trans_data)
         }
 
         if (trans_trace) {
+            // 获取跟踪 ID
             trace_id           = neu_otel_get_trace_id(trans_trace);
             uint8_t span_id[8] = { 0 };
             hex_string_to_binary(new_span_id, span_id, 8);
             uint16_t tarce_header_magic = 0xCE0A;
+
+            // 将跟踪头部的魔术值复制到消息体中
             memcpy(nng_msg_body(msg), &tarce_header_magic, 2);
+
+            // 将跟踪 ID 复制到消息体中
             memcpy(nng_msg_body(msg) + 2, trace_id, 16);
+
+            // 将跨度 ID 复制到消息体中
             memcpy(nng_msg_body(msg) + 2 + 16, span_id, 8);
         }
 
+        // 将传输数据复制到消息体中
         memcpy(nng_msg_body(msg) + trace_header_len, json_str,
                json_len); // no null byte
         plog_debug(plugin, ">> %s", json_str);
+
+        // 释放 JSON 字符串内存
         free(json_str);
+
+        // 非阻塞方式发送消息
         rv = nng_sendmsg(plugin->sock, msg,
                          NNG_FLAG_NONBLOCK); // TODO: use aio to send message
         if (0 == rv) {
+            // 更新发送消息总数的指标
             NEU_PLUGIN_UPDATE_METRIC(plugin, NEU_METRIC_SEND_MSGS_TOTAL, 1,
                                      NULL);
+
+            // 更新 5 秒内发送字节数的指标
             NEU_PLUGIN_UPDATE_METRIC(plugin, NEU_METRIC_SEND_BYTES_5S, json_len,
                                      NULL);
             NEU_PLUGIN_UPDATE_METRIC(plugin, NEU_METRIC_SEND_BYTES_30S,
@@ -157,8 +203,13 @@ void send_data(neu_plugin_t *plugin, neu_reqresp_trans_data_t *trans_data)
             NEU_PLUGIN_UPDATE_METRIC(plugin, NEU_METRIC_SEND_BYTES_60S,
                                      json_len, NULL);
         } else {
+            // 记录消息发送失败的错误信息
             plog_error(plugin, "nng cannot send msg: %s", nng_strerror(rv));
+
+            // 释放消息内存
             nng_msg_free(msg);
+
+            // 更新发送消息错误总数的指标
             NEU_PLUGIN_UPDATE_METRIC(plugin, NEU_METRIC_SEND_MSG_ERRORS_TOTAL,
                                      1, NULL);
         }
@@ -166,16 +217,35 @@ void send_data(neu_plugin_t *plugin, neu_reqresp_trans_data_t *trans_data)
 
     if (trans_trace) {
         if (rv == 0) {
+            // 设置跨度的状态码为成功
             neu_otel_scope_set_status_code2(trans_scope, NEU_OTEL_STATUS_OK, 0);
         } else {
+            // 设置跨度的状态码为错误，并记录错误信息
             neu_otel_scope_set_status_code(trans_scope, NEU_OTEL_STATUS_ERROR,
                                            nng_strerror(rv));
         }
+        // 设置跨度的结束时间
         neu_otel_scope_set_span_end_time(trans_scope, neu_time_ns());
+
+        // 标记跟踪为最终状态
         neu_otel_trace_set_final(trans_trace);
     }
 }
 
+/**
+ * @brief 接收数据的回调函数
+ * 
+ * 此回调函数在接收到数据时被调用，用于处理接收到的消息，包括错误检查、消息解析、
+ * 指标更新、JSON 解码以及数据写入请求的发送等操作。
+ * 
+ * @param arg 传递给回调函数的参数，通常是指向 neu_plugin_t 结构体的指针
+ * 
+ * @note
+ * 
+ * 当使用 nng_aio_alloc 分配好异步 I/O 对象后，还需要启动一个异步操作，
+ * 例如异步接收数据(nng_recv_aio),当异步接收操作完成时（成功接收到数据或者出
+ * 现错误），NNG 库会自动调用之前通过 nng_aio_alloc 关联的回调函数 recv_data_callback
+ */
 void recv_data_callback(void *arg)
 {
     int               rv         = 0;
@@ -190,6 +260,7 @@ void recv_data_callback(void *arg)
     uint8_t *         trace_id   = NULL;
     uint8_t *         span_id    = NULL;
 
+    // 获取异步操作的结果
     rv = nng_aio_result(plugin->recv_aio);
     if (0 != rv) {
         plog_error(plugin, "nng_recv error: %s", nng_strerror(rv));
@@ -199,37 +270,48 @@ void recv_data_callback(void *arg)
         return;
     }
 
+    // 从异步 I/O 对象中获取消息
     msg      = nng_aio_get_msg(plugin->recv_aio);
     body_str = nng_msg_body(msg);
     body_len = nng_msg_len(msg);
 
+    // 检查消息是否包含跟踪信息
     if (*(uint8_t *) body_str == 0x0A && *(uint8_t *) (body_str + 1) == 0xCE) {
-        // trace
+        // 若包含跟踪信息，解析跟踪 ID 和跨度 ID
         trace_id   = (uint8_t *) (body_str + 2);
         span_id    = (uint8_t *) (body_str + 18);
         trace_flag = true;
         json_str   = body_str + 26;
         json_len   = body_len - 26;
     } else {
-        // no trace flag
+        // 若不包含跟踪信息，直接使用消息体作为 JSON 数据
         json_str = body_str;
         json_len = body_len;
     }
 
     plog_debug(plugin, "<< %.*s", (int) json_len, json_str);
+
+    // 更新接收消息总数的指标
     NEU_PLUGIN_UPDATE_METRIC(plugin, NEU_METRIC_RECV_MSGS_TOTAL, 1, NULL);
+
+    // 更新不同时间间隔内接收字节数的指标
     NEU_PLUGIN_UPDATE_METRIC(plugin, NEU_METRIC_RECV_BYTES_5S, json_len, NULL);
     NEU_PLUGIN_UPDATE_METRIC(plugin, NEU_METRIC_RECV_BYTES_30S, json_len, NULL);
     NEU_PLUGIN_UPDATE_METRIC(plugin, NEU_METRIC_RECV_BYTES_60S, json_len, NULL);
+
+    // 更新不同时间间隔内接收消息数的指标
     NEU_PLUGIN_UPDATE_METRIC(plugin, NEU_METRIC_RECV_MSGS_5S, 1, NULL);
     NEU_PLUGIN_UPDATE_METRIC(plugin, NEU_METRIC_RECV_MSGS_30S, 1, NULL);
     NEU_PLUGIN_UPDATE_METRIC(plugin, NEU_METRIC_RECV_MSGS_60S, 1, NULL);
+
+    // 解码 JSON 写入请求
     if (json_decode_write_req(json_str, json_len, &req) < 0) {
         plog_error(plugin, "fail decode write request json: %.*s",
                    (int) nng_msg_len(msg), json_str);
         goto recv_data_callback_end;
     }
 
+    // 根据请求类型（单条或多条）发送写入标签请求
     if (req->singular) {
         rv = send_write_tag_req(plugin, &req->single, json_str, trace_flag,
                                 trace_id, span_id);
@@ -239,13 +321,19 @@ void recv_data_callback(void *arg)
     }
 
     if (0 != rv) {
+        // 若写入请求发送失败，记录错误日志并跳转到结束处理部分
         plog_error(plugin, "failed to write data");
         goto recv_data_callback_end;
     }
 
 recv_data_callback_end:
+    // 释放消息内存
     nng_msg_free(msg);
+
+    // 释放 JSON 解码结果的内存
     neu_json_decode_write_free(req);
+
+    // 再次启动异步接收操作
     nng_recv_aio(plugin->sock, plugin->recv_aio);
 }
 

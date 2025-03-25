@@ -76,8 +76,21 @@ typedef enum neu_conn_tty_flow {
 
 typedef void (*neu_conn_callback)(void *ctx, int fd);
 
+/**
+ * @brief 表示网络连接参数的结构体，可配置不同类型的网络连接。
+ * 
+ * 该结构体使用联合体 `params` 来存储不同类型网络连接所需的参数，
+ * 可以根据 `type` 成员指定的连接类型，选择对应的参数进行配置。
+ */
 typedef struct neu_conn_param {
     zlog_category_t *log;
+
+    /**
+     * @brief 连接类型。
+     * 
+     * 表示网络连接的类型，是一个枚举类型 `neu_conn_type_e`，
+     * 取值包括 TCP 服务器、TCP 客户端、UDP 连接、UDP 目标连接、串口客户端等。
+     */
     neu_conn_type_e  type;
 
     union {
@@ -124,6 +137,15 @@ typedef struct neu_conn_param {
 
 typedef struct neu_conn neu_conn_t;
 
+/**
+ * @brief 用于记录网络连接状态的结构体。
+ *
+ * 此结构体 `neu_conn_state_t` 主要用于跟踪和
+ * 存储网络连接过程中发送和接收的字节数。它可以帮
+ * 助开发者监控网络连接的使用情况，比如在进行数据
+ * 采集、通信等操作时，了解数据的流量大小，从而进
+ * 行性能分析、带宽管理等。
+ */
 typedef struct neu_conn_state {
     uint64_t send_bytes;
     uint64_t recv_bytes;

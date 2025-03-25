@@ -33,15 +33,46 @@
 #include "utils/log.h"
 #include "utils/time.h"
 
+/**
+ * @brief 全局读写锁，用于保护度量集合的并发访问。
+ *
+ * 此读写锁用于确保在多线程环境中对全局度量集合进行安全的读写操作。
+ * 通过使用读写锁，可以允许多个读者同时访问数据，但写者需要独占访问权限。
+ */
 pthread_rwlock_t g_metrics_mtx_ = PTHREAD_RWLOCK_INITIALIZER;
+
+/**
+ * @brief 全局度量对象，用于存储和管理所有适配器和节点的度量信息。
+ *
+ * 此全局变量包含整个应用程序中所有适配器和节点的度量信息。
+ */
 neu_metrics_t    g_metrics_;
+
+/**
+ * @brief 全局起始时间戳，记录程序或特定操作的开始时间。
+ *
+ * 此变量用于存储某个关键点的时间戳（通常以毫秒为单位），
+ * 例如程序启动时间或某项操作的开始时间。它常被用于计算经过的时间或进行性能监控。
+ * 
+ * @note 静态全局变量的作用域仅限于声明它的文件
+ */
 static uint64_t  g_start_ts_;
 
+/**
+ * @brief 查找并填充操作系统的相关信息到全局度量结构体中。
+ *
+ * 此函数执行一系列命令来获取操作系统发行版名称、内核版本和机器类型，并将这些信息
+ * 存储到全局度量结构体 `g_metrics_` 中。如果在执行过程中遇到任何错误（例如命
+ * 令执行失败或无输出），则会记录错误日志并返回。
+ */
 static void find_os_info()
 {
+    // 定义用于获取操作系统信息的shell命令
     const char *cmd =
         "if [ -f /etc/os-release ]; then . /etc/os-release;"
         "echo $NAME $VERSION_ID; else uname -s; fi; uname -r; uname -m";
+    
+    // 执行命令并获取文件指针
     FILE *f = popen(cmd, "r");
 
     if (NULL == f) {
@@ -51,6 +82,7 @@ static void find_os_info()
 
     char buf[64] = {};
 
+    // 读取第一行输出作为发行版名称
     if (NULL == fgets(buf, sizeof(buf), f)) {
         nlog_error("no command output");
         pclose(f);
@@ -60,6 +92,7 @@ static void find_os_info()
     strncpy(g_metrics_.distro, buf, sizeof(g_metrics_.distro));
     g_metrics_.distro[sizeof(g_metrics_.distro) - 1] = 0;
 
+    // 读取第二行输出作为内核版本
     if (NULL == fgets(buf, sizeof(buf), f)) {
         nlog_error("no command output");
         pclose(f);
@@ -69,6 +102,7 @@ static void find_os_info()
     strncpy(g_metrics_.kernel, buf, sizeof(g_metrics_.kernel));
     g_metrics_.kernel[sizeof(g_metrics_.kernel) - 1] = 0;
 
+    // 读取第三行输出作为机器类型
     if (NULL == fgets(buf, sizeof(buf), f)) {
         nlog_error("no command output");
         pclose(f);
@@ -78,18 +112,30 @@ static void find_os_info()
     strncpy(g_metrics_.machine, buf, sizeof(g_metrics_.machine));
     g_metrics_.kernel[sizeof(g_metrics_.machine) - 1] = 0;
 
+    // 关闭管道
     pclose(f);
 
 #ifdef NEU_CLIB
+    // 如果定义了NEU_CLIB宏，则使用预定义的C库信息
     strncpy(g_metrics_.clib, NEU_CLIB, sizeof(g_metrics_.clib));
     strncpy(g_metrics_.clib_version, "unknow", sizeof(g_metrics_.clib_version));
 #else
+    // 否则，默认使用glibc及其版本信息
     strncpy(g_metrics_.clib, "glibc", sizeof(g_metrics_.clib));
     strncpy(g_metrics_.clib_version, gnu_get_libc_version(),
             sizeof(g_metrics_.clib_version));
 #endif
 }
 
+/**
+ * @brief 解析并返回指定列的内存信息（以字节为单位）。
+ *
+ * 此函数通过执行 shell 命令 `free -b | awk 'NR==2 {print $<col>}'` 来获取系统内存信息的特定列，
+ * 并将其转换为字节大小返回。如果命令执行失败或没有输出，则会记录错误日志并返回 0。
+ *
+ * @param col 要解析的列号（从1开始），例如在 `free` 命令输出中，总内存位于第2列，已用内存位于第3列等。
+ * @return 返回指定列的内存大小（以字节为单位）。如果命令执行失败或无输出，则返回 0。
+ */
 static size_t parse_memory_fields(int col)
 {
     FILE * f       = NULL;
@@ -283,28 +329,49 @@ static inline void metrics_unregister_entry(const char *name)
     }
 }
 
+/**
+ * @brief 向度量项列表中添加一个新的度量项。
+ *
+ * 此函数用于向指定的度量项列表中添加一个新的度量项。如果度量项已存在，则检查其类型和帮助信息是否匹配，若不匹配则记录错误并返回 -1。
+ * 如果需要并且初始化值大于 0，则会为滚动计数器类型的度量项分配新的滚动计数器实例。
+ * 在操作过程中可能会分配内存，如果内存分配失败，则返回 -1。
+ *
+ * @param entries 指向度量项列表指针的指针。
+ * @param name 度量项的名称。
+ * @param help 度量项的帮助信息或描述。
+ * @param type 度量项的类型（如计数器、仪表等）。
+ * @param init 度量项的初始值。
+ * @return 成功时返回 0；如果度量项已存在且类型或帮助信息不匹配，返回 -1；如果内存分配失败，也返回 -1；如果度量项已存在但匹配成功，返回 1。
+ */
 int neu_metric_entries_add(neu_metric_entry_t **entries, const char *name,
                            const char *help, neu_metric_type_e type,
                            uint64_t init)
 {
     neu_metric_entry_t *entry = NULL;
+
+    // 查找是否存在同名的度量项
     HASH_FIND_STR(*entries, name, entry);
     if (NULL != entry) {
+        // 如果类型或帮助信息不匹配，则记录错误并返回 -1
         if (entry->type != type || (0 != strcmp(entry->help, help))) {
             nlog_error("metric entry %s(%d, %s) conflicts with (%d, %s)", name,
                        entry->type, entry->help, type, help);
             return -1;
         }
+
+        // 类型和帮助信息匹配，返回 1 表示度量项已存在
         return 1;
     }
 
+    // 分配新的度量项
     entry = calloc(1, sizeof(*entry));
     if (NULL == entry) {
         return -1;
     }
 
+    // 根据度量项类型进行不同的初始化
     if (NEU_METRIC_TYPE_ROLLING_COUNTER == type) {
-        // only allocate rolling counter for nonzero time span
+        // 仅在初始化值大于 0 时为滚动计数器分配内存
         if (init > 0 && NULL == (entry->rcnt = neu_rolling_counter_new(init))) {
             free(entry);
             return -1;
@@ -313,14 +380,30 @@ int neu_metric_entries_add(neu_metric_entry_t **entries, const char *name,
         entry->value = init;
     }
 
+    // 初始化度量项的基本属性
     entry->init = init;
     entry->name = name;
     entry->type = type;
     entry->help = help;
+
+    // 将新的度量项添加到列表中
     HASH_ADD_STR(*entries, name, entry);
     return 0;
 }
 
+/**
+ * @brief 初始化度量指标。
+ *
+ * 此函数负责初始化全局度量指标系统，包括设置启动时间戳、获取操作系统信息和总内存大小。
+ * 使用写锁保护对全局变量的访问，以确保线程安全。
+ *
+ * 在首次调用时，此函数会：
+ * - 设置启动时间戳（`g_start_ts_`）为当前时间（毫秒）。
+ * - 获取并记录操作系统信息。
+ * - 获取并记录系统的总内存大小（字节）到 `g_metrics_.mem_total_bytes`。
+ *
+ * 后续调用不会重复执行上述初始化步骤，因为它们依赖于 `g_start_ts_` 是否已设置。
+ */
 void neu_metrics_init()
 {
     pthread_rwlock_wrlock(&g_metrics_mtx_);
@@ -332,6 +415,14 @@ void neu_metrics_init()
     pthread_rwlock_unlock(&g_metrics_mtx_);
 }
 
+/**
+ * @brief 添加一个节点度量到全局度量集合中。
+ *
+ * 此函数用于将指定适配器的节点度量信息添加到全局度量集合中。
+ * 在进行添加操作时，会使用写锁保护全局度量集合以确保线程安全。
+ *
+ * @param adapter 指向适配器对象的常量指针，包含要添加的节点度量信息。
+ */
 void neu_metrics_add_node(const neu_adapter_t *adapter)
 {
     pthread_rwlock_wrlock(&g_metrics_mtx_);
@@ -346,6 +437,17 @@ void neu_metrics_del_node(const neu_adapter_t *adapter)
     pthread_rwlock_unlock(&g_metrics_mtx_);
 }
 
+/**
+ * @brief 注册一个新的度量项。
+ *
+ * 此函数用于注册一个新的度量项，并将其添加到全局注册度量列表中。如果度量项已存在，则增加其引用计数。
+ * 在操作过程中使用读写锁 `g_metrics_mtx_` 以确保线程安全。
+ *
+ * @param name 度量项的名称。
+ * @param help 度量项的帮助信息或描述。
+ * @param type 度量项的类型（如计数器、仪表等）。
+ * @return 成功时返回 0；如果发生错误（如添加失败），则返回 -1。
+ */
 int neu_metrics_register_entry(const char *name, const char *help,
                                neu_metric_type_e type)
 {

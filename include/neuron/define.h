@@ -138,17 +138,57 @@ extern bool disable_jwt;
 extern char host_port[32];
 extern char g_status[32];
 
+/**
+ * @brief neu_plugin_kind_e 枚举用于标识插件的种类。
+ *
+ * 插件种类用于区分插件在系统中的角色和功能，例如静态插件、系统插件和自定义插件。
+ */
 typedef enum neu_plugin_kind {
+    /**
+     * @brief 静态插件。
+     *
+     * 这种插件通常是系统核心的一部分，无法动态加载或卸载。
+     * 它们在系统启动时自动加载，并且在整个系统运行期间一直存在。
+     */
     NEU_PLUGIN_KIND_STATIC = 0,
+
+    /**
+     * @brief 系统插件。
+     *
+     * 这种插件是系统提供的标准插件，通常用于提供基础功能和服务。
+     * 它们可以被动态加载和卸载，但通常由系统管理员配置和管理。
+     */
     NEU_PLUGIN_KIND_SYSTEM = 1,
+
+    /**
+     * @brief 自定义插件。
+     *
+     * 这种插件是由用户或第三方开发者创建的，用于扩展系统的功能。
+     * 它们可以被动态加载和卸载，并且可以根据需要进行定制和扩展。
+     */
     NEU_PLUGIN_KIND_CUSTOM = 2,
 } neu_plugin_kind_e;
 
+/**
+ * @brief neu_adapter_type_e 和 neu_node_type_e 枚举用于标识适配器的类型。
+ *
+ * 适配器类型/节点类型 用于区分适配器在系统中的角色和功能，例如驱动程序适配器和应用程序适配器。
+ */
 typedef enum {
+    /**
+     * @brief 驱动程序适配器。
+     *
+     * 这种适配器/节点 通常用于与硬件设备进行交互，负责数据的采集和控制命令的发送。
+     */
     NEU_NA_TYPE_DRIVER = 1,
-    NEU_NA_TYPE_APP    = 2,
-} neu_adapter_type_e,
-    neu_node_type_e;
+
+    /**
+     * @brief 应用程序适配器。
+     *
+     * 这种适配器/节点 通常用于与其他软件系统或服务进行交互，负责数据处理和业务逻辑的实现。
+     */
+    NEU_NA_TYPE_APP = 2,
+} neu_adapter_type_e, neu_node_type_e;
 
 typedef enum {
     NEU_NODE_LINK_STATE_DISCONNECTED = 0,
@@ -162,8 +202,26 @@ typedef enum {
     NEU_NODE_RUNNING_STATE_STOPPED = 4,
 } neu_node_running_state_e;
 
+/**
+ * @brief 定义标签缓存的类型。
+ *
+ * 此枚举类型描述了不同的缓存策略，可以用来控制数据标签在缓存中的更新方式。
+ * 例如，是否基于时间间隔更新缓存，或者根本不更新缓存等。
+ */
 typedef enum {
+    /**
+     * @brief 基于时间间隔更新缓存。
+     *
+     * 当设置为这个值时，意味着缓存将根据设定的时间间隔进行更新。
+     */
     NEU_TAG_CACHE_TYPE_INTERVAL = 0,
+
+    /**
+     * @brief 从不更新缓存。
+     *
+     *获取数据都需要直接从数据源获取最新的数据，而不使用缓存中的旧数据
+     *适合数据实时性要求极高的场景
+     */
     NEU_TAG_CACHE_TYPE_NEVER,
 } neu_tag_cache_type_e;
 

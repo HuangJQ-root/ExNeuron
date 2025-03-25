@@ -28,9 +28,37 @@
 
 #define DEFAULT_DASHBOARD_PLUGIN_NAME "default-dashboard"
 
+/**
+ * @brief 
+ * 
+ * - 管理动态加载的插件库.它是插件在运行时的一个实例化表示，
+ *   重点在于插件库的加载、引用和资源管理
+ * 
+ * @note
+ * - 动态库管理：handle 成员是通过 dlopen 函数返回的动态链接库句柄，
+ *   它为系统提供了对插件库进行操作的入口。借助这个句柄，系统可以使用 
+ *   dlsym 函数查找库中的符号（如函数或变量），或者使用 dlclose 函
+ *   数关闭动态链接库，释放相关资源。
+ * 
+ * - 插件功能访问：module 成员是指向 neu_plugin_module_t 类型的
+ *   指针，该类型包含了插件的版本信息、名称、描述、接口函数指针等内容。
+ *   通过这个指针，系统可以访问插件所提供的各种功能，例如调用插件的初
+ *   始化函数、数据处理函数等。
+ */
 typedef struct neu_plugin_instance {
-    void *               handle;
-    neu_plugin_module_t *module;
+    /**
+     * @brief
+     * 
+     * 动态链接库的句柄，由dlopen函数返回。
+     */
+    void *               handle; 
+
+    /**
+     * @brief
+     * 
+     * 指向插件模块的指针，通常包含插件的功能接口。
+     */
+    neu_plugin_module_t *module; 
 } neu_plugin_instance_t;
 
 typedef struct neu_plugin_manager neu_plugin_manager_t;

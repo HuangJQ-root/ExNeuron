@@ -24,22 +24,63 @@
 
 #include "subscribe.h"
 
+/**
+ * @brief 该结构体用于表示订阅元素的关键信息。
+ *
+ * 包含驱动名称和组名称，用于标识特定的订阅元素。
+ */
 typedef struct sub_elem_key {
+    /**
+     * @brief 驱动名称。
+     *
+     * 这个字段存储了与订阅元素相关的驱动的名称
+     */
     char driver[NEU_NODE_NAME_LEN];
+
+    /**
+     * @brief 组名称。
+     *
+     * 这个字段存储了与订阅元素相关的组的名称
+     */
     char group[NEU_GROUP_NAME_LEN];
 } sub_elem_key_t;
 
+/**
+ * @brief
+ * 
+ * 存放每个具体订阅标签，有哪些应用程序（app）进行了订阅
+ */
 typedef struct sub_elem {
+    /**
+     * @brief 订阅元素的关键字。
+     *
+     * 是 UT_hash 的关键字
+     */
     sub_elem_key_t key;
 
+    /**
+     * @brief 应用程序列表。
+     *
+     * 每个元素通常是应用程序的名称。
+     */
     UT_array *apps;
 
+    /**
+     * @brief 用于哈希表的句柄。
+     *
+     * 按照key有序排列
+     */
     UT_hash_handle hh;
 } sub_elem_t;
 
 static const UT_icd app_sub_icd = { sizeof(neu_app_subscribe_t), NULL, NULL,
                                     NULL };
 
+/**
+ * @brief
+ * 
+ * 是订阅管理器，用于管理订阅信息
+ */
 struct neu_subscribe_mgr {
     sub_elem_t *ss;
 };
@@ -172,45 +213,94 @@ void neu_subscribe_manager_unsub_all(neu_subscribe_mgr_t *mgr, const char *app)
     }
 }
 
+/**
+ * @brief 处理订阅请求，将应用程序订阅到指定驱动程序的组。
+ *
+ * 该函数用于在订阅管理器中处理应用程序对指定驱动程序组的订阅请求。它会检查是否已经存在相同的订阅，
+ * 如果不存在则创建新的订阅条目并添加到订阅管理器中。
+ *
+ * @param mgr 指向 `neu_subscribe_mgr_t` 结构体的指针，表示订阅管理器，包含订阅信息的哈希表等。
+ * @param driver 指向字符串的指针，表示要订阅的驱动程序名称。
+ * @param app 指向字符串的指针，表示发起订阅的应用程序名称。
+ * @param group 指向字符串的指针，表示要订阅的组名称。
+ * @param params 指向字符串的指针，表示订阅的参数，可为 NULL。
+ * @param static_tags 指向字符串的指针，表示静态标签，可为 NULL。
+ * @param addr `struct sockaddr_un` 类型的结构体，表示应用程序的地址。
+ *
+ * @return 返回订阅操作的结果状态码：
+ *         - 如果内存分配失败（如 `strdup` 或 `calloc` 失败），返回 `NEU_ERR_EINTERNAL`。
+ *         - 如果应用程序已经订阅了该组，返回 `NEU_ERR_GROUP_ALREADY_SUBSCRIBED`。
+ *         - 如果订阅操作成功，返回 `NEU_ERR_SUCCESS`。
+ */
 int neu_subscribe_manager_sub(neu_subscribe_mgr_t *mgr, const char *driver,
                               const char *app, const char *group,
                               const char *params, const char *static_tags,
                               struct sockaddr_un addr)
 {
+    // 用于查找已存在的订阅条目的指针
     sub_elem_t *        find    = NULL;
+
+    // 订阅条目的键，包含驱动程序和组的信息
     sub_elem_key_t      key     = { 0 };
+
+    // 应用程序订阅信息结构体
     neu_app_subscribe_t app_sub = { 0 };
 
+    // 将驱动程序名称复制到键结构体中
     strncpy(key.driver, driver, sizeof(key.driver));
+
+    // 将组名称复制到键结构体中
     strncpy(key.group, group, sizeof(key.group));
+
+    // 将应用程序名称复制到应用程序订阅信息结构体中
     strncpy(app_sub.app_name, app, sizeof(app_sub.app_name));
+
+    // 设置应用程序的地址
     app_sub.addr = addr;
 
+    // 如果有订阅参数，复制参数到应用程序订阅信息结构体中
     if (params && NULL == (app_sub.params = strdup(params))) {
         return NEU_ERR_EINTERNAL;
     }
 
+    // 如果有静态标签，复制标签到应用程序订阅信息结构体中
     if (static_tags && NULL == (app_sub.static_tags = strdup(static_tags))) {
         return NEU_ERR_EINTERNAL;
     }
 
+    // 在订阅管理器的哈希表中查找具有相同键的订阅条目
     HASH_FIND(hh, mgr->ss, &key, sizeof(sub_elem_key_t), find);
 
+    // 如果找到了具有相同键的订阅条目
     if (find) {
         utarray_foreach(find->apps, neu_app_subscribe_t *, sub)
         {
+            // 如果找到相同的应用程序名称
             if (strcmp(sub->app_name, app) == 0) {
+                // 释放应用程序订阅信息结构体的资源
                 neu_app_subscribe_fini(&app_sub);
+
+                // 返回组已被订阅的错误码
                 return NEU_ERR_GROUP_ALREADY_SUBSCRIBED;
             }
         }
-    } else {
+    } 
+    // 如果未找到具有相同键的订阅条目
+    else {
+        // 分配内存创建新的订阅条目
         find = calloc(1, sizeof(sub_elem_t));
+
+        // 初始化应用程序订阅信息数组
         utarray_new(find->apps, &app_sub_icd);
+
+        // 设置订阅条目的键
         find->key = key;
+
+        // 将新的订阅条目添加到订阅管理器的哈希表中
         HASH_ADD(hh, mgr->ss, key, sizeof(sub_elem_key_t), find);
     }
 
+    // 将新的应用程序订阅信息添加到对应的订阅条目中
     utarray_push_back(find->apps, &app_sub);
     return NEU_ERR_SUCCESS;
 }

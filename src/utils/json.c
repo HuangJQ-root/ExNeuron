@@ -476,20 +476,37 @@ static json_t *encode_object_ecp(json_t *object, neu_json_elem_t ele)
     return ob;
 }
 
+/**
+ * @brief 解析JSON对象中的单个元素值到目标结构体
+ * 
+ * @param root JSON根对象（必须为JSON Object或Array类型）
+ * @param ele  目标元素描述结构体，定义要提取的字段名、类型和存储位置
+ * @return int 解析结果：
+ *             - 0: 成功（或可选字段不存在）
+ *             - -1: 必填字段缺失或类型不匹配
+ * 
+ * @note
+ * - 支持自动类型推断（当ele->t为NEU_JSON_UNDEFINE时）
+ * - 处理字符串时会进行深拷贝（需调用方释放内存）
+ * - 数组类型会自动分配内存（需调用方释放）
+ */
 static int decode_object(json_t *root, neu_json_elem_t *ele)
 {
     json_t *ob = NULL;
 
+    // 步骤1：定位目标JSON节点 --------------------------------
+    // 如果元素名为空，直接使用根对象
     if (ele->name == NULL) {
         ob = root;
-    } else {
+    } else { // 否则按名称查找，并支持备用字段名(op_name)
         ob = json_object_get(root, ele->name);
         if (ob == NULL && ele->op_name != NULL && strlen(ele->op_name) > 0 &&
             strlen(ele->op_name) < 32) {
-            ob = json_object_get(root, ele->op_name);
+            ob = json_object_get(root, ele->op_name); // 尝试备用名（操作名）
         }
     }
 
+    // 步骤2：检查节点是否存在 --------------------------------
     if (ob == NULL) {
         if (ele->attribute == NEU_JSON_ATTRIBUTE_OPTIONAL) {
             return 0;
@@ -498,6 +515,7 @@ static int decode_object(json_t *root, neu_json_elem_t *ele)
         return -1;
     }
 
+    // 步骤3：自动推断类型（如果未指定类型）-------------------
     if (ele->t == NEU_JSON_UNDEFINE) {
         if (json_is_string(ob)) {
             ele->t = NEU_JSON_STR;
@@ -531,8 +549,9 @@ static int decode_object(json_t *root, neu_json_elem_t *ele)
         }
     }
 
-    ele->ok = true;
+    ele->ok = true;  // 标记开始解析
 
+    // 步骤4：按类型解析值 --------------------------------
     switch (ele->t) {
     case NEU_JSON_BIT:
         ele->v.val_bit = json_integer_value(ob);
@@ -871,6 +890,21 @@ int neu_json_decode(char *buf, int size, neu_json_elem_t *ele)
     return 0;
 }
 
+/**
+ * @brief 解析JSON数据到预定义的结构体元素数组
+ * 
+ * @param json 输入的JSON数据（必须是已解析的json_t对象）
+ * @param size 目标元素数组的长度
+ * @param ele  目标元素数组指针
+ * @return int 解析结果：
+ *             - 0: 所有元素解析成功
+ *             - -1: 输入参数无效或解析过程中出错
+ * 
+ * @note
+ * - 要求调用方提前解析好json_t对象（如通过json_loads）
+ * - 按顺序解析ele数组中的每个元素，遇到第一个错误立即返回
+ * - 需要调用方负责最终释放动态分配的内存（如字符串、数组）
+ */
 int neu_json_decode_by_json(void *json, int size, neu_json_elem_t *ele)
 {
     if (json == NULL) {
@@ -1097,6 +1131,14 @@ void *neu_json_decode_new(const char *buf)
     return root;
 }
 
+/**
+ * @brief 从给定的缓冲区中解码 JSON 数据
+ *
+ * @param buf 指向包含 JSON 数据的字符缓冲区的指针。
+ * @param len 缓冲区中 JSON 数据的长度（以字节为单位）。
+ * @return void* 如果 JSON 数据解析成功，返回指向解析后的 JSON 对象的指针；
+ *               如果解析失败，返回 NULL。在使用返回的指针后
+ */
 void *neu_json_decode_newb(char *buf, size_t len)
 {
     json_error_t error;
