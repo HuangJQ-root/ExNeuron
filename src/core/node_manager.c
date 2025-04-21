@@ -66,6 +66,10 @@ typedef struct node_entity {
      */
     bool               single;
     
+    /**
+     * @brief 标识该节点实体是否是监控节点。
+     *
+     */
     bool               is_monitor;
 
     /**

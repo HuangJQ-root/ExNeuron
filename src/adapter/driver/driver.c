@@ -426,6 +426,19 @@ static void write_response(neu_adapter_t *adapter, void *r, neu_error error)
     }
 }
 
+/**
+ * @brief 处理文件上传数据响应
+ *
+ * 此函数用于生成并发送文件上传数据响应。它会设置响应头部和响应体，
+ * 包含错误码、数据长度、数据内容等信息，然后调用适配器的响应回调函数发送响应。
+ *
+ * @param adapter 指向 neu_adapter_t 结构体的指针，代表适配器实例
+ * @param r 指向请求头部的指针，类型为 void*，会被转换为 neu_reqresp_head_t*
+ * @param error 错误码，用于表示操作是否成功
+ * @param bytes 指向数据字节数组的指针，包含要上传的数据
+ * @param n_bytes 数据字节数组的长度
+ * @param more 布尔值，指示是否还有更多数据要上传
+ */
 static void fup_data_response(neu_adapter_t *adapter, void *r, int error,
                               uint8_t *bytes, uint16_t n_bytes, bool more)
 {
@@ -445,6 +458,16 @@ static void fup_data_response(neu_adapter_t *adapter, void *r, int error,
     adapter->cb_funs.response(adapter, req, &resp);
 }
 
+/**
+ * @brief 处理文件下载打开响应
+ *
+ * 该函数用于生成并发送文件下载打开响应。它会设置响应头部和响应体，
+ * 包含错误码信息，然后调用适配器的响应回调函数发送响应。
+ *
+ * @param adapter 指向 neu_adapter_t 结构体的指针，代表适配器实例
+ * @param req 指向请求头部的指针，类型为 void*，会被转换为 neu_reqresp_head_t*
+ * @param error 错误码，用于表示操作是否成功
+ */
 static void fdown_open_response(neu_adapter_t *adapter, void *req, int error)
 {
     neu_reqresp_head_t *r = (neu_reqresp_head_t *) req;
@@ -456,6 +479,17 @@ static void fdown_open_response(neu_adapter_t *adapter, void *req, int error)
     adapter->cb_funs.response(adapter, r, &resp);
 }
 
+/**
+ * @brief 处理文件上传打开响应
+ *
+ * 此函数用于生成并发送文件上传打开响应。它会设置响应头部和响应体，
+ * 包含错误码和文件大小信息，然后调用适配器的响应回调函数发送响应。
+ *
+ * @param adapter 指向 neu_adapter_t 结构体的指针，代表适配器实例
+ * @param r 指向请求头部的指针，类型为 void*，会被转换为 neu_reqresp_head_t*
+ * @param error 错误码，用于表示操作是否成功
+ * @param size 文件的大小，以字节为单位
+ */
 static void fup_open_response(neu_adapter_t *adapter, void *r, int error,
                               int64_t size)
 {
@@ -470,6 +504,18 @@ static void fup_open_response(neu_adapter_t *adapter, void *r, int error,
     adapter->cb_funs.response(adapter, req, &resp);
 }
 
+/**
+ * @brief 处理目录响应
+ *
+ * 该函数用于生成并发送目录响应。它会设置响应头部和响应体，
+ * 包含错误码和目录文件信息，然后调用适配器的响应回调函数发送响应。
+ *
+ * @param adapter 指向 neu_adapter_t 结构体的指针，代表适配器实例
+ * @param r 指向请求头部的指针，类型为 void*，会被转换为 neu_reqresp_head_t*
+ * @param error 错误码，用于表示操作是否成功
+ * @param infos 指向 neu_driver_file_info_t 结构体数组的指针，包含目录文件信息
+ * @param n_info 目录文件信息数组的元素个数
+ */
 static void directory_response(neu_adapter_t *adapter, void *r, int error,
                                neu_driver_file_info_t *infos, int n_info)
 {
