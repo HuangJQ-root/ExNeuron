@@ -1,0 +1,15 @@
+<map id="neuron" name="neuron">
+<area shape="rect" id="node2" href="dir_2be3d49266695b1ae798d5ef3977cec0.html" title="connection" alt="" coords="37,159,131,207"/>
+<area shape="rect" id="edge3-headlabel" href="dir_000003_000018.html" title="2" alt="" coords="123,145,132,160"/>
+<area shape="rect" id="node3" href="dir_44c0a0951df7e931b45670d9fbc77dbc.html" title="event" alt="" coords="155,159,227,207"/>
+<area shape="rect" id="edge4-headlabel" href="dir_000003_000012.html" title="2" alt="" coords="192,133,201,147"/>
+<area shape="rect" id="node7" href="dir_5384584455539c4c2df0387d3b5a5b42.html" title="utils" alt="" coords="133,255,205,303"/>
+<area shape="rect" id="edge2-headlabel" href="dir_000018_000006.html" title="2" alt="" coords="138,228,147,243"/>
+<area shape="rect" id="node4" href="dir_ed6e47375147bc9892f3b2ad1a1295d5.html" title="json" alt="" coords="85,351,157,399"/>
+<area shape="rect" id="node5" href="dir_4aa6e5f11f1802722d5108a17f52ba43.html" title="otel" alt="" coords="48,63,120,111"/>
+<area shape="rect" id="node6" href="dir_2b28a624469f794ddca396a2aa9a075c.html" title="persist" alt="" coords="37,255,109,303"/>
+<area shape="rect" id="edge1-headlabel" href="dir_000021_000015.html" title="1" alt="" coords="104,323,113,338"/>
+<area shape="rect" id="edge5-headlabel" href="dir_000006_000015.html" title="1" alt="" coords="144,331,154,346"/>
+<area shape="rect" id="clust2" href="dir_62a58eabcc7c2ff4dbf33fec07935303.html" alt="" coords="27,52,237,409"/>
+<area shape="rect" id="clust1" href="dir_d44c64559bbebec7f509842c48db8b23.html" title="include" alt="" coords="16,16,248,420"/>
+</map>

@@ -1,0 +1,6 @@
+<map id="neu_reqresp_trans_data_t" name="neu_reqresp_trans_data_t">
+<area shape="rect" id="node1" title="用于存储传输数据请求和响应相关信息的结构体。" alt="" coords="28,199,219,225"/>
+<area shape="rect" id="node2" href="$structUT__array.html" title=" " alt="" coords="5,102,87,129"/>
+<area shape="rect" id="node3" href="$structUT__icd.html" title=" " alt="" coords="13,5,79,32"/>
+<area shape="rect" id="node4" href="$structneu__reqresp__trans__data__ctx__t.html" title="用于存储传输数据请求和响应上下文信息的结构体。" alt="" coords="111,95,290,136"/>
+</map>

@@ -161,19 +161,41 @@ static inline int load_spec_arg(int argc, char *argv[], neu_cli_args_t *args)
     return ret;
 }
 
+/**
+ * @brief      加载环境配置参数到命令行参数结构体
+ * @details    该函数从系统环境变量中读取配置参数，用于初始化 `neu_cli_args_t` 结构体及输出路径指针。
+ *             支持解析环境变量以设置守护进程模式、日志级别、配置目录等参数，具备错误处理和内存管理功能。
+ * @param[in,out] args          指向 neu_cli_args_t 结构体的指针
+ *                             - [输入]：结构体初始值（如默认日志级别、默认目录路径）
+ *                             - [输出]：填充从环境变量解析后的配置参数
+ * @param[out]    log_level_out 指向 char* 的指针，存储解析出的日志级别字符串
+ *                             - 若环境变量存在，通过 strdup 分配内存，需调用者释放
+ *                             - 若环境变量不存在，保持原有值（需确保调用前已正确初始化）
+ * @param[out]    config_dir_out 指向 char* 的指针，存储解析出的配置目录路径
+ *                             - 内存管理规则与 log_level_out 一致
+ * @param[out]    plugin_dir_out 指向 char* 的指针，存储解析出的插件目录路径
+ *                             - 内存管理规则与 log_level_out 一致
+ * @return       0  成功解析所有有效环境变量
+ *              -1  解析过程中出现错误（如环境变量格式非法、内存分配失败）
+ * @note         1. 环境变量优先级高于默认配置，未设置的变量将保留结构体默认值
+ *               2. 支持的环境变量列表：
+ *                  - NEU_ENV_DAEMON: 守护进程模式（"1"启用，"0"禁用）
+ *                  - NEU_ENV_LOG: 开发日志功能（"1"启用，"0"禁用）
+ *                  - NEU_ENV_LOG_LEVEL: 日志级别字符串（如"debug"|"info"）
+ *                  - NEU_ENV_CONFIG_DIR: 配置文件目录路径
+ *               3. 如何设置环境变量
+ *                  - 通过 shell 设置环境变量: export NEURON_DAEMON=1
+ *               4. 错误处理：
+ *                  - 非法环境变量值将输出错误信息到标准输出
+ *                  - 内存分配失败时（如 strdup 失败）将提前返回 -1
+ */
 static inline int load_env(neu_cli_args_t *args, char **log_level_out,
                            char **config_dir_out, char **plugin_dir_out)
 {
 
     int ret = 0;
     do {
-        /**
-         * @brief
-         *  获取linux系统环境变量NEURON_DAEMON
-         * 
-         * @note
-         *  通过 shell 设置环境变量: export NEURON_DAEMON=1
-         */
+        // -------------------- 解析守护进程模式 --------------------
         char *daemon = getenv(NEU_ENV_DAEMON); 
         if (daemon != NULL) {
             if (strcmp(daemon, "1") == 0) {
@@ -187,21 +209,7 @@ static inline int load_env(neu_cli_args_t *args, char **log_level_out,
             }
         }
 
-        /**
-         * @brief 检查并解析 NEU_ENV_LOG 环境变量来设置开发日志选项。
-         *
-         * 该段代码首先从环境中获取名为 NEU_ENV_LOG 的变量值。
-         * 如果该变量存在，则根据其值（"1" 或 "0"）设置 args->dev_log 标志。
-         * 若环境变量的值既不是 "1" 也不是 "0"，则输出错误信息，并设置 ret 返回值为 -1。
-         *
-         * @param args 指向 neu_cli_args_t 结构体的指针，用于存储命令行参数和配置选项。
-         * @param ret  指向 int 类型的指针，用于存储函数执行状态，成功时应保持不变或设为 0，失败时设为 -1。
-         *
-         * @note 
-         * - NEU_ENV_LOG 环境变量应该被设置为 "1" 或 "0" 来启用或禁用开发日志功能。
-         * - 如果 NEU_ENV_LOG 环境变量未设置，args->dev_log 将不会被修改。
-         * - 错误处理部分会输出错误信息到标准输出，并通过 ret 参数返回错误码。
-         */
+        // -------------------- 解析开发日志配置 --------------------
         char *log = getenv(NEU_ENV_LOG);
         if (log != NULL) {
             if (strcmp(log, "1") == 0) {
@@ -215,21 +223,7 @@ static inline int load_env(neu_cli_args_t *args, char **log_level_out,
             }
         }
 
-        /**
-         * @brief 检查并解析 NEU_ENV_SUB_FILTER_ERROR 环境变量来设置订阅过滤器错误选项。
-         *
-         * 该段代码首先从环境中获取名为 NEU_ENV_SUB_FILTER_ERROR 的变量值。
-         * 如果该变量存在，则根据其值（"1" 或 "0"）设置 args->sub_filter_err 标志。
-         * 若环境变量的值既不是 "1" 也不是 "0"，则输出错误信息，并设置 ret 返回值为 -1。
-         *
-         * @param args 指向 neu_cli_args_t 结构体的指针，用于存储命令行参数和配置选项。
-         * @param ret  指向 int 类型的指针，用于存储函数执行状态，成功时应保持不变或设为 0，失败时设为 -1。
-         *
-         * @note 
-         * - NEU_ENV_SUB_FILTER_ERROR 环境变量应该被设置为 "1" 或 "0" 来启用或禁用订阅过滤器错误处理功能。
-         * - 如果 NEU_ENV_SUB_FILTER_ERROR 环境变量未设置，args->sub_filter_err 将不会被修改。
-         * - 错误处理部分会输出错误信息到标准输出，并通过 ret 参数返回错误码。
-         */
+        // -------------------- 解析订阅过滤器错误配置 --------------------
         char *sub_filter_e = getenv(NEU_ENV_SUB_FILTER_ERROR);
         if (sub_filter_e != NULL) {
             if (strcmp(sub_filter_e, "1") == 0) {
@@ -243,6 +237,7 @@ static inline int load_env(neu_cli_args_t *args, char **log_level_out,
             }
         }
 
+        // -------------------- 解析日志级别（字符串） --------------------
         char *log_level = getenv(NEU_ENV_LOG_LEVEL);
         if (log_level != NULL) {
             if (*log_level_out != NULL) {
@@ -251,6 +246,7 @@ static inline int load_env(neu_cli_args_t *args, char **log_level_out,
             *log_level_out = strdup(log_level);
         }
 
+        // -------------------- 解析重启策略 --------------------
         char *restart = getenv(NEU_ENV_RESTART);
         if (restart != NULL) {
             int t = parse_restart_policy(restart, &args->restart);
@@ -261,6 +257,7 @@ static inline int load_env(neu_cli_args_t *args, char **log_level_out,
             }
         }
 
+        // -------------------- 解析禁用认证配置 --------------------
         char *disable_auth = getenv(NEU_ENV_DISABLE_AUTH);
         if (disable_auth != NULL) {
             if (strcmp(disable_auth, "1") == 0) {
@@ -274,20 +271,7 @@ static inline int load_env(neu_cli_args_t *args, char **log_level_out,
             }
         }
 
-        /**
-         * @brief 检查并解析 NEU_ENV_CONFIG_DIR 环境变量来设置配置目录。
-         *
-         * 该段代码首先从环境中获取名为 NEU_ENV_CONFIG_DIR 的变量值。
-         * 如果该变量存在，则将其值复制到由 config_dir_out 指针指向的位置。
-         * 在设置新值之前，如果 config_dir_out 已经指向一个已分配的字符串，则释放旧的内存。
-         *
-         * @param config_dir_out 指向 char* 类型的指针，用于存储配置目录路径。该指针应在调用此代码前初始化为 NULL 或已分配的内存。
-         *
-         * @note 
-         * - NEU_ENV_CONFIG_DIR 环境变量应包含配置目录的路径。
-         * - 如果 NEU_ENV_CONFIG_DIR 环境变量未设置，config_dir_out 将不会被修改。
-         * - 函数使用 strdup 进行字符串复制，并确保在覆盖旧值前释放旧的内存，以避免内存泄漏。
-         */
+        // -------------------- 解析配置目录路径 --------------------
         char *config_dir = getenv(NEU_ENV_CONFIG_DIR);
         if (config_dir != NULL) {
             if (*config_dir_out != NULL) {
@@ -296,6 +280,7 @@ static inline int load_env(neu_cli_args_t *args, char **log_level_out,
             *config_dir_out = strdup(config_dir);
         }
 
+        // -------------------- 解析插件目录路径 --------------------
         char *plugin_dir = getenv(NEU_ENV_PLUGIN_DIR);
         if (plugin_dir != NULL) {
             if (*plugin_dir_out != NULL) {
@@ -304,6 +289,7 @@ static inline int load_env(neu_cli_args_t *args, char **log_level_out,
             *plugin_dir_out = strdup(plugin_dir);
         }
 
+        // -------------------- 解析系统日志主机 --------------------
         char *syslog_host = getenv(NEU_ENV_SYSLOG_HOST);
         if (NULL != syslog_host) {
             if (NULL != args->syslog_host) {
@@ -312,6 +298,7 @@ static inline int load_env(neu_cli_args_t *args, char **log_level_out,
             args->syslog_host = strdup(syslog_host);
         }
 
+        // -------------------- 解析系统日志端口 --------------------
         char *syslog_port = getenv(NEU_ENV_SYSLOG_PORT);
         if (NULL != syslog_port) {
             int port = atoi(syslog_port);

@@ -1,0 +1,7 @@
+<map id="neu_conn_wait_msg" name="neu_conn_wait_msg">
+<area shape="rect" id="node1" title=" " alt="" coords="5,56,160,83"/>
+<area shape="rect" id="node2" href="$connection_8c.html#a1992f0638a83ea36ecafd8c3d281d4bc" title="Disconnect." alt="" coords="208,5,369,32"/>
+<area shape="rect" id="node4" href="$connection_8c.html#a7931f19c3a2113ec168579e03764e010" title="从网络连接中接收数据。" alt="" coords="229,56,348,83"/>
+<area shape="rect" id="node5" href="$protocol__buf_8h.html#a0355e690085d2cffed22f3d82e50d491" title="Initialization of protocol_unpack_buf." alt="" coords="209,107,369,149"/>
+<area shape="rect" id="node3" href="$connection_8c.html#adbb89b1fcbeddbd2ce591a849a0cbd40" title=" " alt="" coords="417,31,548,57"/>
+</map>

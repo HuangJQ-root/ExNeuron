@@ -1,0 +1,16 @@
+<map id="neu_otel_create_trace" name="neu_otel_create_trace">
+<area shape="rect" id="node1" title=" " alt="" coords="5,315,172,341"/>
+<area shape="rect" id="node2" href="$metrics_8h.html#a2c2763ed60fd2ba11688794cc023b310" title=" " alt="" coords="251,5,428,32"/>
+<area shape="rect" id="node3" href="$otel__manager_8c.html#a93ca57932be54ddd055d820d34715a3c" title=" " alt="" coords="264,56,415,83"/>
+<area shape="rect" id="node5" href="$otel__manager_8c.html#a6abd43a4a216584ef7bc051cc078da8a" title=" " alt="" coords="251,107,427,133"/>
+<area shape="rect" id="node6" href="$time_8h.html#a5d0ec4465fba784c9104077b4ca178f9" title=" " alt="" coords="284,157,395,184"/>
+<area shape="rect" id="node7" href="$common_8pb-c_8c.html#a640259837463e6be1da60b2abb5676fa" title=" " alt="" coords="220,209,459,250"/>
+<area shape="rect" id="node8" href="$common_8pb-c_8c.html#a9be83ac42611589184115f6fa4de3e15" title=" " alt="" coords="220,274,459,315"/>
+<area shape="rect" id="node9" href="$resource_8pb-c_8c.html#a493ab29187be327bf4f12cee7d069162" title=" " alt="" coords="226,339,453,381"/>
+<area shape="rect" id="node10" href="$trace_8pb-c_8c.html#a01c4364050cea568e2e191a7dc9c981a" title=" " alt="" coords="255,405,424,461"/>
+<area shape="rect" id="node11" href="$trace_8pb-c_8c.html#a079d29507be4f46ddd6356d3b4fdd079" title=" " alt="" coords="224,486,455,527"/>
+<area shape="rect" id="node12" href="$trace_8pb-c_8c.html#a5f1ad5463d2da1ff01f586b3d79bac59" title=" " alt="" coords="227,551,451,593"/>
+<area shape="rect" id="node13" href="$otel__manager_8c.html#a21a6ed05516c9e8b3703df989299dd38" title=" " alt="" coords="274,617,405,644"/>
+<area shape="rect" id="node14" href="$argparse_8c.html#a8fd0d93500cc0785f6fc728dbe3c6a85" title=" " alt="" coords="304,668,375,695"/>
+<area shape="rect" id="node4" href="$otel__manager_8c.html#a5cd87e8e93b1dca74928253be0d7d64a" title=" " alt="" coords="507,56,656,83"/>
+</map>

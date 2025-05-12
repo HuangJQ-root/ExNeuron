@@ -1,0 +1,7 @@
+<map id="neu_conn_eth_uninit" name="neu_conn_eth_uninit">
+<area shape="rect" id="node1" title=" " alt="" coords="5,56,161,83"/>
+<area shape="rect" id="node2" href="$event_8h.html#a72e666b9b7b0083a2224c44d0e3e87ba" title="Close a event." alt="" coords="212,5,343,32"/>
+<area shape="rect" id="node3" href="$event_8h.html#a99447dadf45db972fc2d416bb3ce9f01" title="Delete io_event from event." alt="" coords="209,56,345,83"/>
+<area shape="rect" id="node5" href="$connection__eth_8c.html#a6f6dad76c60b4c26985865340e755885" title=" " alt="" coords="223,107,331,133"/>
+<area shape="rect" id="node4" href="$event__linux_8c.html#a0cf559856a501aedd7048a5348839592" title="将指定索引处的事件标记为未使用。" alt="" coords="393,56,485,83"/>
+</map>

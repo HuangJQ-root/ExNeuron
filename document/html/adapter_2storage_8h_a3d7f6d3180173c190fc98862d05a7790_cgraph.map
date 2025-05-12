@@ -1,0 +1,4 @@
+<map id="adapter_load_setting" name="adapter_load_setting">
+<area shape="rect" id="node1" title="从持久化存储中加载适配器的设置信息。" alt="" coords="5,13,164,39"/>
+<area shape="rect" id="node2" href="$persist_8h.html#a133afdf2b217a7f7e3921c230942964e" title="从持久化存储中加载指定节点的设置信息。" alt="" coords="212,5,357,47"/>
+</map>

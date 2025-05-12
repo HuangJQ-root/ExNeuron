@@ -1,0 +1,6 @@
+<map id="stop_group_timer" name="stop_group_timer">
+<area shape="rect" id="node1" title=" " alt="" coords="5,31,141,57"/>
+<area shape="rect" id="node2" href="$adapter_8c.html#a12b6db98d828b2df2221926436fbdfba" title=" " alt="" coords="189,5,361,32"/>
+<area shape="rect" id="node3" href="$event_8h.html#a43ef8ce5b3f27fee5d1fa15a08247da9" title="Remove timer from event." alt="" coords="409,31,568,57"/>
+<area shape="rect" id="node4" href="$event__linux_8c.html#a0cf559856a501aedd7048a5348839592" title="将指定索引处的事件标记为未使用。" alt="" coords="616,31,708,57"/>
+</map>

@@ -1,0 +1,12 @@
+<map id="interface_conn" name="interface_conn">
+<area shape="rect" id="node1" title=" " alt="" coords="330,199,449,225"/>
+<area shape="rect" id="node10" href="$structneu__conn__eth.html" title=" " alt="" coords="282,289,394,316"/>
+<area shape="rect" id="node2" href="$structneu__events.html" title="管理和处理事件的核心结构体。" alt="" coords="200,95,297,121"/>
+<area shape="rect" id="node3" href="$structevent__data.html" title="event_data 结构体用于存储和管理单个事件的相关信息。" alt="" coords="422,5,517,32"/>
+<area shape="rect" id="node4" href="$structneu__event__timer.html" title="neu_event_timer 结构体用于管理定时器事件的相关信息。" alt="" coords="326,95,458,121"/>
+<area shape="rect" id="node5" href="$structneu__event__io.html" title="neu_event_io 结构体用于管理 I/O 事件的相关信息。" alt="" coords="486,95,595,121"/>
+<area shape="rect" id="node6" href="$structcallback__elem__t.html" title=" " alt="" coords="274,380,402,407"/>
+<area shape="rect" id="node7" href="$structUT__hash__handle.html" title=" " alt="" coords="46,289,176,316"/>
+<area shape="rect" id="node8" href="$structUT__hash__table.html" title=" " alt="" coords="52,469,170,496"/>
+<area shape="rect" id="node9" href="$structUT__hash__bucket.html" title=" " alt="" coords="47,380,175,407"/>
+</map>

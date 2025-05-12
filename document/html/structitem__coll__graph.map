@@ -1,0 +1,5 @@
+<map id="item" name="item">
+<area shape="rect" id="node1" title="用于实现消息队列的单个节点结构。" alt="" coords="50,200,102,227"/>
+<area shape="rect" id="node2" href="$structneu__msg__s.html" title="定义消息结构体，包含消息头和柔性数组存储消息体" alt="" coords="29,109,123,136"/>
+<area shape="rect" id="node3" href="$structneu__reqresp__head.html" title="请求/响应头部结构体，用于描述消息的基本信息。" alt="" coords="5,5,147,32"/>
+</map>

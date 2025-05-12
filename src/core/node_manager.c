@@ -36,7 +36,7 @@ typedef struct node_entity {
     /**
      * @brief 节点实体的名字。
      */
-    char *name;
+    char *             name;
 
     /**
      * @brief 指向适配器结构体，其用于描述一个适配器的基础信息及其相关资源。。
@@ -97,8 +97,8 @@ typedef struct node_entity {
  * 节点、添加新节点或移除现有节点等操作
  */
 struct neu_node_manager {
-    node_entity_t *nodes;
-    UT_array *     monitors;
+    node_entity_t * nodes;
+    UT_array *      monitors;
 };
 
 neu_node_manager_t *neu_node_manager_create()

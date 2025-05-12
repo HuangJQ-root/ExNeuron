@@ -69,7 +69,7 @@ typedef struct neu_event_timer {
     struct itimerspec value;
 
     /**
-     * @brief 定时器类型，表示定时器的具体类型（如一次性定时器或周期性定时器）。
+     * @brief 定时器类型：如阻塞或非阻塞。
      */
     neu_event_timer_type_e type;
 
@@ -137,6 +137,16 @@ typedef struct neu_event_io {
  *     构并提高了可维护性。
  * - 4.扩展性：如果将来需要添加新的事件类型（例如信号事件），只需在
  *     event_data 中定义新的字段即可，而不需要修改整个事件管理系统的核心逻辑。
+ * 
+ * @note 
+ * 为什么io的fd和timer的fd的定义位置不同？
+ * 
+ * -将对于 I/O 事件，fd 是公开且必要的信息，在不同的模块和函数中都可能需要直接访问 fd 来进行 I/O 操作。
+ *  将 fd 放在 event_data 中，方便外部代码对 I/O 事件的 fd 进行访问和操作。
+ * 
+ * -对于定时器事件，其内部实现细节（如 fd 的使用）应该被隐藏起来，外部代码只需要关注定时器的定时功能和触发逻辑。
+ *  将 fd 放在 neu_event_timer_t 中，能够实现定时器事件内部信息的封装，减少外部代码对定时器实现细节的依赖，
+ *  提高代码的安全性和稳定性。
  * 
  */
 typedef struct event_data {
@@ -209,6 +219,7 @@ typedef struct event_data {
  *
  * 该结构体封装了事件管理所需的各种资源和状态信息，使用 epoll 机制实现高效的事件多路复用，
  * 并通过多线程方式持续监听和处理注册的事件。在多线程环境中，使用互斥锁确保对共享资源的安全访问。
+ * 
  */
 typedef struct neu_events {
     /**

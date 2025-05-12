@@ -1,0 +1,4 @@
+<map id="neu_conn_tcp_server_close_client" name="neu_conn_tcp_server_close_client">
+<area shape="rect" id="node1" title="Close a client connection." alt="" coords="5,5,164,47"/>
+<area shape="rect" id="node2" href="$connection_8c.html#a5cd6981055e39c9eb94cc524f95ddbb2" title="从 TCP 服务器的客户端列表中移除指定文件描述符对应的客户端。" alt="" coords="212,5,367,47"/>
+</map>

@@ -1,0 +1,52 @@
+<map id="neuron_run" name="neuron_run">
+<area shape="rect" id="node1" title=" " alt="" coords="5,1477,100,1503"/>
+<area shape="rect" id="node2" href="$manager_8c.html#a44329f4d76e7c0acab4d5e06af75def0" title="创建并初始化一个 neu_manager 实例。" alt="" coords="148,1003,307,1030"/>
+<area shape="rect" id="node45" href="$persist_8h.html#a3281850a2e5b026ae05edd3d6554da7b" title="创建并初始化一个 SQLite 持久化实例。" alt="" coords="148,1477,307,1503"/>
+<area shape="rect" id="node47" href="$main_8c.html#a1ee1c53cf345098b4cbfd9d7517cd203" title=" " alt="" coords="179,1561,276,1587"/>
+<area shape="rect" id="node3" href="$core_2storage_8c.html#ac5193bacefc3f621a1c0d54d694db673" title="从持久化存储中加载节点信息并添加到管理器" alt="" coords="377,71,531,98"/>
+<area shape="rect" id="node6" href="$core_2storage_8c.html#a308daa16d3336cb820e36b093820b111" title="从持久化存储中加载插件信息，并将插件添加到管理器中。" alt="" coords="373,189,535,215"/>
+<area shape="rect" id="node9" href="$core_2storage_8c.html#ac93343a2a97da85769db829074af5bcc" title=" " alt="" coords="362,357,546,383"/>
+<area shape="rect" id="node15" href="$manager_8c.html#a8011d2038e38f667f5331411b188eea1" title="事件循环处理函数，用于监听并响应来自网络的消息。" alt="" coords="397,750,511,777"/>
+<area shape="rect" id="node33" href="$event_8h.html#ae70b750f0af0f20acc85765e59291466" title="Add io_event to the event." alt="" coords="384,801,524,827"/>
+<area shape="rect" id="node34" href="$event_8h.html#a841fb7701198b122385290a18e7575e8" title="Add a timer to the event." alt="" coords="373,851,535,878"/>
+<area shape="rect" id="node35" href="$event_8h.html#aed56d75c185404f7c2e80f58ae89123b" title="Creat a new event. When an event is created, a corresponding thread is created, and both io_event and..." alt="" coords="392,902,516,929"/>
+<area shape="rect" id="node36" href="$metrics_8h.html#a4c020752c4c581373d5496be25323913" title="初始化度量指标。" alt="" coords="389,953,519,979"/>
+<area shape="rect" id="node37" href="$node__manager_8c.html#a51e0bc947e0f75110d7ce9daf21e47d8" title=" " alt="" coords="355,1003,553,1030"/>
+<area shape="rect" id="node38" href="$node__manager_8c.html#ab98cf9c0e4adce5598d148d3c1c8ac5f" title=" " alt="" coords="359,1055,549,1096"/>
+<area shape="rect" id="node39" href="$plugin__manager_8c.html#af67f3ba668ce35f6724152326a182d81" title=" " alt="" coords="375,1120,533,1161"/>
+<area shape="rect" id="node40" href="$plugin__manager_8c.html#a9c9ee7e6b60c470814d054e0ed8c2d0b" title="从插件管理器中获取所有单例插件的信息。" alt="" coords="375,1185,533,1227"/>
+<area shape="rect" id="node41" href="$subscribe_8c.html#ad47f4f14e35c4b61a7ab96ddfc12ba32" title=" " alt="" coords="364,1251,544,1292"/>
+<area shape="rect" id="node42" href="$manager_8c.html#a8a20b96e391eba98039e716c7ca576d8" title="启动单个适配器" alt="" coords="377,1317,531,1343"/>
+<area shape="rect" id="node43" href="$manager_8c.html#a4c223a13a2d169047247016fc314a027" title="启动静态适配器。" alt="" coords="378,1367,530,1394"/>
+<area shape="rect" id="node44" href="$manager_8c.html#a8aec1bee6428b9eab3ce0b75b5db37b0" title=" " alt="" coords="381,1418,527,1445"/>
+<area shape="rect" id="node4" href="$manager__internal_8c.html#a7870ea0fc4ba24b86f88bbdf29580668" title="向节点管理器中添加一个新的节点。" alt="" coords="624,71,805,98"/>
+<area shape="rect" id="node5" href="$persist_8h.html#a887dca3e49a4edb7e12fd0292d956044" title=" " alt="" coords="642,5,787,47"/>
+<area shape="rect" id="node7" href="$manager__internal_8c.html#a010763d46e468a2eb4aa0aff1f6de113" title=" " alt="" coords="620,189,809,215"/>
+<area shape="rect" id="node8" href="$persist_8h.html#a3ddb5163c396da6cfebb6dda23775a03" title="从默认配置文件和用户配置文件中加载插件信息，并合并去重。" alt="" coords="642,123,787,164"/>
+<area shape="rect" id="node10" href="$manager__internal_8c.html#ac72ad765a5d3c7afac5b89aefac1d69a" title=" " alt="" coords="605,357,824,383"/>
+<area shape="rect" id="node11" href="$manager__internal_8c.html#a4b9e4ec200e76d8825b8ebb2c30d3ec6" title="向指定的应用程序订阅数据。" alt="" coords="625,407,805,434"/>
+<area shape="rect" id="node13" href="$node__manager_8c.html#a213f55121aaf69e22ba08ec4cbbae007" title=" " alt="" coords="625,239,804,266"/>
+<area shape="rect" id="node14" href="$persist_8h.html#a1a79d5e8611f292cb397162030426afe" title=" " alt="" coords="642,291,787,332"/>
+<area shape="rect" id="node12" href="$adapter_8c.html#a5db94d05167b605e2608e7aaa334bf16" title=" " alt="" coords="876,458,1043,485"/>
+<area shape="rect" id="node16" href="$adapter_2storage_8c.html#aab55a90fbfcc9dc1cbbb82454720b3d1" title=" " alt="" coords="635,509,794,551"/>
+<area shape="rect" id="node17" href="$adapter_2storage_8c.html#a52fa958f90dd788e3065e0fe690df71b" title=" " alt="" coords="617,575,812,602"/>
+<area shape="rect" id="node18" href="$adapter_2storage_8c.html#a94158e1e5e26349762afe2a0598a4216" title=" " alt="" coords="625,626,805,653"/>
+<area shape="rect" id="node19" href="$manager_8c.html#aa48025c42b07747da0f6649fe059d90c" title=" " alt="" coords="658,677,771,703"/>
+<area shape="rect" id="node20" href="$manager_8c.html#a65b464232c8dc8ccc7d1b631a66c7a3f" title=" " alt="" coords="906,753,1013,779"/>
+<area shape="rect" id="node21" href="$manager_8c.html#ab2f4ff4053bc92047f02aa3f6c6f6776" title=" " alt="" coords="642,778,787,805"/>
+<area shape="rect" id="node22" href="$core_2storage_8c.html#a51481ce43e74a22844f9b12dc4cfd6a2" title=" " alt="" coords="611,1317,818,1343"/>
+<area shape="rect" id="node23" href="$core_2storage_8c.html#ab870250d6fa6d65bc2730219d1aadb1f" title=" " alt="" coords="613,829,816,855"/>
+<area shape="rect" id="node24" href="$core_2storage_8c.html#a795f57e3df1501f3acf9cd9e373acd98" title=" " alt="" coords="612,879,817,906"/>
+<area shape="rect" id="node25" href="$core_2storage_8c.html#a185ea8b76c34e3815d3549debaab8edf" title=" " alt="" coords="604,930,825,957"/>
+<area shape="rect" id="node26" href="$core_2storage_8c.html#a95ca3fa6d1aacc93158c772e4dad6cdb" title=" " alt="" coords="601,981,828,1007"/>
+<area shape="rect" id="node27" href="$core_2storage_8c.html#aab27a13d532e165d5ada204e1212aa8e" title=" " alt="" coords="621,1032,809,1073"/>
+<area shape="rect" id="node28" href="$core_2storage_8c.html#a737eeb8f6314cbab1180e43dba12a3de" title=" " alt="" coords="621,1098,809,1125"/>
+<area shape="rect" id="node29" href="$manager_8c.html#a285e8060dbd675f898bb19066082d9a5" title=" " alt="" coords="639,1149,791,1175"/>
+<area shape="rect" id="node30" href="$manager_8c.html#a055a6075e338e14147c7e59aa0d7595a" title=" " alt="" coords="634,1199,795,1226"/>
+<area shape="rect" id="node31" href="$driver_8c.html#a49d6df6242f3d54dd81d8eefba3eb4b8" title=" " alt="" coords="641,1251,789,1292"/>
+<area shape="rect" id="node32" href="$adapter_8c.html#a4501f7a68c018b04b354d2246cc7c7c0" title="启动指定的适配器。" alt="" coords="645,1367,785,1394"/>
+<area shape="rect" id="node46" href="$sqlite_8c.html#adc625926a583da917990517f2e96a78a" title="创建并初始化一个 SQLite 持久化实例。" alt="" coords="377,1469,531,1511"/>
+<area shape="rect" id="node48" href="$manager_8c.html#abe219f83b8911da12f2f98cfc3a399fd" title="销毁管理器并释放所有关联资源" alt="" coords="371,1535,537,1562"/>
+<area shape="rect" id="node49" href="$persist_8h.html#a5be2010a1709366a73deb0e937395348" title=" " alt="" coords="371,1586,537,1613"/>
+<area shape="rect" id="node50" href="$zlog_8h.html#a1c4a07ba2c6260d61065e0167a9aa40c" title=" " alt="" coords="416,1637,492,1663"/>
+</map>

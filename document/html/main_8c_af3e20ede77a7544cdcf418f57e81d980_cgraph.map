@@ -1,0 +1,6 @@
+<map id="config_remote_syslog" name="config_remote_syslog">
+<area shape="rect" id="node1" title="配置远程系统日志。" alt="" coords="5,31,169,57"/>
+<area shape="rect" id="node2" href="$main_8c.html#a7c5909c507cad6f6d03955a7fdbc5a26" title="发送日志消息到远程系统日志服务器。" alt="" coords="220,5,339,32"/>
+<area shape="rect" id="node4" href="$zlog_8h.html#ae38f29ff8b915dc369e48e1deb67c386" title=" " alt="" coords="217,56,341,83"/>
+<area shape="rect" id="node3" href="$main_8c.html#a1ee916df21f3a9f013eb1ec01aa71cb8" title=" " alt="" coords="389,5,508,32"/>
+</map>

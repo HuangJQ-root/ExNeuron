@@ -1,0 +1,19 @@
+<map id="neu_manager_destroy" name="neu_manager_destroy">
+<area shape="rect" id="node1" title="销毁管理器并释放所有关联资源" alt="" coords="5,284,172,311"/>
+<area shape="rect" id="node2" href="$event_8h.html#a72e666b9b7b0083a2224c44d0e3e87ba" title="Close a event." alt="" coords="258,5,389,32"/>
+<area shape="rect" id="node3" href="$event_8h.html#a99447dadf45db972fc2d416bb3ce9f01" title="Delete io_event from event." alt="" coords="255,56,391,83"/>
+<area shape="rect" id="node5" href="$event_8h.html#a43ef8ce5b3f27fee5d1fa15a08247da9" title="Remove timer from event." alt="" coords="244,107,403,133"/>
+<area shape="rect" id="node6" href="$msg__internal_8h.html#a5195c708c0277504d339cae804fe4f87" title="释放消息对象占用的内存。" alt="" coords="266,157,381,184"/>
+<area shape="rect" id="node7" href="$msg__internal_8h.html#a8a4e4172b68b0b7097f7e00b3cf5c4fa" title=" " alt="" coords="243,208,404,235"/>
+<area shape="rect" id="node8" href="$msg__internal_8h.html#a247645eb329c23222e21eb7e684781fe" title="创建一个新的消息对象。" alt="" coords="266,259,381,285"/>
+<area shape="rect" id="node10" href="$node__manager_8c.html#a204fb7e3a1c34a8801a98c14dbdaa39e" title=" " alt="" coords="220,309,427,336"/>
+<area shape="rect" id="node11" href="$node__manager_8c.html#adb577a7ff1505f501806ad51a6cad26f" title=" " alt="" coords="234,361,413,402"/>
+<area shape="rect" id="node12" href="$node__manager_8c.html#af84240da9d424e19dbd27620eb411149" title=" " alt="" coords="232,427,415,453"/>
+<area shape="rect" id="node13" href="$plugin__manager_8c.html#ade7e836e52499a80769f60de9b5d7cf9" title=" " alt="" coords="244,478,403,519"/>
+<area shape="rect" id="node15" href="$msg__internal_8h.html#a02fa7954cca3a96d63d6e847967c91be" title="通过指定的 Unix 域套接字地址发送消息。" alt="" coords="254,544,393,571"/>
+<area shape="rect" id="node16" href="$subscribe_8c.html#a9607d63711a3f4120011d56359f3f852" title=" " alt="" coords="233,595,413,637"/>
+<area shape="rect" id="node4" href="$event__linux_8c.html#a0cf559856a501aedd7048a5348839592" title="将指定索引处的事件标记为未使用。" alt="" coords="515,81,607,108"/>
+<area shape="rect" id="node9" href="$msg__internal_8h.html#a72998fc603b4655250d5978cf7a6b6d5" title="XX 宏的作用 #define XX(type, structure) \ case type: \ return sizeof(structure); 定义了一个宏 XX，它接受两个参数 type 和..." alt="" coords="494,259,629,285"/>
+<area shape="rect" id="node14" href="$plugin__manager_8c.html#aff3579e90c6db1783bac31ff43bf2428" title="释放插件实体占用的所有资源。" alt="" coords="515,485,608,512"/>
+<area shape="rect" id="node17" href="$subscribe_8h.html#a7f6159686921dde4a0a5614968eccd22" title=" " alt="" coords="475,603,648,629"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="neu_http_handler" name="neu_http_handler">
+<area shape="rect" id="node1" title="HTTP处理器结构体，用于定义处理HTTP请求的方法、URL、类型及其实现。" alt="" coords="21,109,156,136"/>
+<area shape="rect" id="node2" href="$unionneu__http__handler_1_1neu__http__handler__value.html" title="处理器值联合体。" alt="" coords="5,5,172,47"/>
+</map>

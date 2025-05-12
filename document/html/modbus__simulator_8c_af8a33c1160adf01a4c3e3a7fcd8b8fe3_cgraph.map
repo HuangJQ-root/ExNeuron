@@ -1,0 +1,18 @@
+<map id="recv_msg" name="recv_msg">
+<area shape="rect" id="node1" title=" " alt="" coords="5,195,91,221"/>
+<area shape="rect" id="node2" href="$modbus__simulator_8c.html#a8831fb618efddc548434326c42e5f6f3" title=" " alt="" coords="195,5,280,32"/>
+<area shape="rect" id="node3" href="$modbus__s_8c.html#adb45bc8aafc33c9d75d7ab96d382bbfd" title=" " alt="" coords="167,56,308,83"/>
+<area shape="rect" id="node6" href="$modbus__s_8c.html#ad884b1b4a3a044e1c918662e77f4f457" title=" " alt="" coords="166,107,309,133"/>
+<area shape="rect" id="node7" href="$neu__connection_8h.html#a0c9c48f9b306708bf359b4628ef942b9" title="Close a client connection." alt="" coords="158,158,317,199"/>
+<area shape="rect" id="node9" href="$neu__connection_8h.html#a0d54280a0c947d801d37f3cebdc9bf65" title="Receive data via tcp server connection read." alt="" coords="140,275,335,301"/>
+<area shape="rect" id="node10" href="$neu__connection_8h.html#adfcd97eedd5fde6d9a398f528ebd6958" title="Specify the client to send data." alt="" coords="139,224,336,251"/>
+<area shape="rect" id="node14" href="$event_8h.html#a99447dadf45db972fc2d416bb3ce9f01" title="Delete io_event from event." alt="" coords="169,325,305,352"/>
+<area shape="rect" id="node16" href="$time_8h.html#a1c9d9a0d2bbf7830fdc34a318c163232" title=" " alt="" coords="187,376,288,403"/>
+<area shape="rect" id="node4" href="$modbus__s_8c.html#a6dab7100741cae3c3055bd35f1449789" title=" " alt="" coords="414,107,525,133"/>
+<area shape="rect" id="node5" href="$modbus__s_8c.html#a5601c59e05a58a041ab93140774fdb54" title=" " alt="" coords="412,56,527,83"/>
+<area shape="rect" id="node8" href="$connection_8c.html#a5cd6981055e39c9eb94cc524f95ddbb2" title="从 TCP 服务器的客户端列表中移除指定文件描述符对应的客户端。" alt="" coords="392,158,547,199"/>
+<area shape="rect" id="node11" href="$connection_8c.html#a8632dc263a1a70e3aadd72c72ddb820e" title="启动 TCP 服务器监听。" alt="" coords="384,224,555,251"/>
+<area shape="rect" id="node12" href="$connection_8c.html#a16a52c768d652c4dcfa583df5933b1dd" title=" " alt="" coords="603,199,671,225"/>
+<area shape="rect" id="node13" href="$connection_8c.html#a4a08211800aced7472145af053011ee7" title=" " alt="" coords="603,249,671,276"/>
+<area shape="rect" id="node15" href="$event__linux_8c.html#a0cf559856a501aedd7048a5348839592" title="将指定索引处的事件标记为未使用。" alt="" coords="423,325,515,352"/>
+</map>

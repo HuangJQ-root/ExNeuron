@@ -1,0 +1,52 @@
+<map id="start_single_adapter" name="start_single_adapter">
+<area shape="rect" id="node1" title="启动单个适配器" alt="" coords="5,747,160,773"/>
+<area shape="rect" id="node2" href="$core_2storage_8c.html#a51481ce43e74a22844f9b12dc4cfd6a2" title=" " alt="" coords="208,81,415,108"/>
+<area shape="rect" id="node7" href="$adapter_8c.html#a66f33dbccefd1506e6fa56c26ac84b0a" title="创建并初始化一个新的适配器实例。" alt="" coords="236,671,387,697"/>
+<area shape="rect" id="node46" href="$adapter_8c.html#ac0be90d43618c592594f8f96f195ebca" title="向管理器发送适配器初始化消息。" alt="" coords="503,949,633,976"/>
+<area shape="rect" id="node48" href="$adapter_8c.html#a64fa15a14d235d66779eb13f2070befb" title=" " alt="" coords="218,772,405,799"/>
+<area shape="rect" id="node49" href="$node__manager_8c.html#adbb3221d0779f811d970f4a5f736c562" title=" " alt="" coords="221,823,402,865"/>
+<area shape="rect" id="node50" href="$plugin__manager_8c.html#a226c813a7193a5db70c7b9e3040bb97c" title="根据插件名称在插件管理器中创建插件实例。" alt="" coords="232,889,391,930"/>
+<area shape="rect" id="node3" href="$manager__internal_8c.html#aa59a3bc26c7c77ef2c902a629c0f62db" title=" " alt="" coords="463,5,673,32"/>
+<area shape="rect" id="node5" href="$persist_8h.html#ab407459ed864007eecda8b1b37e98165" title=" " alt="" coords="471,56,665,83"/>
+<area shape="rect" id="node6" href="$persist_8h.html#a9be81b508c5bd69865fbf642a8099286" title=" " alt="" coords="473,107,663,133"/>
+<area shape="rect" id="node4" href="$node__manager_8c.html#ae8a5340b8b78d3932550a20f3d683e2f" title=" " alt="" coords="728,5,909,32"/>
+<area shape="rect" id="node8" href="$adapter_8c.html#a508fd653f42b8dd66922efe33df17ebf" title="消费者线程函数，处理适配器消息队列中的消息。" alt="" coords="497,477,639,504"/>
+<area shape="rect" id="node14" href="$adapter_2storage_8c.html#a33ffcd381bb224d5007f6d8cc1875ed3" title="从持久化存储中加载适配器驱动的组和标签信息。" alt="" coords="493,1363,643,1405"/>
+<area shape="rect" id="node22" href="$adapter_2storage_8c.html#a3d7f6d3180173c190fc98862d05a7790" title="从持久化存储中加载适配器的设置信息。" alt="" coords="739,351,898,377"/>
+<area shape="rect" id="node24" href="$adapter_8c.html#ac015f93763a9b5fb865410bdb3183471" title="适配器的事件循环处理函数。" alt="" coords="515,1000,621,1027"/>
+<area shape="rect" id="node29" href="$plugin_8h.html#aeed2304733a2ba56247be8f138abcdb3" title=" " alt="" coords="739,1605,899,1646"/>
+<area shape="rect" id="node31" href="$zlog_8h.html#a198df360c740264a6773fbfdc49f79b3" title=" " alt="" coords="750,1203,887,1229"/>
+<area shape="rect" id="node32" href="$msg__q_8c.html#a289a5862769617cd0be2ff86e17e1b28" title="创建并初始化一个新的适配器消息队列。" alt="" coords="490,325,646,352"/>
+<area shape="rect" id="node33" href="$adapter_2storage_8c.html#af61d4ff4bf04affdfeac01358e7639fa" title=" " alt="" coords="484,376,652,403"/>
+<area shape="rect" id="node34" href="$adapter_8c.html#a306a4cec25887b5c31e518c79cda3475" title="处理传输数据事件。" alt="" coords="494,899,642,925"/>
+<area shape="rect" id="node35" href="$adapter_8c.html#a5fa26530e03462e1e13ba5cc5e120fe8" title=" " alt="" coords="501,528,635,555"/>
+<area shape="rect" id="node36" href="$adapter_8c.html#aa26261d1c57845fee606c423f438606b" title=" " alt="" coords="489,275,647,301"/>
+<area shape="rect" id="node37" href="$driver_8c.html#a4cd5cc9faea9e541ede735b355790b68" title="创建一个新的驱动适配器实例。" alt="" coords="494,209,642,250"/>
+<area shape="rect" id="node38" href="$event_8h.html#aed56d75c185404f7c2e80f58ae89123b" title="Creat a new event. When an event is created, a corresponding thread is created, and both io_event and..." alt="" coords="757,187,881,213"/>
+<area shape="rect" id="node39" href="$driver_8c.html#a7898cee7a7ee96b68a90768806f182bc" title=" " alt="" coords="494,579,642,621"/>
+<area shape="rect" id="node40" href="$driver_8c.html#aae3ac568103063021ad4e253e159acb5" title="初始化适配器驱动。" alt="" coords="480,645,656,672"/>
+<area shape="rect" id="node41" href="$adapter_8c.html#a6e65e204a34f5634ac30cabb84cdb430" title=" " alt="" coords="484,696,652,723"/>
+<area shape="rect" id="node42" href="$event_8h.html#ae70b750f0af0f20acc85765e59291466" title="Add io_event to the event." alt="" coords="498,747,638,773"/>
+<area shape="rect" id="node43" href="$event_8h.html#a99447dadf45db972fc2d416bb3ce9f01" title="Delete io_event from event." alt="" coords="500,797,636,824"/>
+<area shape="rect" id="node44" href="$manager_8c.html#acd56210c31fdf434514b575e72ab56e7" title="获取并递增端口号。" alt="" coords="482,848,654,875"/>
+<area shape="rect" id="node45" href="$plugin_8h.html#a9a738e902b6984321f7f8fca169830cc" title="Check the common parameter in the plugin." alt="" coords="467,1579,669,1605"/>
+<area shape="rect" id="node9" href="$msg__q_8c.html#ac099b9ca3054fb9a52fddfb489efb61b" title="从适配器消息队列中弹出一条消息。" alt="" coords="742,477,895,504"/>
+<area shape="rect" id="node10" href="$msg__internal_8h.html#a5195c708c0277504d339cae804fe4f87" title="释放消息对象占用的内存。" alt="" coords="761,680,876,707"/>
+<area shape="rect" id="node11" href="$msg__internal_8h.html#a8a4e4172b68b0b7097f7e00b3cf5c4fa" title=" " alt="" coords="738,731,899,757"/>
+<area shape="rect" id="node12" href="$msg_8h.html#a212efea9ecb4ffd7c7cecc3e8077dd27" title=" " alt="" coords="727,629,910,656"/>
+<area shape="rect" id="node13" href="$msg_8h.html#ae4a4a8acbcf4ba1c601418cce78faa0e" title=" " alt="" coords="741,553,896,580"/>
+<area shape="rect" id="node15" href="$driver_8c.html#a3a827036e7c0a0a87e2324aad56df52e" title="向适配器驱动中添加一个新的组。" alt="" coords="969,1254,1117,1295"/>
+<area shape="rect" id="node16" href="$driver_8c.html#a4a8bb4597120c90c9548d90559ccd7d1" title="向适配器驱动中添加标签信息。" alt="" coords="745,1254,893,1295"/>
+<area shape="rect" id="node18" href="$driver_8c.html#a102f3ac6201b22dba08905192cb7e1c7" title=" " alt="" coords="745,1539,893,1581"/>
+<area shape="rect" id="node19" href="$cid_8h.html#a2c87e7baf447dd1ec82ec0784cd61e60" title=" " alt="" coords="725,1371,912,1397"/>
+<area shape="rect" id="node20" href="$persist_8h.html#a83dfc8102c9de5ce70b83858d8898eb0" title=" " alt="" coords="746,1422,891,1463"/>
+<area shape="rect" id="node21" href="$persist_8h.html#a0f28eaee3e51ca22798892e52c29e02f" title=" " alt="" coords="729,1488,909,1515"/>
+<area shape="rect" id="node17" href="$adapter_2storage_8c.html#aab55a90fbfcc9dc1cbbb82454720b3d1" title=" " alt="" coords="964,1115,1123,1157"/>
+<area shape="rect" id="node23" href="$persist_8h.html#a133afdf2b217a7f7e3921c230942964e" title="从持久化存储中加载指定节点的设置信息。" alt="" coords="971,343,1116,385"/>
+<area shape="rect" id="node25" href="$adapter_2storage_8c.html#a52fa958f90dd788e3065e0fe690df71b" title=" " alt="" coords="721,1101,916,1128"/>
+<area shape="rect" id="node26" href="$adapter_2storage_8c.html#a556b53a66b209ad9ef923b0cd57a7c8f" title=" " alt="" coords="741,883,896,925"/>
+<area shape="rect" id="node27" href="$adapter_2storage_8c.html#a30b43df4724b2915d306b06a2588bfbc" title=" " alt="" coords="727,949,910,976"/>
+<area shape="rect" id="node28" href="$adapter_2storage_8c.html#a94158e1e5e26349762afe2a0598a4216" title=" " alt="" coords="729,1000,909,1027"/>
+<area shape="rect" id="node30" href="$msg__internal_8h.html#a461d10dfad0d3fb7d3b124e1494432ee" title="通过文件描述符发送消息。" alt="" coords="759,832,878,859"/>
+<area shape="rect" id="node47" href="$msg__internal_8h.html#a247645eb329c23222e21eb7e684781fe" title="创建一个新的消息对象。" alt="" coords="761,781,876,808"/>
+</map>

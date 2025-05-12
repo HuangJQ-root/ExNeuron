@@ -1,0 +1,13 @@
+<map id="read_report_group" name="read_report_group">
+<area shape="rect" id="node1" title="从缓存中读取标签值并根据特定条件进行报告。" alt="" coords="5,144,147,171"/>
+<area shape="rect" id="node2" href="$driver_8c.html#acf3a86e2dfb4ab06256856c12d6958f6" title="对 neu_dvalue_t 类型的双精度浮点数进行格式化处理。" alt="" coords="229,5,366,32"/>
+<area shape="rect" id="node3" href="$cache_8c.html#a9a7ff10a42d5f2254cdf4347ce5a2ba6" title="从缓存中获取指定组和标签的值及其元数据。" alt="" coords="195,56,400,83"/>
+<area shape="rect" id="node5" href="$cache_8c.html#ae240a096284dfcac8bcd318272a2862b" title="从缓存中获取指定组和标签的变化值。" alt="" coords="209,107,386,149"/>
+<area shape="rect" id="node6" href="$type_8h.html#aa7ebeef650cc8f3e2f65e95f427a90d1" title=" " alt="" coords="252,173,343,200"/>
+<area shape="rect" id="node7" href="$type_8h.html#a3424a4f0ad900ce3847b9074703558e1" title=" " alt="" coords="245,224,349,251"/>
+<area shape="rect" id="node11" href="$tag_8h.html#a625e0ebdf976f8fdfb54bc6567b48ccf" title="测试标签是否具有指定的属性。" alt="" coords="213,275,382,301"/>
+<area shape="rect" id="node4" href="$cache_8c.html#a26a2ab2a56c24f7fa7f9d655e243eaf8" title=" " alt="" coords="467,85,533,112"/>
+<area shape="rect" id="node8" href="$type_8h.html#af3c77dbb669a5e92d191108186c305ad" title=" " alt="" coords="448,224,552,251"/>
+<area shape="rect" id="node9" href="$type_8h.html#acb565c9f6abf0a2936a50e976109ff66" title=" " alt="" coords="600,199,705,225"/>
+<area shape="rect" id="node10" href="$type_8h.html#a7488f6d2f536b2ceb592a2f89956241c" title=" " alt="" coords="601,249,705,276"/>
+</map>

@@ -1,0 +1,9 @@
+<map id="neu_adapter_driver_get_read_tag" name="neu_adapter_driver_get_read_tag">
+<area shape="rect" id="node1" title="获取可读标签集" alt="" coords="5,23,153,65"/>
+<area shape="rect" id="node2" href="$structgroup.html#a62f042052b2e1d5ac4c979d89cb84906" title="指向 neu_group_t 类型结构体的指针。" alt="" coords="241,5,345,32"/>
+<area shape="rect" id="node3" href="$group_8c.html#a51224d831ac8d9c7672aa7ae31eb3f02" title="获取组中所有可读的标签。" alt="" coords="201,56,384,83"/>
+<area shape="rect" id="node4" href="$group_8c.html#a325abfbe413328c2334910916fec954e" title="根据给定的谓词过滤标签列表。" alt="" coords="437,31,524,57"/>
+<area shape="rect" id="node6" href="$group_8c.html#a1c82177b3dd84c10eb264e590e6a2388" title="判断标签是否具有可读或可订阅属性。" alt="" coords="432,81,529,108"/>
+<area shape="rect" id="node5" href="$tag_8h.html#acdcf2b9c571dc38c131362b14c7c00ab" title="获取用于数据标签管理的UT_icd结构体指针。" alt="" coords="598,31,726,57"/>
+<area shape="rect" id="node7" href="$tag_8h.html#a625e0ebdf976f8fdfb54bc6567b48ccf" title="测试标签是否具有指定的属性。" alt="" coords="577,81,747,108"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="neu_event_del_io" name="neu_event_del_io">
+<area shape="rect" id="node1" title="从事件循环中删除一个I/O事件。" alt="" coords="5,5,141,32"/>
+<area shape="rect" id="node2" href="$event__linux_8c.html#a0cf559856a501aedd7048a5348839592" title="将指定索引处的事件标记为未使用。" alt="" coords="189,5,281,32"/>
+</map>

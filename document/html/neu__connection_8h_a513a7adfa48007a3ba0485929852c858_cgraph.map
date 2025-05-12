@@ -1,0 +1,9 @@
+<map id="neu_conn_new" name="neu_conn_new">
+<area shape="rect" id="node1" title="create a new connection." alt="" coords="5,81,124,108"/>
+<area shape="rect" id="node2" href="$connection_8c.html#a88b3b7fcf4e7f37622a7c15292e4eb1e" title=" " alt="" coords="192,5,323,32"/>
+<area shape="rect" id="node3" href="$connection_8c.html#a8632dc263a1a70e3aadd72c72ddb820e" title="启动 TCP 服务器监听。" alt="" coords="172,56,343,83"/>
+<area shape="rect" id="node6" href="$modbus__simulator_8c.html#aa367b820541bcd72148577fdc1ae89fd" title=" " alt="" coords="213,107,302,133"/>
+<area shape="rect" id="node7" href="$modbus__simulator_8c.html#a92e357610c5583711db4b87b6706ff11" title=" " alt="" coords="203,157,311,184"/>
+<area shape="rect" id="node4" href="$connection_8c.html#a16a52c768d652c4dcfa583df5933b1dd" title=" " alt="" coords="391,31,459,57"/>
+<area shape="rect" id="node5" href="$connection_8c.html#a4a08211800aced7472145af053011ee7" title=" " alt="" coords="391,81,459,108"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="neu_event_new" name="neu_event_new">
+<area shape="rect" id="node1" title="创建并初始化一个新的事件管理器实例。" alt="" coords="5,5,129,32"/>
+<area shape="rect" id="node2" href="$event__linux_8c.html#a45a8a4df3da87cc394c3691950d2bf51" title="事件循环线程的主函数。" alt="" coords="177,5,272,32"/>
+</map>

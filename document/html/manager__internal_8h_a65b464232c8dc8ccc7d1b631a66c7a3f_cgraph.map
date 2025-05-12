@@ -1,0 +1,7 @@
+<map id="forward_msg" name="forward_msg">
+<area shape="rect" id="node1" title=" " alt="" coords="5,81,112,108"/>
+<area shape="rect" id="node2" href="$msg__internal_8h.html#a5195c708c0277504d339cae804fe4f87" title="释放消息对象占用的内存。" alt="" coords="210,5,325,32"/>
+<area shape="rect" id="node3" href="$node__manager_8c.html#abb808c6e3613f40836b0daf7853f57bc" title=" " alt="" coords="160,56,375,83"/>
+<area shape="rect" id="node4" href="$msg_8h.html#a212efea9ecb4ffd7c7cecc3e8077dd27" title=" " alt="" coords="176,107,359,133"/>
+<area shape="rect" id="node5" href="$msg__internal_8h.html#a02fa7954cca3a96d63d6e847967c91be" title="通过指定的 Unix 域套接字地址发送消息。" alt="" coords="198,157,337,184"/>
+</map>

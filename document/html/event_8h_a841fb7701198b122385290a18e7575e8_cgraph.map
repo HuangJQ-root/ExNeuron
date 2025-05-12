@@ -1,0 +1,4 @@
+<map id="neu_event_add_timer" name="neu_event_add_timer">
+<area shape="rect" id="node1" title="Add a timer to the event." alt="" coords="5,5,168,32"/>
+<area shape="rect" id="node2" href="$event__linux_8c.html#a25fcd2e3335e715cadc7be0229ec040f" title="获取一个空闲的事件索引。" alt="" coords="216,5,336,32"/>
+</map>

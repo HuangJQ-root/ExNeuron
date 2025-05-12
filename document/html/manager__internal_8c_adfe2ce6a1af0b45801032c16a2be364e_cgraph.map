@@ -1,0 +1,8 @@
+<map id="manager_subscribe" name="manager_subscribe">
+<area shape="rect" id="node1" title="执行实际的订阅操作，这是一个内部辅助函数。" alt="" coords="5,97,155,123"/>
+<area shape="rect" id="node2" href="$driver_8c.html#ae922a1ac1f31e39a859b425bdf1b9cc8" title=" " alt="" coords="236,5,384,47"/>
+<area shape="rect" id="node3" href="$node__manager_8c.html#ae8a5340b8b78d3932550a20f3d683e2f" title=" " alt="" coords="219,71,401,98"/>
+<area shape="rect" id="node4" href="$node__manager_8c.html#abb808c6e3613f40836b0daf7853f57bc" title=" " alt="" coords="203,122,417,149"/>
+<area shape="rect" id="node5" href="$subscribe_8c.html#a3b5f54a863541a78f32fbab4386dc48e" title="处理订阅请求，将应用程序订阅到指定驱动程序的组。" alt="" coords="205,173,415,199"/>
+<area shape="rect" id="node6" href="$subscribe_8h.html#a7f6159686921dde4a0a5614968eccd22" title=" " alt="" coords="465,173,639,199"/>
+</map>

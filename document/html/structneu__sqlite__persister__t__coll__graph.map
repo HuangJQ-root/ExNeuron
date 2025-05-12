@@ -1,0 +1,4 @@
+<map id="neu_sqlite_persister_t" name="neu_sqlite_persister_t">
+<area shape="rect" id="node1" title="用于表示 SQLite 持久化器的结构体。" alt="" coords="5,95,171,121"/>
+<area shape="rect" id="node2" href="$structneu__persister__vtbl__s.html" title="虚函数表，定义了一组函数指针，这些指针指向不同的函数， 这些函数实现了持久化对象的各种操作。通过使用虚函数表， 可以在运行时根据实际的持久化对象类型调用相应的函数， 从而实现多态性(不同的持久化对象如s..." alt="" coords="10,5,166,32"/>
+</map>

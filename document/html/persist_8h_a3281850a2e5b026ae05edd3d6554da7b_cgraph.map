@@ -1,0 +1,5 @@
+<map id="neu_persister_create" name="neu_persister_create">
+<area shape="rect" id="node1" title="创建并初始化一个 SQLite 持久化实例。" alt="" coords="5,13,164,39"/>
+<area shape="rect" id="node2" href="$sqlite_8c.html#adc625926a583da917990517f2e96a78a" title="创建并初始化一个 SQLite 持久化实例。" alt="" coords="212,5,365,47"/>
+<area shape="rect" id="node3" href="$sqlite_8c.html#ae1d0e648c4be350d79213152e4b136a4" title="打开或创建一个 SQLite 数据库，并应用模式文件。" alt="" coords="413,13,491,39"/>
+</map>

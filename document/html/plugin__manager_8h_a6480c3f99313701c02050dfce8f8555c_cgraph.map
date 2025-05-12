@@ -1,0 +1,4 @@
+<map id="neu_plugin_manager_del" name="neu_plugin_manager_del">
+<area shape="rect" id="node1" title="从插件管理器中删除指定名称的插件。" alt="" coords="5,5,191,32"/>
+<area shape="rect" id="node2" href="$plugin__manager_8c.html#aff3579e90c6db1783bac31ff43bf2428" title="释放插件实体占用的所有资源。" alt="" coords="239,5,332,32"/>
+</map>

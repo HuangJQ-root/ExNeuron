@@ -1,0 +1,7 @@
+<map id="neu_plugin_manager" name="neu_plugin_manager">
+<area shape="rect" id="node1" title="插件管理器结构体，负责管理所有的插件实体。" alt="" coords="5,187,164,213"/>
+<area shape="rect" id="node2" href="$structplugin__entity.html" title="存储插件实体的相关信息。" alt="" coords="31,97,138,124"/>
+<area shape="rect" id="node3" href="$structUT__hash__handle.html" title=" " alt="" coords="160,7,289,33"/>
+<area shape="rect" id="node4" href="$structUT__hash__table.html" title=" " alt="" coords="240,187,359,213"/>
+<area shape="rect" id="node5" href="$structUT__hash__bucket.html" title=" " alt="" coords="235,97,363,124"/>
+</map>

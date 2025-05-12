@@ -1,0 +1,13 @@
+<map id="neu_adapter_register_group_metric" name="neu_adapter_register_group_metric">
+<area shape="rect" id="node1" title=" " alt="" coords="5,54,165,95"/>
+<area shape="rect" id="node2" href="$metrics_8h.html#a2300d2f7ef66d9da931b9c005407b988" title="向节点度量中添加一个新的度量项。" alt="" coords="213,61,385,88"/>
+<area shape="rect" id="node3" href="$metrics_8h.html#adcf9c20994247a75a0e325bc9a028ac2" title="向度量项列表中添加一个新的度量项。" alt="" coords="656,5,835,32"/>
+<area shape="rect" id="node5" href="$metrics_8h.html#ad747eaf22f78ec7829e8b02258ab47aa" title="注册一个新的度量项。" alt="" coords="441,54,600,95"/>
+<area shape="rect" id="node7" href="$metrics_8h.html#a1df8cd187485739c3e3749919b5e1c44" title=" " alt="" coords="433,119,608,161"/>
+<area shape="rect" id="node4" href="$rolling__counter_8h.html#a9273294344137dd0bc9830beecf985b9" title=" " alt="" coords="883,33,1067,60"/>
+<area shape="rect" id="node6" href="$metrics_8c.html#adcf9c20994247a75a0e325bc9a028ac2" title="向度量项列表中添加一个新的度量项。" alt="" coords="656,60,835,87"/>
+<area shape="rect" id="node8" href="$metrics_8c.html#a0c540b36a3c5c2bf45c461f101da5b65" title=" " alt="" coords="673,119,817,161"/>
+<area shape="rect" id="node9" href="$metrics_8h.html#ae8a16be19a1963e118da7e68d13dfce3" title=" " alt="" coords="890,127,1059,153"/>
+<area shape="rect" id="node10" href="$metrics_8h.html#a8c32e9cb6e10201d020fdda7c24e63ce" title=" " alt="" coords="1131,90,1281,131"/>
+<area shape="rect" id="node11" href="$rolling__counter_8h.html#a2adea9d49fb3e851d1b2461c5cb4a8dc" title=" " alt="" coords="1115,156,1297,183"/>
+</map>

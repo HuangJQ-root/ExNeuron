@@ -1,0 +1,13 @@
+<map id="neu_persister_library_exists" name="neu_persister_library_exists">
+<area shape="rect" id="node1" title=" " alt="" coords="5,151,164,192"/>
+<area shape="rect" id="node2" href="$persist_8c.html#a3ddb5163c396da6cfebb6dda23775a03" title="从默认配置文件和用户配置文件中加载插件信息，并合并去重。" alt="" coords="212,151,357,192"/>
+<area shape="rect" id="node3" href="$persist_8c.html#a0a240d34a87441ba07e6c6f4839e3ee9" title="从指定的 JSON 文件中加载插件信息，并将其添加到插件信息数组中。" alt="" coords="405,133,536,159"/>
+<area shape="rect" id="node11" href="$persist_8c.html#a4749ebf3ef6aa4428a0af4b5fa7c3089" title=" " alt="" coords="423,183,518,210"/>
+<area shape="rect" id="node4" href="$persist__json__plugin_8h.html#ad093bedf6e501b799484c9623b60722d" title="对包含插件请求信息的 JSON 字符串进行解码" alt="" coords="584,107,793,134"/>
+<area shape="rect" id="node10" href="$persist_8c.html#aec2efc7b62fb11c66ffd9836cb7186a9" title=" " alt="" coords="627,158,750,185"/>
+<area shape="rect" id="node5" href="$json_8h.html#ab965a73267bb5baa954999a40b335e12" title=" " alt="" coords="841,5,1016,47"/>
+<area shape="rect" id="node7" href="$json_8h.html#a6f8b41899ae86508896781a51fc0d97b" title=" " alt="" coords="841,71,1016,112"/>
+<area shape="rect" id="node8" href="$json_8h.html#ab5d58851e39dff95a5a8b4247ee18b48" title=" " alt="" coords="845,137,1012,163"/>
+<area shape="rect" id="node9" href="$json_8h.html#a82d24a48260c75d9995b70db3fa1d593" title=" " alt="" coords="845,187,1013,214"/>
+<area shape="rect" id="node6" href="$json_8c.html#a419e10fed5f24b251883cfbadede23bc" title="解析JSON对象中的单个元素值到目标结构体" alt="" coords="1064,13,1180,39"/>
+</map>

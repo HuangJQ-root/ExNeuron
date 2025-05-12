@@ -1,0 +1,10 @@
+<map id="neu_adapter_driver_get_ptag" name="neu_adapter_driver_get_ptag">
+<area shape="rect" id="node1" title="获取与特定组和标签关联的所有数据标签。" alt="" coords="5,74,153,115"/>
+<area shape="rect" id="node2" href="$structgroup.html#a62f042052b2e1d5ac4c979d89cb84906" title="指向 neu_group_t 类型结构体的指针。" alt="" coords="224,5,328,32"/>
+<area shape="rect" id="node3" href="$group_8c.html#ad7737ddf47885e43778a250e8cf197f9" title=" " alt="" coords="201,56,351,83"/>
+<area shape="rect" id="node6" href="$tag_8h.html#a82f17a2975362c8ffbeba7a5cbd47e48" title=" " alt="" coords="223,107,329,133"/>
+<area shape="rect" id="node8" href="$tag_8h.html#acdcf2b9c571dc38c131362b14c7c00ab" title="获取用于数据标签管理的UT_icd结构体指针。" alt="" coords="212,157,340,184"/>
+<area shape="rect" id="node4" href="$tag_8h.html#af03e773f256197fe10952a9e1d308ff6" title=" " alt="" coords="405,56,510,83"/>
+<area shape="rect" id="node5" href="$tag_8c.html#a58e88adf0c29f0de5434c5e856e5829e" title="复制neu_datatag_t类型的数据。" alt="" coords="564,56,687,83"/>
+<area shape="rect" id="node7" href="$tag_8c.html#a78c85cfbe8e7a66fa8bd1b9824f668f7" title="释放neu_datatag_t类型的数据。" alt="" coords="399,107,516,133"/>
+</map>

@@ -1115,6 +1115,12 @@ static void conn_tcp_server_stop(neu_conn_t *conn)
     }
 }
 
+/**
+ * @brief 建立连接的函数
+ * @param conn 指向 neu_conn_t 结构体的指针，包含连接相关参数和状态
+ * 
+ * @note 连接类型：tcp server, tcp client, udp , udp_to, tty
+ */
 static void conn_connect(neu_conn_t *conn)
 {
     int ret = 0;
@@ -1131,15 +1137,79 @@ static void conn_connect(neu_conn_t *conn)
                     (conn->param.params.tcp_client.timeout % 1000) * 1000,
             };
 
+            // 判断是 IPv4 地址则创建 IPv4 的 TCP 套接字，否则创建 IPv6 的 TCP 套接字
             if (is_ipv4(conn->param.params.tcp_client.ip)) {
+                /**
+                 * @brief 创建一个 TCP 流式套接字。
+                 * 
+                 * 此函数调用 `socket` 系统调用以创建一个用于网络通信的套接字描述符。
+                 * 该套接字将使用 IPv4 地址族（AF_INET），流式套接字类型（SOCK_STREAM），
+                 * 以及 TCP 传输协议（IPPROTO_TCP）。
+                 * 
+                 * @param AF_INET 地址族参数，代表 IPv4 地址族。IPv4 是互联网上广泛使用的
+                 * 网络层协议，其地址是 32 位的，通常以点分十进制的形式呈现，例如 192.168.1.1。
+                 * 使用该地址族表明此套接字将在 IPv4 网络环境中进行通信。
+                 * 
+                 * @param SOCK_STREAM 套接字类型参数，代表流式套接字。流式套接字基于 TCP 协议，
+                 * 提供面向连接、可靠、基于字节流的通信服务。TCP 协议会确保数据按顺序、无丢失
+                 * 地传输，适用于对数据准确性要求较高的场景，如网页浏览、文件传输等。
+                 * 
+                 * 与之相对的是 SOCK_DGRAM，它代表数据报套接字。数据报套接字基于 UDP 协议，
+                 * 提供无连接、不可靠的通信服务。UDP 不会保证数据的顺序和完整性，但具有传输
+                 * 速度快、开销小的特点，适用于对实时性要求较高、对数据准确性要求相对较低的
+                 * 场景，例如视频会议、在线游戏等。
+                 * 
+                 * @param IPPROTO_TCP 协议参数，明确指定使用 TCP 作为传输层协议。TCP 是一种
+                 * 面向连接的、可靠的、基于字节流的传输层协议，通过三次握手建立连接、四次
+                 * 挥手关闭连接，具备流量控制、拥塞控制等机制，保证数据传输的可靠性和稳定性。
+                 * 
+                 * @return int 返回一个新的套接字描述符，如果创建失败则返回 -1。
+                 */
                 fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
             } else {
                 fd = socket(AF_INET6, SOCK_STREAM, IPPROTO_TCP);
-            }
-
+            }  
+            /**
+             * @brief 设置套接字接收超时时间。
+             *
+             * 此函数调用 `setsockopt` 系统调用来为指定的套接字设置接收超时时间。
+             * 当在指定的超时时间内没有数据到达套接字时，后续的接收操作（如 `recv`、`recvfrom` 等）
+             * 将返回错误，以此避免程序在等待数据时无限期阻塞。
+             *
+             * @param fd 套接字描述符，代表要设置选项的目标套接字。该套接字必须是之前通过 `socket` 函数成功创建的。
+             * @param SOL_SOCKET 作为选项级别（level 参数），它表明后续要设置或获取的是通用的、与套接字本身整体行
+             *                   为相关的选项，而不是特定于某个传输层协议（如 TCP、UDP）的选项。第三个参数则明确了
+             *                   具体要设置的选项。
+             * @param SO_RCVTIMEO 具体的选项名称，避免接收过程中无限期等待。
+             *          
+             * @param SO_SNDTIMEO 设置套接字发送操作的超时时间，防止发送过程中长时间阻塞。
+             *        
+             * @param &tv 指向 `timeval` 结构体的指针，该结构体包含了超时时间的具体值。
+             *        `timeval` 结构体定义如下：
+             *        ```c
+             *        struct timeval {
+             *            long tv_sec;  // 秒数
+             *            long tv_usec; // 微秒数
+             *        };
+             *        ```
+             *        例如，若要设置超时时间为 5 秒 200 微秒，则可将 `tv_sec` 设为 5，`tv_usec` 设为 200。
+             * @param sizeof(tv) `timeval` 结构体的大小，用于告知 `setsockopt` 函数传递的超时时间结构体的长度。
+             *
+             * @return int 若设置成功，返回值为 0；若设置失败，返回 -1，并会设置 `errno` 来指示具体的错误类型。
+             */
             setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
             setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
         } else {
+            /**
+             * @brief 创建一个 TCP 流式非阻塞套接字。
+             * 
+             * @note
+             * 在创建套接字时，如果指定了 SOCK_NONBLOCK 标志，那么该套接字将以非阻塞模式运行。
+             * 在非阻塞模式下，当进行诸如 recv（接收数据）、send（发送数据）、connect（建立连接）
+             * 等操作时，如果操作不能立即完成，函数不会阻塞程序的执行，而是会立即返回一个错误。
+             * 通常情况下，errno 会被设置为 EAGAIN 或 EWOULDBLOCK。
+             * 
+             */
             if (is_ipv4(conn->param.params.tcp_client.ip)) {
                 fd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, IPPROTO_TCP);
             } else {
@@ -1214,6 +1284,24 @@ static void conn_connect(neu_conn_t *conn)
         }
 
         int so_broadcast = 1;
+        /**
+         * @brief 为指定的套接字设置广播选项。
+         *
+         * 此函数调用 `setsockopt` 系统调用来为指定的套接字 `fd` 设置广播选项。
+         * 广播允许在网络中向多个目标同时发送数据，通过设置 `SO_BROADCAST` 选项，
+         * 可以让套接字能够发送广播数据包。
+         *
+         * @param fd 套接字描述符，代表要设置选项的目标套接字。该套接字必须是之前通过 `socket` 函数成功创建的。
+         * @param SOL_SOCKET 选项级别，`SOL_SOCKET` 表示这是一个通用的套接字选项，适用于所有类型的套接字。
+         *        此级别下的选项通常用于控制套接字的基本行为和特性。
+         * @param SO_BROADCAST 具体的选项名称，`SO_BROADCAST` 用于启用套接字的广播功能。
+         *        当设置该选项后，套接字可以发送广播数据包到指定的广播地址。
+         * @param &so_broadcast 指向一个布尔类型变量的指针，用于指定是否启用广播功能。
+         *        若该变量的值为非零（通常为 `1`），则表示启用广播；若为 `0`，则表示禁用广播。
+         * @param sizeof(so_broadcast) 布尔类型变量 `so_broadcast` 的大小，用于告知 `setsockopt` 函数传递的变量长度。
+         *
+         * @return int 若设置成功，返回值为 0；若设置失败，返回 -1，并会设置 `errno` 来指示具体的错误类型。
+         */
         setsockopt(fd, SOL_SOCKET, SO_BROADCAST, &so_broadcast,
                    sizeof(so_broadcast));
 
@@ -1369,6 +1457,20 @@ static void conn_connect(neu_conn_t *conn)
             fd = ret;
         }
 #else
+        /**
+         * @brief 使用指定标志打开文件或设备，并获取其文件描述符。
+         *
+         * @param conn 指向包含设备路径信息的结构体指针。其中 `conn->param.params.tty_client.device` 
+         *             应指向要打开的文件或设备的路径字符串。
+         * @return int 若打开成功，返回新打开文件或设备的文件描述符；若打开失败，返回 -1，并设置 `errno` 
+         *             指示具体错误类型。
+         *
+         * @note 
+         * O_RDWR:   指定以读写模式打开文件或设备。在串口通信中常见，允许程序进行双向数据交互，即既能从设备读取数据，
+         *           也能向设备写入数据。
+         * O_NOCTTY: 当设置此标志时，即使打开的是终端设备（如串口），也不会将该设备作为调用进程的控制终端(程序只负
+         *           责向串口发送指令和接收设备返回的数据，不需要用户通过串口输入命令等交互操作)
+         */
         fd = open(conn->param.params.tty_client.device, O_RDWR | O_NOCTTY, 0);
 #endif
         if (fd <= 0) {
@@ -1378,10 +1480,38 @@ static void conn_connect(neu_conn_t *conn)
             return;
         }
 
+        // 获取指定文件描述符对应的串口设备的当前终端属性，并将这些属性存储在 tty_opt 指向的 termios 结构体中。
         tcgetattr(fd, &tty_opt);
-        tty_opt.c_cc[VTIME] = conn->param.params.tty_client.timeout / 100;
-        tty_opt.c_cc[VMIN]  = 0;
 
+        /**
+         * @brief 设置串口读取操作的超时时间。
+         * @param VTIME: tty_opt.c_cc 是 termios 结构体中的字符数组，用于存储特殊控制字符和时间参数。
+         *               VTIME 是该数组的一个索引，用于指定超时时间，单位为 0.1 秒。
+         */
+        tty_opt.c_cc[VTIME] = conn->param.params.tty_client.timeout / 100;
+
+        /**
+         * @brief 设置串口读取操作的最小读取字节数。
+         * @param VMIN: tty_opt.c_cc 是 termios 结构体中的字符数组，用于指定最小读取字节数。
+         *              将其设置为 0 表示不要求读取操作必须读取到一定数量的字节，结合超时时间，
+         *              读取操作会在有数据到达或者超时时间到达时立即返回，即使没有读取到任何数据
+         */
+        tty_opt.c_cc[VMIN]  = 0;
+        
+        /**
+         * @brief 根据串口流控制状态设置硬件流控制标志。
+         *          
+         * @param CRTSCTS 是一个宏定义，代表硬件流控制（RTS/CTS）标志
+         * @note 
+         * 启用硬件流控制（RTS/CTS）主要有以下作用
+         *  - 防止数据丢失：在串口通信中，当发送方发送数据的速度超过接收方的处理能力时，接收方可能会来不及接收和处理数据，
+         *    从而导致数据丢失。启用硬件流控制后，接收方可以通过控制 RTS（Request to Send）信号来通知发送方暂停发送数
+         *    据，直到接收方准备好接收更多数据，然后再通过 RTS 信号通知发送方继续发送，这样可以有效避免数据因接收方缓冲区溢出而丢失。
+         *  - 保证数据完整性：硬件流控制可以确保数据在传输过程中的完整性。通过在发送方和接收方之间建立一种握手机制，使得双
+         *    方能够协调数据的发送和接收节奏，避免数据的重复、丢失或错误。
+         *  - 提高通信可靠性：在存在干扰或不稳定的通信环境中，硬件流控制可以增强通信的可靠性。即使出现短暂的通信故障或数据传输延迟，
+         *    流控制机制也能够通过暂停和恢复数据发送来适应这种情况，减少因外部因素导致的数据传输错误或中断的可能性。
+         */
         switch (conn->param.params.tty_client.flow) {
         case NEU_CONN_TTYP_FLOW_DISABLE:
             tty_opt.c_cflag &= ~CRTSCTS;
@@ -1391,6 +1521,7 @@ static void conn_connect(neu_conn_t *conn)
             break;
         }
 
+        // -------------------- 设置波特率 --------------------    
         switch (conn->param.params.tty_client.baud) {
         case NEU_CONN_TTY_BAUD_115200:
             cfsetospeed(&tty_opt, B115200);
@@ -1446,35 +1577,49 @@ static void conn_connect(neu_conn_t *conn)
             break;
         }
 
+        // -------------------- 设置奇偶校验模式 --------------------
         switch (conn->param.params.tty_client.parity) {
         case NEU_CONN_TTY_PARITY_NONE:
+            // 禁用奇偶校验
             tty_opt.c_cflag &= ~PARENB;
             break;
         case NEU_CONN_TTY_PARITY_ODD:
+            // 启用奇偶校验
             tty_opt.c_cflag |= PARENB;
+            // 选择奇校验
             tty_opt.c_cflag |= PARODD;
+            // 启用输入奇偶校验检查
             tty_opt.c_iflag = INPCK;
             break;
         case NEU_CONN_TTY_PARITY_EVEN:
+            // 启用奇偶校验
             tty_opt.c_cflag |= PARENB;
+            // 选择偶校验
             tty_opt.c_cflag &= ~PARODD;
+            // 启用输入奇偶校验检查
             tty_opt.c_iflag = INPCK;
             break;
         case NEU_CONN_TTY_PARITY_MARK:
             tty_opt.c_cflag |= PARENB;
             tty_opt.c_cflag |= PARODD;
+            // 设置 CMSPAR 位，选择标记奇偶校验
             tty_opt.c_cflag |= CMSPAR;
             tty_opt.c_iflag = INPCK;
             break;
         case NEU_CONN_TTY_PARITY_SPACE:
+            // 启用奇偶校验
             tty_opt.c_cflag |= PARENB;
+            // 设置 CMSPAR 位
             tty_opt.c_cflag |= CMSPAR;
+            // 清除 PARODD 位，选择空格奇偶校验
             tty_opt.c_cflag &= ~PARODD;
             tty_opt.c_iflag = INPCK;
             break;
         }
 
-        tty_opt.c_cflag &= ~CSIZE;
+        // -------------------- 设置数据位 --------------------
+        // 清除之前可能设置的数据位长度
+        tty_opt.c_cflag &= ~CSIZE; 
         switch (conn->param.params.tty_client.data) {
         case NEU_CONN_TTY_DATA_5:
             tty_opt.c_cflag |= CS5;
@@ -1486,10 +1631,21 @@ static void conn_connect(neu_conn_t *conn)
             tty_opt.c_cflag |= CS7;
             break;
         case NEU_CONN_TTY_DATA_8:
+            /**
+             * @brief 不同的数据位设置决定了可以表示的数据范围，如果要
+             * 传输的数据值超出了所设置数据位能表示的范围，就会导致数据错误或丢失。
+             */
             tty_opt.c_cflag |= CS8;
             break;
         }
 
+        // -------------------- 设置停止位 --------------------
+        /**
+         * @brief 根据串口连接参数设置停止位。
+         *
+         * @note `CSTOPB` 是一个宏定义，代表使用两个停止位的标志。当 `c_cflag` 中的 `CSTOPB` 位被设置时，
+         *       表示使用两个停止位；当该位被清除时，表示使用一个停止位。
+         */
         switch (conn->param.params.tty_client.stop) {
         case NEU_CONN_TTY_STOP_1:
             tty_opt.c_cflag &= ~CSTOPB;
@@ -1499,7 +1655,43 @@ static void conn_connect(neu_conn_t *conn)
             break;
         }
 
+        /**
+         * @brief 配置并打开串口连接。
+         *
+         * 此函数用于配置串口设备的各项参数，包括控制标志、本地标志、输入标志和输出标志，
+         * 然后刷新串口缓冲区，应用配置，并最终建立串口连接。
+         *
+         * @details
+         * 该函数的具体操作步骤如下：
+         * 1. 设置控制标志（c_cflag）：
+         *    - 启用接收功能（CREAD），允许串口接收数据。
+         *    - 忽略调制解调器状态线（CLOCAL），使串口通信不受调制解调器状态的影响。
+         * 2. 清除本地标志（c_lflag）：
+         *    - 禁用规范模式（ICANON），使串口以非规范模式工作，数据将立即返回，而不是等待换行符。
+         *    - 禁用回显功能（ECHO），避免将接收到的数据回显到终端。
+         *    - 禁用回显擦除字符（ECHOE），防止对擦除字符进行特殊处理。
+         *    - 禁用回显换行符（ECHONL），避免对换行符进行特殊处理。
+         *    - 禁用信号生成（ISIG），防止生成中断、退出等信号。
+         * 3. 清除输入标志（c_iflag）：
+         *    - 禁用软件流控制（IXON、IXOFF、IXANY），不使用 XON/XOFF 协议进行流量控制。
+         *    - 禁用各种输入处理标志（IGNBRK、BRKINT、PARMRK、ISTRIP、INLCR、IGNCR、ICRNL），
+         *      避免对输入数据进行特殊处理。
+         * 4. 清除输出标志（c_oflag）：
+         *    - 禁用输出处理（OPOST），不对输出数据进行特殊处理。
+         *    - 禁用换行符转换（ONLCR），避免将换行符转换为回车换行符。
+         * 5. 刷新串口缓冲区（tcflush）：
+         *    - 清空输入和输出缓冲区（TCIOFLUSH），确保缓冲区中没有残留数据。
+         * 6. 应用配置（tcsetattr）：
+         *    - 立即应用修改后的串口属性（TCSANOW）。
+         * 7. 更新连接状态：
+         *    - 将文件描述符赋值给 conn->fd。
+         *    - 将连接状态设置为已连接（conn->is_connected = true）。
+         * 8. 记录日志：
+         *    - 使用 zlog_notice 函数记录串口连接成功的信息。
+         */
+
         tty_opt.c_cflag |= CREAD | CLOCAL;
+
         tty_opt.c_lflag &= ~ICANON;
         tty_opt.c_lflag &= ~ECHO;
         tty_opt.c_lflag &= ~ECHOE;
@@ -1509,6 +1701,7 @@ static void conn_connect(neu_conn_t *conn)
         tty_opt.c_iflag &= ~(IXON | IXOFF | IXANY);
         tty_opt.c_iflag &=
             ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL);
+
         tty_opt.c_oflag &= ~OPOST;
         tty_opt.c_oflag &= ~ONLCR;
 

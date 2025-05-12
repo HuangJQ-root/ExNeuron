@@ -1,0 +1,5 @@
+<map id="event_data" name="event_data">
+<area shape="rect" id="node1" title="event_data 结构体用于存储和管理单个事件的相关信息。" alt="" coords="104,5,199,32"/>
+<area shape="rect" id="node2" href="$structneu__event__timer.html" title="neu_event_timer 结构体用于管理定时器事件的相关信息。" alt="" coords="5,95,137,121"/>
+<area shape="rect" id="node3" href="$structneu__event__io.html" title="neu_event_io 结构体用于管理 I/O 事件的相关信息。" alt="" coords="178,95,287,121"/>
+</map>

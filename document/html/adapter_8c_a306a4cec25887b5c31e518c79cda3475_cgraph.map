@@ -1,0 +1,9 @@
+<map id="adapter_trans_data" name="adapter_trans_data">
+<area shape="rect" id="node1" title="处理传输数据事件。" alt="" coords="5,132,153,159"/>
+<area shape="rect" id="node2" href="$msg__q_8c.html#abfb78ea6a4463de21ba4d1670d0ee5d5" title="将消息推入适配器消息队列。" alt="" coords="213,5,373,32"/>
+<area shape="rect" id="node3" href="$msg__internal_8h.html#a5195c708c0277504d339cae804fe4f87" title="释放消息对象占用的内存。" alt="" coords="235,56,350,83"/>
+<area shape="rect" id="node4" href="$msg__internal_8h.html#a8a4e4172b68b0b7097f7e00b3cf5c4fa" title=" " alt="" coords="212,107,373,133"/>
+<area shape="rect" id="node5" href="$msg__internal_8h.html#a8ba105da4ac6b24029d7d0318c065eec" title="从指定的文件描述符接收一条消息。" alt="" coords="235,157,351,184"/>
+<area shape="rect" id="node6" href="$msg_8h.html#a212efea9ecb4ffd7c7cecc3e8077dd27" title=" " alt="" coords="201,208,384,235"/>
+<area shape="rect" id="node7" href="$msg_8h.html#ae4a4a8acbcf4ba1c601418cce78faa0e" title=" " alt="" coords="215,259,370,285"/>
+</map>

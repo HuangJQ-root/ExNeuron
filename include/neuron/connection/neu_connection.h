@@ -124,7 +124,7 @@ typedef struct neu_conn_param {
         } udpto;
 
         struct {
-            char *                device;
+            char *                device; // 一个指向串口设备文件路径的字符串
             neu_conn_tty_data_e   data;
             neu_conn_tty_stop_e   stop;
             neu_conn_tty_baud_e   baud;

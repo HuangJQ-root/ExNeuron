@@ -1,0 +1,52 @@
+<map id="neu_adapter_driver_update_group" name="neu_adapter_driver_update_group">
+<area shape="rect" id="node1" title=" " alt="" coords="5,2204,153,2245"/>
+<area shape="rect" id="node2" href="$structgroup.html#a62f042052b2e1d5ac4c979d89cb84906" title="指向 neu_group_t 类型结构体的指针。" alt="" coords="934,1883,1038,1910"/>
+<area shape="rect" id="node3" href="$adapter_8c.html#a7d880caf8a7d088c1588dc9b5e8adcf4" title=" " alt="" coords="207,2204,370,2245"/>
+<area shape="rect" id="node5" href="$group_8c.html#a54b14485b43cfbd31f776fe7fba81de9" title=" " alt="" coords="899,163,1073,190"/>
+<area shape="rect" id="node6" href="$group_8c.html#a39fae4b372b83e0e046989fecc70595a" title=" " alt="" coords="201,2270,376,2296"/>
+<area shape="rect" id="node7" href="$group_8c.html#ae4792e73391b18a4cbab7565b5ea47bc" title=" " alt="" coords="208,2320,369,2347"/>
+<area shape="rect" id="node8" href="$driver_8c.html#a0578ddefcc89f9daf93647e562277690" title="启动驱动适配器的组定时器。" alt="" coords="219,679,358,706"/>
+<area shape="rect" id="node47" href="$driver_8c.html#a1168e2c900cac62b1e96eaa62ffdebb4" title=" " alt="" coords="221,2371,357,2398"/>
+<area shape="rect" id="node4" href="$metrics_8h.html#aba5005d621082e97821cbdc0f095df99" title=" " alt="" coords="424,2204,617,2245"/>
+<area shape="rect" id="node9" href="$adapter_8c.html#acddb9206f10b165b95adf5ec4a8da28e" title=" " alt="" coords="433,87,609,114"/>
+<area shape="rect" id="node10" href="$event_8h.html#a841fb7701198b122385290a18e7575e8" title="Add a timer to the event." alt="" coords="677,87,839,114"/>
+<area shape="rect" id="node12" href="$driver_8c.html#ac635d66f569734b9b61409fa24616a97" title="读取回调函数，在定时器到期时被调用，用于处理组数据的读取操作。" alt="" coords="465,1963,577,1990"/>
+<area shape="rect" id="node19" href="$driver_8c.html#aa02e7d8830b4c56145e458f509f17261" title="定期报告指定组的标签数据的回调函数。" alt="" coords="459,679,582,706"/>
+<area shape="rect" id="node36" href="$driver_8c.html#aedea4e30dca67af74155bcb8405aa2bc" title=" " alt="" coords="463,1338,579,1364"/>
+<area shape="rect" id="node11" href="$event__linux_8c.html#a25fcd2e3335e715cadc7be0229ec040f" title="获取一个空闲的事件索引。" alt="" coords="926,87,1046,114"/>
+<area shape="rect" id="node13" href="$driver_8c.html#a530ce751519be43018265b014a59b662" title="处理组数据发生变化时的回调函数。" alt="" coords="701,2102,815,2128"/>
+<area shape="rect" id="node16" href="$adapter_8c.html#a084731812a71276f51069879af1089f7" title=" " alt="" coords="681,1985,835,2026"/>
+<area shape="rect" id="node17" href="$group_8c.html#a7e89d9a160a26df3ea8232fa7d9a45dd" title="检查组数据是否发生变化，若变化则调用指定的回调函数。" alt="" coords="670,2051,846,2078"/>
+<area shape="rect" id="node18" href="$group_8c.html#a4380449e3f6cc5de579e6d2188ecf4c8" title="检查组数据是否发生变化。" alt="" coords="677,1934,839,1960"/>
+<area shape="rect" id="node14" href="$cache_8c.html#acbc5c8d07b93823120be47eb72d23d42" title="向驱动缓存中添加或更新一个标签的值。" alt="" coords="903,2127,1069,2154"/>
+<area shape="rect" id="node15" href="$cache_8c.html#a392a29735a1c80573d0c35468a2df039" title="从驱动缓存中删除指定组和标签的数据。" alt="" coords="905,2076,1067,2103"/>
+<area shape="rect" id="node20" href="$driver_8c.html#aff0fb7d1a039138bf9e0f05e8d161d1a" title="获取可读标签集" alt="" coords="684,924,832,965"/>
+<area shape="rect" id="node21" href="$adapter_8c.html#a81782879d75fdd3df51466bc85d0fd87" title="获取指定适配器的标签缓存类型。" alt="" coords="679,341,837,382"/>
+<area shape="rect" id="node22" href="$cache_8c.html#a2a75216c747e2b65d69955137e04bf74" title=" " alt="" coords="676,406,840,448"/>
+<area shape="rect" id="node23" href="$otel__manager_8h.html#a8e2badedb7a3aeb0c0a65f5c0835769d" title="在给定的 OpenTelemetry 跟踪上下文中添加一个新的跨度（span）。" alt="" coords="681,472,835,499"/>
+<area shape="rect" id="node24" href="$otel__manager_8h.html#a500ed7b95d28d0c0408030422aba1b04" title=" " alt="" coords="665,523,851,550"/>
+<area shape="rect" id="node25" href="$otel__manager_8h.html#a0bea02d2b82aeb3742fdd12b44f61504" title="根据请求上下文查找对应的OpenTelemetry追踪上下文。" alt="" coords="683,1186,833,1212"/>
+<area shape="rect" id="node26" href="$otel__manager_8h.html#a2be077a409008f12ff681faf09942de0" title="生成一个新的Span ID。" alt="" coords="673,822,843,848"/>
+<area shape="rect" id="node27" href="$time_8h.html#a90c72ccb2419f8678105b68f95ea859f" title=" " alt="" coords="933,822,1039,848"/>
+<area shape="rect" id="node28" href="$otel__manager_8h.html#ac10242c2a38be6e0cd63fe61dfe71fea" title="向给定跟踪范围上下文的Span中添加一个整数类型的属性。" alt="" coords="681,989,835,1030"/>
+<area shape="rect" id="node29" href="$otel__manager_8h.html#a9805eedbfb853d67093528836977d334" title=" " alt="" coords="683,1120,833,1161"/>
+<area shape="rect" id="node30" href="$otel__manager_8h.html#a1c6bb166ad49d775489c2764c0e27e9b" title="设置给定跟踪范围上下文的Span开始时间。" alt="" coords="683,1054,833,1096"/>
+<area shape="rect" id="node31" href="$otel__manager_8h.html#a0f5f923ef6155abed72968f0216bb8f5" title=" " alt="" coords="677,574,839,616"/>
+<area shape="rect" id="node32" href="$otel__manager_8h.html#a7af213cb6383784afa6edf127d24390c" title=" " alt="" coords="685,640,831,681"/>
+<area shape="rect" id="node33" href="$msg_8h.html#af0235968344bae34dfd4f088f0175daa" title="获取用于管理 neu_resp_tag_value_meta_t 类型数据的 UT_icd 接口。" alt="" coords="682,705,834,746"/>
+<area shape="rect" id="node34" href="$msg_8h.html#ae4a4a8acbcf4ba1c601418cce78faa0e" title=" " alt="" coords="681,239,835,266"/>
+<area shape="rect" id="node35" href="$driver_8c.html#a16aa6b16f531afd455a5e22374119f9e" title="从缓存中读取标签值并根据特定条件进行报告。" alt="" coords="687,290,829,316"/>
+<area shape="rect" id="node37" href="$otel__manager_8h.html#a1af83195c916b50e8cc01c13981ec282" title="添加一个新的Span到OpenTelemetry跟踪上下文中。" alt="" coords="685,1388,831,1415"/>
+<area shape="rect" id="node38" href="$otel__manager_8h.html#a73114517146a84e8ace3071a192220e6" title=" " alt="" coords="684,1440,832,1481"/>
+<area shape="rect" id="node39" href="$otel__manager_8h.html#a5d5687ae2c059be0bf510de59b48cbee" title=" " alt="" coords="681,1505,835,1546"/>
+<area shape="rect" id="node40" href="$otel__manager_8h.html#ac0330f7e7d52c469b8e7a1bf11652243" title="获取当前跟踪范围上下文中的前一个Span ID。" alt="" coords="683,1570,833,1612"/>
+<area shape="rect" id="node41" href="$otel__manager_8h.html#a77caac33bc383c6793c558074aa1c8ed" title="设置给定跟踪范围上下文的父Span ID。" alt="" coords="683,1636,833,1677"/>
+<area shape="rect" id="node42" href="$otel__manager_8h.html#ae03936931b301b17ba1be289db7976a8" title="设置给定跟踪范围上下文的Span ID。" alt="" coords="683,1701,833,1742"/>
+<area shape="rect" id="node43" href="$otel__manager_8h.html#a4a0722fc34791302b9d14412c9197688" title=" " alt="" coords="683,1766,833,1808"/>
+<area shape="rect" id="node44" href="$tag_8h.html#a82f17a2975362c8ffbeba7a5cbd47e48" title=" " alt="" coords="705,1832,811,1859"/>
+<area shape="rect" id="node45" href="$time_8h.html#a5d0ec4465fba784c9104077b4ca178f9" title=" " alt="" coords="703,1287,813,1314"/>
+<area shape="rect" id="node46" href="$argparse_8c.html#a8fd0d93500cc0785f6fc728dbe3c6a85" title=" " alt="" coords="723,1338,793,1364"/>
+<area shape="rect" id="node48" href="$adapter_8c.html#a12b6db98d828b2df2221926436fbdfba" title=" " alt="" coords="435,2396,607,2423"/>
+<area shape="rect" id="node49" href="$event_8h.html#a43ef8ce5b3f27fee5d1fa15a08247da9" title="Remove timer from event." alt="" coords="679,2371,837,2398"/>
+<area shape="rect" id="node50" href="$event__linux_8c.html#a0cf559856a501aedd7048a5348839592" title="将指定索引处的事件标记为未使用。" alt="" coords="940,2371,1032,2398"/>
+</map>

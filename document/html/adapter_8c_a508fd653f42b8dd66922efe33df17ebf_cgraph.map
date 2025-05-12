@@ -1,0 +1,8 @@
+<map id="adapter_consumer" name="adapter_consumer">
+<area shape="rect" id="node1" title="消费者线程函数，处理适配器消息队列中的消息。" alt="" coords="5,107,148,133"/>
+<area shape="rect" id="node2" href="$msg__q_8c.html#ac099b9ca3054fb9a52fddfb489efb61b" title="从适配器消息队列中弹出一条消息。" alt="" coords="211,5,364,32"/>
+<area shape="rect" id="node3" href="$msg__internal_8h.html#a5195c708c0277504d339cae804fe4f87" title="释放消息对象占用的内存。" alt="" coords="230,56,345,83"/>
+<area shape="rect" id="node4" href="$msg__internal_8h.html#a8a4e4172b68b0b7097f7e00b3cf5c4fa" title=" " alt="" coords="207,107,368,133"/>
+<area shape="rect" id="node5" href="$msg_8h.html#a212efea9ecb4ffd7c7cecc3e8077dd27" title=" " alt="" coords="196,157,379,184"/>
+<area shape="rect" id="node6" href="$msg_8h.html#ae4a4a8acbcf4ba1c601418cce78faa0e" title=" " alt="" coords="210,208,365,235"/>
+</map>

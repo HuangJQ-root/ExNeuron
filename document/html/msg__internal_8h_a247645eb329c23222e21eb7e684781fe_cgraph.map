@@ -1,0 +1,4 @@
+<map id="neu_msg_new" name="neu_msg_new">
+<area shape="rect" id="node1" title="创建一个新的消息对象。" alt="" coords="5,5,120,32"/>
+<area shape="rect" id="node2" href="$msg__internal_8h.html#a72998fc603b4655250d5978cf7a6b6d5" title="XX 宏的作用 #define XX(type, structure) \ case type: \ return sizeof(structure); 定义了一个宏 XX，它接受两个参数 type 和..." alt="" coords="168,5,303,32"/>
+</map>

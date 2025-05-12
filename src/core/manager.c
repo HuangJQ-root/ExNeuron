@@ -317,7 +317,7 @@ void neu_manager_destroy(neu_manager_t *manager)
  * 此函数作为事件循环的一部分被调用，它根据接收的消息类型执行相应的操作，
  * 如节点初始化、插件添加和删除等，并对错误情况进行处理。
  *
- * @param type     事件类型，可以是NEU_EVENT_IO_CLOSED（连接关闭）、NEU_EVENT_IO_HUP（挂起）或其他类型的输入输出事件。
+ * @param type     事件类型：读取事件，连接关闭事件，挂起事件
  * @param fd       文件描述符，代表套接字连接。
  * @param usr_data 用户数据指针，指向neu_manager_t结构体实例。
  * 

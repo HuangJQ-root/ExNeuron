@@ -1,0 +1,6 @@
+<map id="neu_node_metrics_update" name="neu_node_metrics_update">
+<area shape="rect" id="node1" title="更新节点度量信息。" alt="" coords="5,78,199,105"/>
+<area shape="rect" id="node2" href="$metrics_8h.html#a8a2794ffaef7861929a267ff7cef6030" title="检查度量类型是否为计数器类型。" alt="" coords="260,5,409,47"/>
+<area shape="rect" id="node3" href="$metrics_8h.html#a8c32e9cb6e10201d020fdda7c24e63ce" title=" " alt="" coords="260,71,409,112"/>
+<area shape="rect" id="node4" href="$rolling__counter_8h.html#a708a3e3c14c123cb8adcacaf2a1b7c40" title="增量滚动计数器并返回更新后的值。" alt="" coords="247,137,423,163"/>
+</map>

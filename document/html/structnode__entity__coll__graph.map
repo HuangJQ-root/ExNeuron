@@ -1,0 +1,24 @@
+<map id="node_entity" name="node_entity">
+<area shape="rect" id="node1" title="一个通用的节点实体的信息。" alt="" coords="1473,81,1571,108"/>
+<area shape="rect" id="node2" href="$structUT__hash__handle.html" title=" " alt="" coords="42,183,171,209"/>
+<area shape="rect" id="node3" href="$structUT__hash__table.html" title=" " alt="" coords="623,121,741,148"/>
+<area shape="rect" id="node4" href="$structUT__hash__bucket.html" title=" " alt="" coords="326,183,454,209"/>
+<area shape="rect" id="node10" href="$structneu__node__metrics__t.html" title="节点度量结构体。" alt="" coords="907,299,1060,325"/>
+<area shape="rect" id="node11" href="$structneu__group__metrics__t.html" title="组度量结构体。" alt="" coords="603,347,761,373"/>
+<area shape="rect" id="node12" href="$structneu__metric__entry__t.html" title="度量项结构体。" alt="" coords="316,284,464,311"/>
+<area shape="rect" id="node5" href="$structneu__adapter.html" title="适配器结构体，用于描述一个适配器的基础信息及其相关资源。" alt="" coords="1197,412,1300,439"/>
+<area shape="rect" id="node18" href="$structadapter__callbacks.html" title="适配器回调函数集合结构体，用于定义适配器与外部系统交互时所需的各种回调函数。" alt="" coords="1452,412,1592,439"/>
+<area shape="rect" id="node6" href="$structneu__events.html" title="管理和处理事件的核心结构体。" alt="" coords="935,485,1032,512"/>
+<area shape="rect" id="node7" href="$structevent__data.html" title="event_data 结构体用于存储和管理单个事件的相关信息。" alt="" coords="635,575,729,601"/>
+<area shape="rect" id="node8" href="$structneu__event__timer.html" title="neu_event_timer 结构体用于管理定时器事件的相关信息。" alt="" coords="917,536,1049,563"/>
+<area shape="rect" id="node9" href="$structneu__event__io.html" title="neu_event_io 结构体用于管理 I/O 事件的相关信息。" alt="" coords="929,620,1038,647"/>
+<area shape="rect" id="node13" href="$structneu__rolling__counter__t.html" title="滚动计数器。" alt="" coords="25,393,188,420"/>
+<area shape="rect" id="node14" href="$structneu__plugin__module.html" title="插件模块信息结构体" alt="" coords="909,384,1058,411"/>
+<area shape="rect" id="node15" href="$structneu__plugin__intf__funs.html" title="插件接口函数集合结构体，定义了一组用于管理和操作插件的核心函数。" alt="" coords="603,397,761,424"/>
+<area shape="rect" id="node16" href="$structneu__datatag__t.html" title="数据标签结构体，用于描述一个数据标签的各项属性。" alt="" coords="333,433,447,460"/>
+<area shape="rect" id="node17" href="$unionneu__datatag__addr__option__u.html" title="数据标签地址选项联合体，用于描述不同类型数据标签的具体选项。" alt="" coords="5,444,208,471"/>
+<area shape="rect" id="node19" href="$structadapter__msg__q.html" title="适配器消息队列结构体。" alt="" coords="922,435,1045,461"/>
+<area shape="rect" id="node20" href="$structitem.html" title="用于实现消息队列的单个节点结构。" alt="" coords="656,501,708,528"/>
+<area shape="rect" id="node21" href="$structneu__msg__s.html" title="定义消息结构体，包含消息头和柔性数组存储消息体" alt="" coords="343,503,437,529"/>
+<area shape="rect" id="node22" href="$structneu__reqresp__head.html" title="请求/响应头部结构体，用于描述消息的基本信息。" alt="" coords="36,504,177,531"/>
+</map>

@@ -1,0 +1,16 @@
+<map id="neu_adapter_stop" name="neu_adapter_stop">
+<area shape="rect" id="node1" title=" " alt="" coords="5,101,144,127"/>
+<area shape="rect" id="node2" href="$adapter_2storage_8c.html#af61d4ff4bf04affdfeac01358e7639fa" title=" " alt="" coords="207,13,375,39"/>
+<area shape="rect" id="node4" href="$driver_8c.html#ac4534f5ae677ea5180e9820c82d7f39b" title=" " alt="" coords="217,64,365,105"/>
+<area shape="rect" id="node9" href="$adapter_8c.html#a5db94d05167b605e2608e7aaa334bf16" title=" " alt="" coords="208,130,375,157"/>
+<area shape="rect" id="node10" href="$adapter__internal_8h.html#aef7987c958fd9f9f3c50b039f67d1557" title=" " alt="" coords="192,187,391,214"/>
+<area shape="rect" id="node3" href="$persist_8h.html#a42c76476200a802233cc8f9b293ac417" title=" " alt="" coords="448,5,611,47"/>
+<area shape="rect" id="node5" href="$driver_8c.html#a1168e2c900cac62b1e96eaa62ffdebb4" title=" " alt="" coords="461,71,597,98"/>
+<area shape="rect" id="node6" href="$adapter_8c.html#a12b6db98d828b2df2221926436fbdfba" title=" " alt="" coords="668,21,840,47"/>
+<area shape="rect" id="node7" href="$event_8h.html#a43ef8ce5b3f27fee5d1fa15a08247da9" title="Remove timer from event." alt="" coords="888,46,1047,73"/>
+<area shape="rect" id="node8" href="$event__linux_8c.html#a0cf559856a501aedd7048a5348839592" title="将指定索引处的事件标记为未使用。" alt="" coords="1095,46,1187,73"/>
+<area shape="rect" id="node11" href="$metrics_8h.html#a64ec7ca2e431ba9d1c6a1d110b784c85" title=" " alt="" coords="439,191,620,218"/>
+<area shape="rect" id="node12" href="$metrics_8h.html#a8c32e9cb6e10201d020fdda7c24e63ce" title=" " alt="" coords="679,123,829,164"/>
+<area shape="rect" id="node13" href="$metrics_8h.html#a5589d90ebb7370da20f750a84859c428" title=" " alt="" coords="677,188,831,229"/>
+<area shape="rect" id="node14" href="$rolling__counter_8h.html#af34d001c646b35dcdf16acbed3d1ff35" title=" " alt="" coords="679,253,829,295"/>
+</map>

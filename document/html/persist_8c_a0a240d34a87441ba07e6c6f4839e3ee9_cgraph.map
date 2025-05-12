@@ -1,0 +1,10 @@
+<map id="load_plugins_file" name="load_plugins_file">
+<area shape="rect" id="node1" title="从指定的 JSON 文件中加载插件信息，并将其添加到插件信息数组中。" alt="" coords="5,133,136,159"/>
+<area shape="rect" id="node2" href="$persist__json__plugin_8h.html#ad093bedf6e501b799484c9623b60722d" title="对包含插件请求信息的 JSON 字符串进行解码" alt="" coords="184,107,393,134"/>
+<area shape="rect" id="node8" href="$persist_8c.html#aec2efc7b62fb11c66ffd9836cb7186a9" title=" " alt="" coords="227,158,350,185"/>
+<area shape="rect" id="node3" href="$json_8h.html#ab965a73267bb5baa954999a40b335e12" title=" " alt="" coords="441,5,616,47"/>
+<area shape="rect" id="node5" href="$json_8h.html#a6f8b41899ae86508896781a51fc0d97b" title=" " alt="" coords="441,71,616,112"/>
+<area shape="rect" id="node6" href="$json_8h.html#ab5d58851e39dff95a5a8b4247ee18b48" title=" " alt="" coords="445,137,612,163"/>
+<area shape="rect" id="node7" href="$json_8h.html#a82d24a48260c75d9995b70db3fa1d593" title=" " alt="" coords="445,187,613,214"/>
+<area shape="rect" id="node4" href="$json_8c.html#a419e10fed5f24b251883cfbadede23bc" title="解析JSON对象中的单个元素值到目标结构体" alt="" coords="664,13,780,39"/>
+</map>

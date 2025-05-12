@@ -1,0 +1,7 @@
+<map id="neu_adapter_info" name="neu_adapter_info">
+<area shape="rect" id="node1" title="该结构体用于存储适配器的基本信息。" alt="" coords="39,363,174,389"/>
+<area shape="rect" id="node2" href="$structneu__plugin__module.html" title="插件模块信息结构体" alt="" coords="32,273,181,300"/>
+<area shape="rect" id="node3" href="$structneu__plugin__intf__funs.html" title="插件接口函数集合结构体，定义了一组用于管理和操作插件的核心函数。" alt="" coords="28,184,185,211"/>
+<area shape="rect" id="node4" href="$structneu__datatag__t.html" title="数据标签结构体，用于描述一个数据标签的各项属性。" alt="" coords="49,95,164,121"/>
+<area shape="rect" id="node5" href="$unionneu__datatag__addr__option__u.html" title="数据标签地址选项联合体，用于描述不同类型数据标签的具体选项。" alt="" coords="5,5,208,32"/>
+</map>

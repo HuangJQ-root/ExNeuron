@@ -1,0 +1,8 @@
+<map id="neu_adapter_init" name="neu_adapter_init">
+<area shape="rect" id="node1" title="向管理器发送适配器初始化消息。" alt="" coords="5,81,136,108"/>
+<area shape="rect" id="node2" href="$msg__internal_8h.html#a5195c708c0277504d339cae804fe4f87" title="释放消息对象占用的内存。" alt="" coords="207,5,322,32"/>
+<area shape="rect" id="node3" href="$msg__internal_8h.html#a8a4e4172b68b0b7097f7e00b3cf5c4fa" title=" " alt="" coords="184,56,345,83"/>
+<area shape="rect" id="node4" href="$msg__internal_8h.html#a247645eb329c23222e21eb7e684781fe" title="创建一个新的消息对象。" alt="" coords="207,107,322,133"/>
+<area shape="rect" id="node6" href="$msg__internal_8h.html#a461d10dfad0d3fb7d3b124e1494432ee" title="通过文件描述符发送消息。" alt="" coords="205,157,324,184"/>
+<area shape="rect" id="node5" href="$msg__internal_8h.html#a72998fc603b4655250d5978cf7a6b6d5" title="XX 宏的作用 #define XX(type, structure) \ case type: \ return sizeof(structure); 定义了一个宏 XX，它接受两个参数 type 和..." alt="" coords="393,107,528,133"/>
+</map>

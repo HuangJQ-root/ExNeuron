@@ -1,0 +1,6 @@
+<map id="neu_otel_add_span" name="neu_otel_add_span">
+<area shape="rect" id="node1" title="添加一个新的Span到OpenTelemetry跟踪上下文中。" alt="" coords="5,35,152,61"/>
+<area shape="rect" id="node2" href="$otel__manager_8c.html#aa28ed2d6ab82117a06d1759f74f666c7" title="将十六进制字符串转换为二进制数组。" alt="" coords="210,5,369,32"/>
+<area shape="rect" id="node4" href="$trace_8pb-c_8c.html#ab61051f589a177e53d4bf38ba8df0053" title=" " alt="" coords="200,57,379,98"/>
+<area shape="rect" id="node3" href="$otel__manager_8c.html#a55b1bd4173b19c09b4f850ba31c9c288" title=" " alt="" coords="427,5,552,32"/>
+</map>

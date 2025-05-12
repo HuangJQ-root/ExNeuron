@@ -1,0 +1,52 @@
+<map id="add_driver" name="add_driver">
+<area shape="rect" id="node1" title=" " alt="" coords="5,816,96,843"/>
+<area shape="rect" id="node2" href="$manager__internal_8c.html#a9ed0339c6e0f9198fc6eec9ac082be2f" title=" " alt="" coords="194,396,275,423"/>
+<area shape="rect" id="node7" href="$adapter_8c.html#abaf452bec26e13e90e0de2a9a60c767b" title=" " alt="" coords="404,759,551,785"/>
+<area shape="rect" id="node14" href="$manager__internal_8c.html#ae2ca72a8e60c1149a5f9723e16d748f4" title=" " alt="" coords="389,708,566,735"/>
+<area shape="rect" id="node17" href="$node__manager_8c.html#ae8a5340b8b78d3932550a20f3d683e2f" title=" " alt="" coords="637,272,819,299"/>
+<area shape="rect" id="node27" href="$adapter_8c.html#a0bdf79ede08427af0b5f27d2bc2f798f" title=" " alt="" coords="146,1311,323,1337"/>
+<area shape="rect" id="node37" href="$adapter_8c.html#aae77db97e7098f49002a3884878d7af1" title=" " alt="" coords="155,1501,314,1542"/>
+<area shape="rect" id="node39" href="$adapter_8c.html#a9cca2cac0e6816dcd49af65bf0cc042f" title=" " alt="" coords="153,1657,316,1698"/>
+<area shape="rect" id="node43" href="$manager__internal_8c.html#a7870ea0fc4ba24b86f88bbdf29580668" title="向节点管理器中添加一个新的节点。" alt="" coords="144,892,325,919"/>
+<area shape="rect" id="node3" href="$manager_8c.html#a65b464232c8dc8ccc7d1b631a66c7a3f" title=" " alt="" coords="424,505,531,532"/>
+<area shape="rect" id="node4" href="$core_2storage_8c.html#ab870250d6fa6d65bc2730219d1aadb1f" title=" " alt="" coords="376,53,579,80"/>
+<area shape="rect" id="node6" href="$adapter_8c.html#a5db94d05167b605e2608e7aaa334bf16" title=" " alt="" coords="394,221,561,248"/>
+<area shape="rect" id="node19" href="$msg__internal_8h.html#a8a4e4172b68b0b7097f7e00b3cf5c4fa" title=" " alt="" coords="647,617,809,644"/>
+<area shape="rect" id="node20" href="$msg__internal_8h.html#a247645eb329c23222e21eb7e684781fe" title="创建一个新的消息对象。" alt="" coords="671,415,785,441"/>
+<area shape="rect" id="node22" href="$node__manager_8c.html#a6778670e6f497cf7c196d964bea45e28" title=" " alt="" coords="393,323,561,365"/>
+<area shape="rect" id="node23" href="$subscribe_8c.html#aa1f989d4af560cfe23729e2a0fa017d8" title=" " alt="" coords="387,389,567,430"/>
+<area shape="rect" id="node24" href="$subscribe_8c.html#ac44ffc7cc615b05cac330f8a35ea6168" title=" " alt="" coords="373,455,581,481"/>
+<area shape="rect" id="node25" href="$subscribe_8c.html#a715bef9df72e95ed69e312be143e86b4" title=" " alt="" coords="387,105,567,146"/>
+<area shape="rect" id="node5" href="$persist_8h.html#ad48429dbcc101efaf3a564fadb7e8060" title=" " alt="" coords="629,53,827,80"/>
+<area shape="rect" id="node8" href="$driver_8c.html#a7898cee7a7ee96b68a90768806f182bc" title=" " alt="" coords="654,807,802,849"/>
+<area shape="rect" id="node9" href="$driver_8c.html#a43b6eebde4ee8ee758f4d2e431ceda32" title=" " alt="" coords="654,1274,802,1315"/>
+<area shape="rect" id="node13" href="$event_8h.html#a99447dadf45db972fc2d416bb3ce9f01" title="Delete io_event from event." alt="" coords="660,873,796,900"/>
+<area shape="rect" id="node10" href="$structgroup.html#a62f042052b2e1d5ac4c979d89cb84906" title="指向 neu_group_t 类型结构体的指针。" alt="" coords="907,1281,1011,1308"/>
+<area shape="rect" id="node11" href="$driver_8c.html#af68e22f29bc4f94965a9a31b7dcd5651" title=" " alt="" coords="885,1421,1033,1462"/>
+<area shape="rect" id="node12" href="$group_8c.html#ae204823fb3383673b164bb0ad93e5f52" title=" " alt="" coords="883,1336,1034,1363"/>
+<area shape="rect" id="node15" href="$adapter_8c.html#aa26261d1c57845fee606c423f438606b" title=" " alt="" coords="649,924,807,951"/>
+<area shape="rect" id="node16" href="$node__manager_8c.html#ae5d633caec0ddd504621fe7dfcef4f15" title=" " alt="" coords="639,756,817,783"/>
+<area shape="rect" id="node18" href="$subscribe_8c.html#a5fb6495a844bcab1b13f4dc9c587531b" title=" " alt="" coords="638,690,818,731"/>
+<area shape="rect" id="node21" href="$msg__internal_8h.html#a72998fc603b4655250d5978cf7a6b6d5" title="XX 宏的作用 #define XX(type, structure) \ case type: \ return sizeof(structure); 定义了一个宏 XX，它接受两个参数 type 和..." alt="" coords="891,415,1026,441"/>
+<area shape="rect" id="node26" href="$subscribe_8c.html#ad4e212c8133cf89a64a0ea8a846e03c1" title=" " alt="" coords="638,105,818,146"/>
+<area shape="rect" id="node28" href="$adapter_2storage_8c.html#aab55a90fbfcc9dc1cbbb82454720b3d1" title=" " alt="" coords="649,1081,807,1122"/>
+<area shape="rect" id="node31" href="$driver_8c.html#a3a827036e7c0a0a87e2324aad56df52e" title="向适配器驱动中添加一个新的组。" alt="" coords="654,1157,802,1198"/>
+<area shape="rect" id="node35" href="$driver_8c.html#a4a8bb4597120c90c9548d90559ccd7d1" title="向适配器驱动中添加标签信息。" alt="" coords="403,1333,551,1374"/>
+<area shape="rect" id="node36" href="$driver_8c.html#a14dbd3a06a70720e147ee7c14b9f644c" title=" " alt="" coords="654,1391,802,1433"/>
+<area shape="rect" id="node29" href="$cid_8h.html#ac7c7b11502ea624a7ae45915d2d189a9" title=" " alt="" coords="875,1079,1043,1105"/>
+<area shape="rect" id="node30" href="$persist_8h.html#a01ef105b7fabc7775dcac8259fc22368" title=" " alt="" coords="883,1013,1034,1054"/>
+<area shape="rect" id="node32" href="$group_8c.html#a6a1d4a1a167f33a6daf4061d7724ff72" title=" " alt="" coords="885,1180,1032,1207"/>
+<area shape="rect" id="node33" href="$group_8c.html#a96d51fa9cfe77c94dc5a367fac26fe06" title="创建一个新的 neu_group_t 类型的组对象。" alt="" coords="897,1231,1021,1257"/>
+<area shape="rect" id="node34" href="$driver_8c.html#a0578ddefcc89f9daf93647e562277690" title="启动驱动适配器的组定时器。" alt="" coords="889,1129,1028,1156"/>
+<area shape="rect" id="node38" href="$driver_8c.html#a9e6bbc76891a74a49ff5790c96fb5bf5" title=" " alt="" coords="403,1559,551,1601"/>
+<area shape="rect" id="node40" href="$driver_8c.html#a590d38697e402c361c8d26ea59f994b8" title=" " alt="" coords="403,1625,551,1666"/>
+<area shape="rect" id="node41" href="$driver_8c.html#a4064a5b8885f9ed99005c71ea143ae34" title=" " alt="" coords="403,1690,551,1731"/>
+<area shape="rect" id="node42" href="$driver_8c.html#a6d67533b808b33f94efb91747bae9ed8" title=" " alt="" coords="403,1755,551,1797"/>
+<area shape="rect" id="node44" href="$adapter_8c.html#a66f33dbccefd1506e6fa56c26ac84b0a" title="创建并初始化一个新的适配器实例。" alt="" coords="402,911,553,937"/>
+<area shape="rect" id="node45" href="$adapter_8c.html#a832ab68dc1b7280229882f37d042e9ce" title=" " alt="" coords="407,860,548,887"/>
+<area shape="rect" id="node46" href="$adapter_8c.html#ac0be90d43618c592594f8f96f195ebca" title="向管理器发送适配器初始化消息。" alt="" coords="412,657,543,684"/>
+<area shape="rect" id="node47" href="$adapter_8c.html#ad1f40ac7c5941ea2c2db46fc3c56aac1" title="为适配器设置配置信息，并根据设置结果进行相应处理。" alt="" coords="386,961,569,988"/>
+<area shape="rect" id="node48" href="$node__manager_8c.html#a920e2b5e7931f404e2f3a5dd67d792c4" title="向节点管理器中添加一个新的节点实体。" alt="" coords="387,1012,568,1039"/>
+<area shape="rect" id="node49" href="$plugin__manager_8c.html#a226c813a7193a5db70c7b9e3040bb97c" title="根据插件名称在插件管理器中创建插件实例。" alt="" coords="398,1063,557,1105"/>
+<area shape="rect" id="node50" href="$plugin__manager_8c.html#ad6a709f7d7dde97af84572dc6871f680" title="在插件管理器中查找指定名称的插件，并获取其详细信息。" alt="" coords="383,809,572,836"/>
+</map>

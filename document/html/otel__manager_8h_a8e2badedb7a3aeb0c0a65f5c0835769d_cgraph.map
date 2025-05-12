@@ -1,0 +1,9 @@
+<map id="neu_otel_add_span2" name="neu_otel_add_span2">
+<area shape="rect" id="node1" title="在给定的 OpenTelemetry 跟踪上下文中添加一个新的跨度（span）。" alt="" coords="5,105,160,132"/>
+<area shape="rect" id="node2" href="$otel__manager_8c.html#aa28ed2d6ab82117a06d1759f74f666c7" title="将十六进制字符串转换为二进制数组。" alt="" coords="435,44,593,70"/>
+<area shape="rect" id="node4" href="$otel__manager_8c.html#a77caac33bc383c6793c558074aa1c8ed" title="设置给定跟踪范围上下文的父Span ID。" alt="" coords="222,32,373,74"/>
+<area shape="rect" id="node5" href="$otel__manager_8c.html#ae03936931b301b17ba1be289db7976a8" title="设置给定跟踪范围上下文的Span ID。" alt="" coords="222,98,373,139"/>
+<area shape="rect" id="node6" href="$otel__manager_8c.html#a4a0722fc34791302b9d14412c9197688" title=" " alt="" coords="222,163,373,204"/>
+<area shape="rect" id="node7" href="$trace_8pb-c_8c.html#ab61051f589a177e53d4bf38ba8df0053" title=" " alt="" coords="208,228,387,270"/>
+<area shape="rect" id="node3" href="$otel__manager_8c.html#a55b1bd4173b19c09b4f850ba31c9c288" title=" " alt="" coords="641,44,767,70"/>
+</map>

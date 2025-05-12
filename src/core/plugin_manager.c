@@ -173,6 +173,10 @@ void neu_plugin_manager_destroy(neu_plugin_manager_t *mgr)
  *         - `NEU_ERR_LIBRARY_INFO_INVALID`：插件信息无效。
  *         - `NEU_ERR_LIBRARY_MODULE_VERSION_NOT_MATCH`：插件版本与主程序版本不匹配。
  *         - `NEU_ERR_LIBRARY_NAME_CONFLICT`：插件名称冲突。
+ * 
+ * @note
+ * dlopen：此函数用于在运行时打开一个共享库文件，并且返回一个指向该共享库的句柄。借助这个句柄，程序就能调用共享库中的函数和变量。
+ * dlsym(Dynamic Link Symbol)：该函数借助共享库的句柄，在共享库中查找指定名称的符号（函数或者变量），然后返回该符号的地址。
  */
 int neu_plugin_manager_add(neu_plugin_manager_t *mgr,
                            const char *          plugin_lib_name)

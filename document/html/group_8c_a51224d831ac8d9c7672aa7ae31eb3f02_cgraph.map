@@ -1,0 +1,7 @@
+<map id="neu_group_get_read_tag" name="neu_group_get_read_tag">
+<area shape="rect" id="node1" title="获取组中所有可读的标签。" alt="" coords="5,31,188,57"/>
+<area shape="rect" id="node2" href="$group_8c.html#a325abfbe413328c2334910916fec954e" title="根据给定的谓词过滤标签列表。" alt="" coords="241,5,328,32"/>
+<area shape="rect" id="node4" href="$group_8c.html#a1c82177b3dd84c10eb264e590e6a2388" title="判断标签是否具有可读或可订阅属性。" alt="" coords="236,56,333,83"/>
+<area shape="rect" id="node3" href="$tag_8h.html#acdcf2b9c571dc38c131362b14c7c00ab" title="获取用于数据标签管理的UT_icd结构体指针。" alt="" coords="402,5,530,32"/>
+<area shape="rect" id="node5" href="$tag_8h.html#a625e0ebdf976f8fdfb54bc6567b48ccf" title="测试标签是否具有指定的属性。" alt="" coords="381,56,551,83"/>
+</map>

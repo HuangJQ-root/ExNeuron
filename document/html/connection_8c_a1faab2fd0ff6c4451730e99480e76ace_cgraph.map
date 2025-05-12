@@ -1,0 +1,7 @@
+<map id="neu_conn_tcp_server_wait_msg" name="neu_conn_tcp_server_wait_msg">
+<area shape="rect" id="node1" title=" " alt="" coords="5,64,164,105"/>
+<area shape="rect" id="node2" href="$connection_8c.html#a0c9c48f9b306708bf359b4628ef942b9" title="Close a client connection." alt="" coords="230,5,389,47"/>
+<area shape="rect" id="node4" href="$connection_8c.html#a0d54280a0c947d801d37f3cebdc9bf65" title="Receive data via tcp server connection read." alt="" coords="212,71,407,98"/>
+<area shape="rect" id="node5" href="$protocol__buf_8h.html#a0355e690085d2cffed22f3d82e50d491" title="Initialization of protocol_unpack_buf." alt="" coords="229,123,389,164"/>
+<area shape="rect" id="node3" href="$connection_8c.html#a5cd6981055e39c9eb94cc524f95ddbb2" title="从 TCP 服务器的客户端列表中移除指定文件描述符对应的客户端。" alt="" coords="455,5,609,47"/>
+</map>

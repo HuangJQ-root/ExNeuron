@@ -1,0 +1,7 @@
+<map id="neu_metrics_init" name="neu_metrics_init">
+<area shape="rect" id="node1" title="初始化度量指标。" alt="" coords="5,56,136,83"/>
+<area shape="rect" id="node2" href="$metrics_8c.html#a85c7f967bf06b5296bb6847078c4e141" title="查找并填充操作系统的相关信息到全局度量结构体中。" alt="" coords="191,5,291,32"/>
+<area shape="rect" id="node3" href="$metrics_8c.html#ac8ded23fbb5452e9519b762b8af7f500" title=" " alt="" coords="184,56,299,83"/>
+<area shape="rect" id="node5" href="$time_8h.html#a5d0ec4465fba784c9104077b4ca178f9" title=" " alt="" coords="186,107,297,133"/>
+<area shape="rect" id="node4" href="$metrics_8c.html#a1c0c07b91859d028e459b964fdd8f13e" title="解析并返回指定列的内存信息（以字节为单位）。" alt="" coords="347,56,509,83"/>
+</map>

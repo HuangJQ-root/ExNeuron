@@ -1,0 +1,10 @@
+<map id="notify_monitor" name="notify_monitor">
+<area shape="rect" id="node1" title=" " alt="" coords="5,132,123,159"/>
+<area shape="rect" id="node2" href="$msg__internal_8h.html#a5195c708c0277504d339cae804fe4f87" title="释放消息对象占用的内存。" alt="" coords="221,5,335,32"/>
+<area shape="rect" id="node3" href="$msg__internal_8h.html#a8a4e4172b68b0b7097f7e00b3cf5c4fa" title=" " alt="" coords="197,56,359,83"/>
+<area shape="rect" id="node4" href="$msg__internal_8h.html#a247645eb329c23222e21eb7e684781fe" title="创建一个新的消息对象。" alt="" coords="221,107,335,133"/>
+<area shape="rect" id="node6" href="$node__manager_8c.html#abb808c6e3613f40836b0daf7853f57bc" title=" " alt="" coords="171,157,385,184"/>
+<area shape="rect" id="node7" href="$msg_8h.html#a212efea9ecb4ffd7c7cecc3e8077dd27" title=" " alt="" coords="187,208,369,235"/>
+<area shape="rect" id="node8" href="$msg__internal_8h.html#a02fa7954cca3a96d63d6e847967c91be" title="通过指定的 Unix 域套接字地址发送消息。" alt="" coords="209,259,347,285"/>
+<area shape="rect" id="node5" href="$msg__internal_8h.html#a72998fc603b4655250d5978cf7a6b6d5" title="XX 宏的作用 #define XX(type, structure) \ case type: \ return sizeof(structure); 定义了一个宏 XX，它接受两个参数 type 和..." alt="" coords="433,107,568,133"/>
+</map>

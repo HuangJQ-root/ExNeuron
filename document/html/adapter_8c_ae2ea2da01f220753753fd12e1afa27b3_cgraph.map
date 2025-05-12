@@ -1,0 +1,7 @@
+<map id="reply" name="reply">
+<area shape="rect" id="node1" title=" " alt="" coords="5,56,60,83"/>
+<area shape="rect" id="node2" href="$msg_8h.html#a5303c131d30ff1b4876ec401da6b9215" title="根据请求/响应头部和数据生成完整的消息。" alt="" coords="143,5,255,32"/>
+<area shape="rect" id="node4" href="$msg_8h.html#a212efea9ecb4ffd7c7cecc3e8077dd27" title=" " alt="" coords="108,56,291,83"/>
+<area shape="rect" id="node5" href="$msg__internal_8h.html#a461d10dfad0d3fb7d3b124e1494432ee" title="通过文件描述符发送消息。" alt="" coords="140,107,259,133"/>
+<area shape="rect" id="node3" href="$msg__internal_8h.html#a72998fc603b4655250d5978cf7a6b6d5" title="XX 宏的作用 #define XX(type, structure) \ case type: \ return sizeof(structure); 定义了一个宏 XX，它接受两个参数 type 和..." alt="" coords="339,5,473,32"/>
+</map>

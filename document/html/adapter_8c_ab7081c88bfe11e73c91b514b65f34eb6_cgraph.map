@@ -1,0 +1,9 @@
+<map id="notify_monitor" name="notify_monitor">
+<area shape="rect" id="node1" title=" " alt="" coords="5,107,123,133"/>
+<area shape="rect" id="node2" href="$msg__internal_8h.html#a5195c708c0277504d339cae804fe4f87" title="释放消息对象占用的内存。" alt="" coords="205,5,319,32"/>
+<area shape="rect" id="node3" href="$msg__internal_8h.html#a8a4e4172b68b0b7097f7e00b3cf5c4fa" title=" " alt="" coords="181,56,343,83"/>
+<area shape="rect" id="node4" href="$msg__internal_8h.html#a247645eb329c23222e21eb7e684781fe" title="创建一个新的消息对象。" alt="" coords="205,107,319,133"/>
+<area shape="rect" id="node6" href="$msg_8h.html#a212efea9ecb4ffd7c7cecc3e8077dd27" title=" " alt="" coords="171,157,353,184"/>
+<area shape="rect" id="node7" href="$msg__internal_8h.html#a461d10dfad0d3fb7d3b124e1494432ee" title="通过文件描述符发送消息。" alt="" coords="203,208,321,235"/>
+<area shape="rect" id="node5" href="$msg__internal_8h.html#a72998fc603b4655250d5978cf7a6b6d5" title="XX 宏的作用 #define XX(type, structure) \ case type: \ return sizeof(structure); 定义了一个宏 XX，它接受两个参数 type 和..." alt="" coords="401,107,536,133"/>
+</map>

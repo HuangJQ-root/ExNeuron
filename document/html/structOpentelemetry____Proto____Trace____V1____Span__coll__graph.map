@@ -1,0 +1,10 @@
+<map id="Opentelemetry__Proto__Trace__V1__Span" name="Opentelemetry__Proto__Trace__V1__Span">
+<area shape="rect" id="node1" title=" " alt="" coords="693,101,861,143"/>
+<area shape="rect" id="node2" href="$structOpentelemetry____Proto____Trace____V1____Span____Link.html" title=" " alt="" coords="339,200,527,241"/>
+<area shape="rect" id="node3" href="$structOpentelemetry____Proto____Common____V1____KeyValue.html" title=" " alt="" coords="5,200,205,241"/>
+<area shape="rect" id="node5" href="$structOpentelemetry____Proto____Common____V1____KeyValueList.html" title=" " alt="" coords="321,265,544,307"/>
+<area shape="rect" id="node7" href="$structOpentelemetry____Proto____Trace____V1____Span____Event.html" title=" " alt="" coords="333,5,532,47"/>
+<area shape="rect" id="node4" href="$structOpentelemetry____Proto____Common____V1____AnyValue.html" title=" " alt="" coords="676,299,877,340"/>
+<area shape="rect" id="node6" href="$structOpentelemetry____Proto____Common____V1____ArrayValue.html" title=" " alt="" coords="1007,299,1217,340"/>
+<area shape="rect" id="node8" href="$structOpentelemetry____Proto____Trace____V1____Status.html" title=" " alt="" coords="349,71,517,112"/>
+</map>

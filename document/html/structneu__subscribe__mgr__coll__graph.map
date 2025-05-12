@@ -1,0 +1,10 @@
+<map id="neu_subscribe_mgr" name="neu_subscribe_mgr">
+<area shape="rect" id="node1" title="是订阅管理器，用于管理订阅信息" alt="" coords="318,276,466,303"/>
+<area shape="rect" id="node2" href="$structsub__elem.html" title="存放每个具体订阅标签，有哪些应用程序（app）进行了订阅" alt="" coords="349,187,435,213"/>
+<area shape="rect" id="node3" href="$structUT__hash__handle.html" title=" " alt="" coords="117,96,246,123"/>
+<area shape="rect" id="node4" href="$structUT__hash__table.html" title=" " alt="" coords="122,276,241,303"/>
+<area shape="rect" id="node5" href="$structUT__hash__bucket.html" title=" " alt="" coords="5,187,133,213"/>
+<area shape="rect" id="node6" href="$structUT__array.html" title=" " alt="" coords="351,96,433,123"/>
+<area shape="rect" id="node7" href="$structUT__icd.html" title=" " alt="" coords="359,5,425,32"/>
+<area shape="rect" id="node8" href="$structsub__elem__key.html" title="该结构体用于表示订阅元素的关键信息。" alt="" coords="457,96,572,123"/>
+</map>

@@ -1,0 +1,18 @@
+<map id="read_callback" name="read_callback">
+<area shape="rect" id="node1" title="读取回调函数，在定时器到期时被调用，用于处理组数据的读取操作。" alt="" coords="5,185,117,212"/>
+<area shape="rect" id="node2" href="$structgroup.html#a62f042052b2e1d5ac4c979d89cb84906" title="指向 neu_group_t 类型结构体的指针。" alt="" coords="434,5,538,32"/>
+<area shape="rect" id="node3" href="$driver_8c.html#a530ce751519be43018265b014a59b662" title="处理组数据发生变化时的回调函数。" alt="" coords="197,107,310,133"/>
+<area shape="rect" id="node8" href="$adapter_8c.html#a084731812a71276f51069879af1089f7" title=" " alt="" coords="176,178,331,219"/>
+<area shape="rect" id="node13" href="$group_8c.html#a7e89d9a160a26df3ea8232fa7d9a45dd" title="检查组数据是否发生变化，若变化则调用指定的回调函数。" alt="" coords="165,244,341,271"/>
+<area shape="rect" id="node16" href="$group_8c.html#a4380449e3f6cc5de579e6d2188ecf4c8" title="检查组数据是否发生变化。" alt="" coords="172,295,335,321"/>
+<area shape="rect" id="node4" href="$cache_8c.html#acbc5c8d07b93823120be47eb72d23d42" title="向驱动缓存中添加或更新一个标签的值。" alt="" coords="403,56,569,83"/>
+<area shape="rect" id="node6" href="$cache_8c.html#a392a29735a1c80573d0c35468a2df039" title="从驱动缓存中删除指定组和标签的数据。" alt="" coords="405,107,567,133"/>
+<area shape="rect" id="node7" href="$group_8c.html#a54b14485b43cfbd31f776fe7fba81de9" title=" " alt="" coords="399,157,573,184"/>
+<area shape="rect" id="node5" href="$cache_8c.html#a26a2ab2a56c24f7fa7f9d655e243eaf8" title=" " alt="" coords="686,63,751,89"/>
+<area shape="rect" id="node9" href="$metrics_8h.html#a8d539e4bf16fa264bf040b001a200a03" title="更新节点度量信息。" alt="" coords="389,208,583,235"/>
+<area shape="rect" id="node10" href="$metrics_8h.html#a8a2794ffaef7861929a267ff7cef6030" title="检查度量类型是否为计数器类型。" alt="" coords="644,127,793,169"/>
+<area shape="rect" id="node11" href="$metrics_8h.html#a8c32e9cb6e10201d020fdda7c24e63ce" title=" " alt="" coords="644,193,793,234"/>
+<area shape="rect" id="node12" href="$rolling__counter_8h.html#a708a3e3c14c123cb8adcacaf2a1b7c40" title="增量滚动计数器并返回更新后的值。" alt="" coords="631,259,807,285"/>
+<area shape="rect" id="node14" href="$group_8c.html#ac8ff7fac22160c5927d7e1a05990465d" title="将由 tag_elem_t 结构体组成的哈希表转换为 UT_array 数组。" alt="" coords="448,263,524,289"/>
+<area shape="rect" id="node15" href="$tag_8h.html#acdcf2b9c571dc38c131362b14c7c00ab" title="获取用于数据标签管理的UT_icd结构体指针。" alt="" coords="655,309,783,336"/>
+</map>

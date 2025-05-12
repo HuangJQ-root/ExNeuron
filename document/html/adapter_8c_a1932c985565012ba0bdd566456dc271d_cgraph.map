@@ -1,0 +1,9 @@
+<map id="adapter_response" name="adapter_response">
+<area shape="rect" id="node1" title="处理并发送适配器响应。" alt="" coords="5,107,144,133"/>
+<area shape="rect" id="node2" href="$msg_8h.html#acdb88d58f4df75658c4730683ebee41a" title="交换消息头中的发送者和接收者信息。" alt="" coords="208,5,359,32"/>
+<area shape="rect" id="node3" href="$msg__internal_8h.html#a5195c708c0277504d339cae804fe4f87" title="释放消息对象占用的内存。" alt="" coords="226,56,341,83"/>
+<area shape="rect" id="node4" href="$msg_8h.html#a5303c131d30ff1b4876ec401da6b9215" title="根据请求/响应头部和数据生成完整的消息。" alt="" coords="227,107,339,133"/>
+<area shape="rect" id="node6" href="$msg_8h.html#a212efea9ecb4ffd7c7cecc3e8077dd27" title=" " alt="" coords="192,157,375,184"/>
+<area shape="rect" id="node7" href="$msg__internal_8h.html#a461d10dfad0d3fb7d3b124e1494432ee" title="通过文件描述符发送消息。" alt="" coords="224,208,343,235"/>
+<area shape="rect" id="node5" href="$msg__internal_8h.html#a72998fc603b4655250d5978cf7a6b6d5" title="XX 宏的作用 #define XX(type, structure) \ case type: \ return sizeof(structure); 定义了一个宏 XX，它接受两个参数 type 和..." alt="" coords="423,107,557,133"/>
+</map>

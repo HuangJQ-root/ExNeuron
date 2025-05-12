@@ -1,0 +1,7 @@
+<map id="neu_conn_tcp_server_send" name="neu_conn_tcp_server_send">
+<area shape="rect" id="node1" title="Specify the client to send data." alt="" coords="5,42,203,69"/>
+<area shape="rect" id="node2" href="$connection_8c.html#a5cd6981055e39c9eb94cc524f95ddbb2" title="从 TCP 服务器的客户端列表中移除指定文件描述符对应的客户端。" alt="" coords="259,5,413,47"/>
+<area shape="rect" id="node3" href="$connection_8c.html#a8632dc263a1a70e3aadd72c72ddb820e" title="启动 TCP 服务器监听。" alt="" coords="251,71,421,98"/>
+<area shape="rect" id="node4" href="$connection_8c.html#a16a52c768d652c4dcfa583df5933b1dd" title=" " alt="" coords="469,46,537,73"/>
+<area shape="rect" id="node5" href="$connection_8c.html#a4a08211800aced7472145af053011ee7" title=" " alt="" coords="469,97,537,123"/>
+</map>
