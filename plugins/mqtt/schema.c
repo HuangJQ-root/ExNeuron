@@ -45,10 +45,45 @@ static int mqtt_schema_parse(json_t *root, mqtt_schema_vt_t **vts,
             } else if (strcmp(str_val, "${tag_errors}") == 0) {
                 vt->vt = MQTT_SCHEMA_TAG_ERRORS;
             } else {
-                if (str_val[0] == '$' && str_val[1] == '{' &&
-                    str_val[strlen(str_val) - 1] == '}') {
-                    return -1;
-                } else {
+                char *tmp_str = strdup(str_val);
+                // 以逗号为分隔符分割 tmp_str，得到第一个字段;无逗号则整体作为字段返回
+                char *token = strtok(tmp_str, ",");
+                int tag_count = 0;
+
+                while (token != NULL) {
+                    if (token[0] == '$' && token[1] == '{' &&
+                        token[strlen(token) - 1] == '}') {
+                        if (tag_count == 0) {
+                            // 检查原始字符串中是否包含逗号
+                            if (strchr(str_val, ',') != NULL) {
+                                vt->vt = MQTT_SCHEMA_CUSTOM_TAGS;
+                            } else {
+                                vt->vt = MQTT_SCHEMA_CUSTOM_TAG;
+                            }
+                        }
+
+                        char tag_name[256];
+                        strncpy(tag_name, token + 2, strlen(token) - 3);
+                        tag_name[strlen(token) - 3] = '\0';
+
+                        if (vt->vt == MQTT_SCHEMA_CUSTOM_TAG) {
+                            strcpy(vt->custom_tag, tag_name);
+                        } else if (vt->vt == MQTT_SCHEMA_CUSTOM_TAGS) {
+                            strcpy(vt->custom_tags[tag_count], tag_name);
+                        }
+                        tag_count++;
+                    }
+                    // 继续从上次分割的位置开始查找下一个逗号，然后返回下一个子字符串的指针。
+                    token = strtok(NULL, ",");
+                }
+
+                if (vt->vt == MQTT_SCHEMA_CUSTOM_TAGS) {
+                    vt->n_custom_tags = tag_count;
+                }
+
+                free(tmp_str);
+
+                if (vt->vt != MQTT_SCHEMA_CUSTOM_TAG && vt->vt != MQTT_SCHEMA_CUSTOM_TAGS) {
                     vt->vt = MQTT_SCHEMA_UD;
                     strcpy(vt->ud, str_val);
                 }
@@ -288,6 +323,65 @@ static void *schema_encode(char *driver, char *group,
                                            vts[i].n_sub_vts, s_tags, n_s_tags);
             elem.t         = NEU_JSON_OBJECT;
             elem.v.val_object = sub_root;
+            break;
+        }
+        case MQTT_SCHEMA_CUSTOM_TAG: {
+            neu_json_read_resp_tag_t *p_tag = tags->tags;
+
+            for (int j = 0; j < tags->n_tag; j++) {
+                neu_json_elem_t tag_elems[1 + NEU_TAG_META_SIZE] = { 0 };
+
+                if (p_tag->error == 0 && strcmp(p_tag->name, vts[i].custom_tag) == 0) {
+                    tag_elems[0].name = p_tag->name;
+                    tag_elems[0].t    = p_tag->t;
+                    tag_elems[0].v    = p_tag->value;
+
+                    for (int k = 0; k < p_tag->n_meta; k++) {
+                        tag_elems[1 + k].name = p_tag->metas[k].name;
+                        tag_elems[1 + k].t    = p_tag->metas[k].t;
+                        tag_elems[1 + k].v    = p_tag->metas[k].value;
+                    }
+
+                    neu_json_encode_field(root, tag_elems,
+                                          1 + p_tag->n_meta);
+                }
+
+                p_tag++;
+            }
+
+            break;
+        }
+        case MQTT_SCHEMA_CUSTOM_TAGS: {
+            void *values_array = neu_json_encode_new();
+
+            neu_json_read_resp_tag_t *p_tag = tags->tags;
+
+            for (int tag_count = 0; tag_count < vts[i].n_custom_tags; tag_count++) {
+                for (int j = 0; j < tags->n_tag; j++) {
+                    neu_json_elem_t tag_elems[1 + NEU_TAG_META_SIZE] = { 0 };
+
+                    if (p_tag->error == 0 && strcmp(p_tag->name, vts[i].custom_tags[tag_count]) == 0) {
+                        tag_elems[0].name = p_tag->name;
+                        tag_elems[0].t    = p_tag->t;
+                        tag_elems[0].v    = p_tag->value;
+
+                        for (int k = 0; k < p_tag->n_meta; k++) {
+                            tag_elems[1 + k].name = p_tag->metas[k].name;
+                            tag_elems[1 + k].t    = p_tag->metas[k].t;
+                            tag_elems[1 + k].v    = p_tag->metas[k].value;
+                        }
+
+                        neu_json_encode_field(values_array, tag_elems,
+                                              1 + p_tag->n_meta);
+                    }
+
+                    p_tag++;
+                }
+                p_tag = tags->tags;
+            }
+
+            elem.t            = NEU_JSON_OBJECT;
+            elem.v.val_object = values_array;
             break;
         }
         }

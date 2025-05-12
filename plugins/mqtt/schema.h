@@ -31,6 +31,9 @@ extern "C" {
 
 #include "plugin.h"
 
+#define NEU_MAX_TAGS     1000
+#define NEU_MAX_NAME_LEN 128
+
 typedef enum {
     MQTT_SCHEMA_TIMESTAMP        = 0,
     MQTT_SCHEMA_NODE_NAME        = 1,
@@ -43,6 +46,8 @@ typedef enum {
     MQTT_SCHEMA_TAG_ERROR_VALUES = 8,
     MQTT_SCHEMA_UD               = 9,
     MQTT_SCHEMA_OBJECT           = 10,
+    MQTT_SCHEMA_CUSTOM_TAG       = 11,
+    MQTT_SCHEMA_CUSTOM_TAGS      = 12,
 } mqtt_schema_vt_e;
 
 typedef struct mqtt_schema_vt mqtt_schema_vt_t;
@@ -52,6 +57,11 @@ typedef struct mqtt_schema_vt {
     mqtt_schema_vt_e vt;
 
     char ud[128];
+    
+    char custom_tag[128];
+
+    char custom_tags[NEU_MAX_TAGS][NEU_MAX_NAME_LEN]; // 存储多个自定义标签名称
+    int n_custom_tags;                                // 自定义标签的数量
 
     mqtt_schema_vt_t *sub_vts;
     size_t            n_sub_vts;
